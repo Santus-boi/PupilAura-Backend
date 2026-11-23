@@ -1,0 +1,289 @@
+{% extends "student/base.html" %}
+{% load static payments %}
+
+{% block title %}Checkout | PupilAura{% endblock %}
+
+{% block breadcrumb %}
+    Workspace <span class="pa-breadcrumb-sep">/</span>
+    <strong>Checkout</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pa-checkout-wrap { max-width: 780px; margin: 0 auto; }
+
+    .pa-checkout-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 30px 34px;
+        margin-bottom: 22px;
+        border-radius: 21px;
+        background: linear-gradient(112deg, #1d4ed8 0%, #2563eb 57%, #4f46e5 100%);
+        color: white;
+        box-shadow: 0 12px 28px #2563eb20;
+    }
+    .pa-checkout-hero::before {
+        content: "";
+        position: absolute;
+        width: 280px; height: 280px;
+        right: 6%; top: -190px;
+        border: 1px solid #ffffff20;
+        border-radius: 50%;
+        box-shadow: 0 0 0 32px #ffffff08, 0 0 0 65px #ffffff06;
+    }
+    .pa-checkout-hero h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 8px;
+        font: 800 clamp(24px, 3vw, 32px) "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.5px;
+    }
+    .pa-checkout-hero p {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        color: #e2eaff;
+        font-size: 15px;
+    }
+
+    .pa-checkout-panel {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: white;
+        padding: 26px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(15,23,42,0.05);
+    }
+
+    .pa-checkout-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed var(--border);
+    }
+    .pa-checkout-row:last-of-type { border-bottom: 0; }
+
+    .pa-checkout-row span { color: var(--muted); font-size: 14px; }
+    .pa-checkout-row strong { color: var(--ink); font-size: 15px; }
+
+    .pa-checkout-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+        margin-top: 12px;
+    }
+    .pa-checkout-total span { font-size: 15px; font-weight: 700; }
+    .pa-checkout-total strong {
+        font: 800 26px "Plus Jakarta Sans", sans-serif;
+        color: var(--primary);
+    }
+
+    .pa-form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .pa-gateway-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .pa-gateway-option {
+        position: relative;
+        cursor: pointer;
+    }
+    .pa-gateway-option input {
+        position: absolute;
+        opacity: 0;
+    }
+    .pa-gateway-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: white;
+        transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .pa-gateway-option input:checked + .pa-gateway-card {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+    .pa-gateway-card i {
+        font-size: 22px;
+        color: var(--primary);
+    }
+    .pa-gateway-card strong { display: block; font-size: 14px; color: var(--ink); }
+    .pa-gateway-card small { color: var(--muted); font-size: 12px; }
+
+    .pa-checkout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 52px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb, #4338ca);
+        color: white;
+        font-size: 15px;
+        font-weight: 800;
+        box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.55);
+        cursor: pointer;
+        transition: transform .2s, box-shadow .2s;
+    }
+    .pa-checkout-btn:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px -10px rgba(37, 99, 235, 0.7);
+    }
+
+    .pa-redeem-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .pa-redeem-form input {
+        flex: 1;
+        min-width: 200px;
+        min-height: 46px;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        font-size: 14px;
+    }
+    .pa-redeem-form input:focus {
+        outline: none;
+        border-color: #93b4ff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
+    .pa-redeem-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 20px;
+        border-radius: 11px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .pa-redeem-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    @media (max-width: 650px) {
+        .pa-gateway-grid { grid-template-columns: 1fr; }
+        .pa-checkout-hero { padding: 24px 20px; }
+        .pa-checkout-panel { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pa-checkout-wrap">
+
+    <section class="pa-checkout-hero">
+        <h1>Unlock this {{ content_label }}</h1>
+        <p>Get 90 days of access. Renew anytime.</p>
+    </section>
+
+    <!-- ORDER SUMMARY -->
+    <div class="pa-checkout-panel">
+        <div class="pa-checkout-row">
+            <span>Item</span>
+            <strong>{{ content_label }} #{{ content_id }}</strong>
+        </div>
+        <div class="pa-checkout-row">
+            <span>Access duration</span>
+            <strong>90 days</strong>
+        </div>
+        <div class="pa-checkout-total">
+            <span>Total due</span>
+            <strong>{{ amount|floatformat:0 }}</strong>
+        </div>
+    </div>
+
+    <!-- PAYMENT METHOD -->
+    <form method="POST" class="pa-checkout-panel">
+        {% csrf_token %}
+
+        <div class="pa-form-label">Select payment method</div>
+
+        <div class="pa-gateway-grid">
+
+            <label class="pa-gateway-option">
+                <input type="radio" name="gateway" value="paystack" checked>
+                <div class="pa-gateway-card">
+                    <i class="bi bi-credit-card-2-front-fill"></i>
+                    <div>
+                        <strong>Paystack</strong>
+                        <small>Cards, bank transfer, USSD (NGN)</small>
+                    </div>
+                </div>
+            </label>
+
+            <label class="pa-gateway-option">
+                <input type="radio" name="gateway" value="stripe">
+                <div class="pa-gateway-card">
+                    <i class="bi bi-credit-card-fill"></i>
+                    <div>
+                        <strong>Stripe</strong>
+                        <small>International cards (USD, GBP, EUR)</small>
+                    </div>
+                </div>
+            </label>
+
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="id_currency" class="pa-form-label">Currency</label>
+            <select name="currency" id="id_currency" class="form-select" style="min-height:46px;border-radius:11px;border-color:var(--border);">
+                <option value="NGN">NGN — Nigerian Naira</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="EUR">EUR — Euro</option>
+            </select>
+            <small style="display:block;margin-top:6px;color:var(--muted);font-size:12.5px;">
+                Paystack works with NGN only. Stripe works with international currencies.
+            </small>
+        </div>
+
+        <button type="submit" class="pa-checkout-btn">
+            <i class="bi bi-lock-fill"></i>
+            Proceed to secure payment
+        </button>
+    </form>
+
+    <!-- TOKEN REDEMPTION -->
+    <div class="pa-checkout-panel">
+        <div class="pa-form-label">Have a promo code?</div>
+        <p style="color:var(--muted);font-size:13px;margin:0 0 12px;">
+            Enter your single-use code to unlock this item free for 90 days.
+        </p>
+        <form method="POST" action="{% url 'payments:redeem' %}" class="pa-redeem-form">
+            {% csrf_token %}
+            <input type="hidden" name="content_type" value="{{ content_type }}">
+            <input type="hidden" name="content_id" value="{{ content_id }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <input type="text" name="code" placeholder="PUPIL-XXXX-XXXX" autocomplete="off">
+            <button type="submit" class="pa-redeem-btn">
+                <i class="bi bi-gift-fill"></i>
+                Redeem code
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

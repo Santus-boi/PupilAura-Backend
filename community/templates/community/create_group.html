@@ -1,0 +1,531 @@
+
+{% extends "student/base.html" %}
+
+{% block title %}Create Group | PupilAura{% endblock %}
+
+{% block breadcrumb %}
+Community <span class="pa-breadcrumb-sep">/</span>
+<strong>Create Group</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .community-create {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .community-create .create-heading {
+        margin-bottom: 28px;
+    }
+
+    .community-create .create-eyebrow {
+        color: #dc2626;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .community-create .create-heading h1 {
+        font-size: clamp(25px, 4vw, 34px);
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .community-create .create-heading p {
+        color: #64748b;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .community-create .create-card {
+        background: #fff;
+        border: 1px solid #e9edf3;
+        border-radius: 20px;
+        box-shadow: 0 10px 35px rgba(15, 23, 42, .05);
+        overflow: hidden;
+    }
+
+    .community-create .create-card-header {
+        padding: 25px 30px;
+        border-bottom: 1px solid #edf0f4;
+        background: linear-gradient(135deg, #fff 0%, #fff7f7 100%);
+    }
+
+    .community-create .create-card-header h2 {
+        font-size: 17px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 5px;
+    }
+
+    .community-create .create-card-header p {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .community-create .create-card-body {
+        padding: 30px;
+    }
+
+    .community-create .field-label {
+        display: block;
+        color: #263244;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 9px;
+    }
+
+    .community-create .field-help {
+        display: block;
+        color: #8993a3;
+        font-size: 12px;
+        margin-top: 7px;
+    }
+
+    .community-create .form-control,
+    .community-create .form-select {
+        min-height: 48px;
+        border: 1px solid #dfe5ed;
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-size: 14px;
+        box-shadow: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .community-create textarea.form-control {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .community-create .form-control:focus,
+    .community-create .form-select:focus {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, .09);
+    }
+
+    .community-create .group-type-section {
+        margin: 28px 0;
+        padding: 22px;
+        background: #f8fafc;
+        border: 1px solid #edf0f4;
+        border-radius: 15px;
+    }
+
+    .community-create .section-heading {
+        font-size: 14px;
+        font-weight: 800;
+        color: #172033;
+        margin-bottom: 6px;
+    }
+
+    .community-create .section-description {
+        color: #718096;
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .community-create .context-panel {
+        padding: 21px;
+        margin-top: 22px;
+        background: #fffafa;
+        border: 1px solid #f4dada;
+        border-radius: 14px;
+        animation: contextReveal .2s ease;
+    }
+
+    .community-create .context-panel[hidden] {
+        display: none !important;
+    }
+
+    .community-create .context-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #991b1b;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .community-create .context-title i {
+        font-size: 18px;
+    }
+
+    .community-create .context-description {
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .community-create .review-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        margin-bottom: 25px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        color: #1e40af;
+    }
+
+    .community-create .review-notice i {
+        font-size: 19px;
+        margin-top: 1px;
+    }
+
+    .community-create .review-notice strong {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 3px;
+    }
+
+    .community-create .review-notice p {
+        font-size: 12px;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .community-create .field-errors {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 7px;
+    }
+
+    .community-create .field-errors ul {
+        padding-left: 18px;
+        margin: 0;
+    }
+
+    .community-create .create-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 25px;
+        margin-top: 25px;
+        border-top: 1px solid #edf0f4;
+    }
+
+    .community-create .create-submit,
+    .community-create .create-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 47px;
+        padding: 0 22px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .community-create .create-submit {
+        border: 0;
+        color: #fff;
+        background: #dc2626;
+    }
+
+    .community-create .create-submit:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    .community-create .create-cancel {
+        border: 1px solid #dfe5ed;
+        color: #475569;
+        background: #fff;
+    }
+
+    .community-create .create-cancel:hover {
+        background: #f8fafc;
+        color: #111827;
+    }
+
+    @keyframes contextReveal {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 575px) {
+        .community-create .create-card-header {
+            padding: 21px;
+        }
+
+        .community-create .create-card-body {
+            padding: 21px;
+        }
+
+        .community-create .group-type-section {
+            padding: 17px;
+        }
+
+        .community-create .context-panel {
+            padding: 17px;
+        }
+
+        .community-create .create-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .community-create .create-submit,
+        .community-create .create-cancel {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="community-create">
+
+    <div class="create-heading">
+        <div class="create-eyebrow">Build your learning community</div>
+        <h1>Create a Group</h1>
+        <p>Bring learners together, share knowledge and grow together.</p>
+    </div>
+
+    <div class="create-card">
+
+        <div class="create-card-header">
+            <h2>Group information</h2>
+            <p>Complete the details below to submit your group proposal.</p>
+        </div>
+
+        <div class="create-card-body">
+
+            <div class="review-notice">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <strong>Administrative approval required</strong>
+                    <p>Your group will remain private until an administrator or authorized reviewer approves it.</p>
+                </div>
+            </div>
+
+            <form method="post" id="communityCreateForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="field-label">
+                        Group name
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="field-errors">{{ form.name.errors }}</div>
+                    {% endif %}
+                    <span class="field-help">Choose a clear name that describes your community.</span>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.description.id_for_label }}" class="field-label">
+                        Group description
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="field-errors">{{ form.description.errors }}</div>
+                    {% endif %}
+                    <span class="field-help">Explain the group's purpose and what members will gain.</span>
+                </div>
+
+                <div class="group-type-section">
+
+                    <div class="section-heading">Choose your group category</div>
+                    <div class="section-description">
+                        Available categories depend on your learning access.
+                    </div>
+
+                    <label for="{{ form.group_type.id_for_label }}" class="field-label">
+                        Group type
+                    </label>
+
+                    {{ form.group_type }}
+
+                    {% if form.group_type.errors %}
+                        <div class="field-errors">{{ form.group_type.errors }}</div>
+                    {% endif %}
+
+                    <!-- School context -->
+                    <div class="context-panel" id="schoolContext" hidden>
+                        <div class="context-title">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            School group details
+                        </div>
+                        <p class="context-description">
+                            This group will be connected to your assigned school class.
+                        </p>
+
+                        <label for="{{ form.school_class.id_for_label }}" class="field-label">
+                            Your school class
+                        </label>
+
+                        {{ form.school_class }}
+
+                        {% if form.school_class.errors %}
+                            <div class="field-errors">{{ form.school_class.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Exam context -->
+                    <div class="context-panel" id="examContext" hidden>
+                        <div class="context-title">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                            Exam Prep group details
+                        </div>
+                        <p class="context-description">
+                            Choose the examination community you want to create.
+                        </p>
+
+                        <div class="mb-3">
+                            <label for="{{ form.exam.id_for_label }}" class="field-label">
+                                Examination
+                            </label>
+
+                            {{ form.exam }}
+
+                            {% if form.exam.errors %}
+                                <div class="field-errors">{{ form.exam.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.exam_subject.id_for_label }}" class="field-label">
+                                Examination subject (optional)
+                            </label>
+
+                            {{ form.exam_subject }}
+
+                            {% if form.exam_subject.errors %}
+                                <div class="field-errors">{{ form.exam_subject.errors }}</div>
+                            {% endif %}
+                            <span class="field-help">Choose a subject if this group focuses on one particular subject.</span>
+                        </div>
+                    </div>
+
+                    <!-- Tech context -->
+                    <div class="context-panel" id="techContext" hidden>
+                        <div class="context-title">
+                            <i class="bi bi-laptop-fill"></i>
+                            Tech Academy group details
+                        </div>
+                        <p class="context-description">
+                            Choose a Tech Academy course in which you are enrolled.
+                        </p>
+
+                        <label for="{{ form.tech_course.id_for_label }}" class="field-label">
+                            Enrolled Tech course
+                        </label>
+
+                        {{ form.tech_course }}
+
+                        {% if form.tech_course.errors %}
+                            <div class="field-errors">{{ form.tech_course.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Interest context -->
+                    <div class="context-panel" id="interestContext" hidden>
+                        <div class="context-title">
+                            <i class="bi bi-people-fill"></i>
+                            General interest group
+                        </div>
+                        <p class="context-description">
+                            This is an open community based on shared interests. No school class, examination or Tech course is required.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="create-actions">
+                    <button type="submit" class="create-submit">
+                        <i class="bi bi-send-fill"></i>
+                        Submit for review
+                    </button>
+
+                    <a href="{% url 'community:home' %}" class="create-cancel">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const groupType = document.getElementById("id_group_type");
+    const examSelect = document.getElementById("id_exam");
+    const examSubjectSelect = document.getElementById("id_exam_subject");
+
+    const panels = {
+        school: document.getElementById("schoolContext"),
+        exam: document.getElementById("examContext"),
+        tech: document.getElementById("techContext"),
+        interest: document.getElementById("interestContext")
+    };
+
+    const fields = {
+        school: document.getElementById("id_school_class"),
+        exam: examSelect,
+        examSubject: examSubjectSelect,
+        tech: document.getElementById("id_tech_course")
+    };
+
+    function updateGroupContext() {
+        const selectedType = groupType.value;
+
+        Object.values(panels).forEach(function (panel) {
+            panel.hidden = true;
+        });
+
+        if (panels[selectedType]) {
+            panels[selectedType].hidden = false;
+        }
+
+        // Clear fields that do not belong to the selected group type.
+        if (selectedType !== "school" && fields.school) {
+            fields.school.value = "";
+        }
+
+        if (selectedType !== "exam") {
+            if (fields.exam) fields.exam.value = "";
+            if (fields.examSubject) fields.examSubject.value = "";
+        }
+
+        if (selectedType !== "tech" && fields.tech) {
+            fields.tech.value = "";
+        }
+    }
+
+    groupType.addEventListener("change", updateGroupContext);
+
+    // Preserve the selected context when the form returns with validation errors.
+    updateGroupContext();
+});
+</script>
+{% endblock %}

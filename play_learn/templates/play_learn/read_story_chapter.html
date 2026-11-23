@@ -1,0 +1,727 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.title }} | PupilAura Reader{% endblock %}
+
+{% block content %}
+
+<style>
+.reader-page {
+    --reader-bg: #f3f5fa;
+    --paper: #ffffff;
+    --ink: #263247;
+    --muted: #8490a3;
+    --accent: #6366f1;
+    --border: #e8ebf2;
+
+    min-height: 100vh;
+    background: var(--reader-bg);
+    padding-bottom: 80px;
+    transition: background .25s ease;
+}
+
+.reader-page.theme-sepia {
+    --reader-bg: #eee6d5;
+    --paper: #f8f0df;
+    --ink: #514333;
+    --muted: #93816a;
+    --border: #e5d8c1;
+    --accent: #a16c35;
+}
+
+.reader-page.theme-dark {
+    --reader-bg: #111827;
+    --paper: #1f2937;
+    --ink: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #374151;
+    --accent: #818cf8;
+}
+
+.reader-progress-track {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    z-index: 9999;
+}
+
+.reader-progress-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a78bfa);
+    transition: width .1s linear;
+}
+
+.reader-header {
+    background: #111827;
+    color: white;
+    padding: 22px 5%;
+}
+
+.reader-header-inner {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.reader-brand {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -.7px;
+}
+
+.reader-brand span {
+    color: #818cf8;
+}
+
+.reader-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.reader-header-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reader-header-link:hover {
+    color: white;
+}
+
+.reader-container {
+    max-width: 1050px;
+    margin: 42px auto 0;
+    padding: 0 20px;
+}
+
+.reader-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 25px;
+}
+
+.reader-breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.reader-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 230px;
+    gap: 25px;
+    align-items: start;
+}
+
+.reader-main {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 50px 65px 45px;
+    box-shadow: 0 15px 50px rgba(15, 23, 42, .045);
+    transition: background .25s ease;
+}
+
+.reader-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.reader-eyebrow::before {
+    content: "";
+    width: 22px;
+    height: 2px;
+    background: var(--accent);
+}
+
+.reader-title {
+    color: var(--ink);
+    font-size: clamp(30px, 4vw, 43px);
+    font-weight: 900;
+    line-height: 1.18;
+    letter-spacing: -1.5px;
+    margin: 0 0 18px;
+}
+
+.reader-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+}
+
+.reader-meta-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.reader-content {
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 19px;
+    line-height: 2.05;
+    letter-spacing: .05px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    padding-top: 30px;
+    transition: font-size .2s ease;
+}
+
+.reader-content::first-letter {
+    font-size: 3.5em;
+    float: left;
+    line-height: .85;
+    padding: 8px 10px 0 0;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.reader-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.reader-tool-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, .035);
+}
+
+.reader-tool-title {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 16px;
+}
+
+.reader-font-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.reader-control-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    background: var(--reader-bg);
+    color: var(--ink);
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.reader-control-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.reader-font-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.reader-themes {
+    display: flex;
+    gap: 10px;
+}
+
+.reader-theme-btn {
+    flex: 1;
+    height: 38px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.reader-theme-btn.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, .15);
+}
+
+.theme-light-btn {
+    background: #fff;
+}
+
+.theme-sepia-btn {
+    background: #eee6d5;
+}
+
+.theme-dark-btn {
+    background: #1f2937;
+}
+
+.reader-chapter-progress {
+    height: 7px;
+    background: var(--reader-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 12px 0;
+}
+
+.reader-chapter-progress div {
+    height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+}
+
+.reader-progress-label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.reader-sidebar-note {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.reader-navigation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+}
+
+.reader-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.reader-nav-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.reader-nav-card.next {
+    background: var(--accent);
+    border-color: var(--accent);
+    text-align: right;
+}
+
+.reader-nav-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.reader-nav-card.next .reader-nav-label {
+    color: rgba(255,255,255,.75);
+}
+
+.reader-nav-title {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.reader-nav-card.next .reader-nav-title {
+    color: white;
+}
+
+.reader-complete {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 13px;
+    background: rgba(99, 102, 241, .09);
+    color: var(--accent);
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.reader-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 35px;
+}
+
+@media (max-width: 850px) {
+    .reader-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .reader-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reader-sidebar .reader-tool-card:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .reader-header {
+        padding: 18px 17px;
+    }
+
+    .reader-header-inner {
+        align-items: flex-start;
+    }
+
+    .reader-brand {
+        font-size: 17px;
+    }
+
+    .reader-header-link {
+        font-size: 11px;
+    }
+
+    .reader-header-actions {
+        gap: 10px;
+    }
+
+    .reader-container {
+        margin-top: 25px;
+        padding: 0 12px;
+    }
+
+    .reader-main {
+        padding: 30px 22px;
+        border-radius: 17px;
+    }
+
+    .reader-title {
+        font-size: 31px;
+    }
+
+    .reader-content {
+        font-size: 17px;
+        line-height: 1.95;
+    }
+
+    .reader-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .reader-sidebar .reader-tool-card:last-child {
+        grid-column: auto;
+    }
+
+    .reader-navigation {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="reader-page" id="readerPage">
+
+    <div class="reader-progress-track">
+        <div class="reader-progress-fill" id="readingProgress"></div>
+    </div>
+
+    <header class="reader-header">
+        <div class="reader-header-inner">
+
+            <div class="reader-brand">
+                PupilAura<span> Reader.</span>
+            </div>
+
+            <div class="reader-header-actions">
+                <a href="{% url 'play_learn:story_detail' story.slug %}"
+                   class="reader-header-link">
+                    ← Story Details
+                </a>
+
+                <a href="{% url 'play_learn:my_story_library' %}"
+                   class="reader-header-link">
+                    Library
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="reader-container">
+
+        <div class="reader-breadcrumb">
+            <a href="{% url 'play_learn:story_library' %}">Stories</a>
+            <span>/</span>
+            <a href="{% url 'play_learn:story_detail' story.slug %}">
+                {{ story.title }}
+            </a>
+            <span>/</span>
+            <span>Chapter {{ chapter.chapter_number }}</span>
+        </div>
+
+        <div class="reader-layout">
+
+            <main class="reader-main">
+
+                <div class="reader-eyebrow">
+                    Chapter {{ chapter.chapter_number }}
+                </div>
+
+                <h1 class="reader-title">
+                    {{ chapter.title }}
+                </h1>
+
+                <div class="reader-meta">
+                    <span>{{ story.title }}</span>
+                    <span class="reader-meta-dot"></span>
+                    <span>Chapter {{ chapter.chapter_number }} of {{ chapter_count }}</span>
+                    <span class="reader-meta-dot"></span>
+                    <span>PupilAura Stories</span>
+                </div>
+
+                <article class="reader-content" id="readerContent">{{ chapter.content }}</article>
+
+                <div class="reader-navigation">
+
+                    {% if previous_chapter %}
+                        <a href="{% url 'play_learn:read_story_chapter' story.slug previous_chapter.chapter_number %}"
+                           class="reader-nav-card">
+
+                            <span class="reader-nav-label">← Previous</span>
+
+                            <span class="reader-nav-title">
+                                {{ previous_chapter.title }}
+                            </span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'play_learn:story_detail' story.slug %}"
+                           class="reader-nav-card">
+
+                            <span class="reader-nav-label">← Back</span>
+
+                            <span class="reader-nav-title">
+                                Story Overview
+                            </span>
+                        </a>
+                    {% endif %}
+
+                    {% if next_chapter %}
+                        <a href="{% url 'play_learn:read_story_chapter' story.slug next_chapter.chapter_number %}"
+                           class="reader-nav-card next">
+
+                            <span class="reader-nav-label">Continue Reading →</span>
+
+                            <span class="reader-nav-title">
+                                {{ next_chapter.title }}
+                            </span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'play_learn:story_detail' story.slug %}"
+                           class="reader-nav-card next">
+
+                            <span class="reader-nav-label">Completed →</span>
+
+                            <span class="reader-nav-title">
+                                Return to Story
+                            </span>
+                        </a>
+                    {% endif %}
+
+                </div>
+
+                {% if not next_chapter %}
+                    <div class="reader-complete">
+                        🎉 You've reached the final published chapter.
+                    </div>
+                {% endif %}
+
+            </main>
+
+            <aside class="reader-sidebar">
+
+                <div class="reader-tool-card">
+                    <div class="reader-tool-title">Reading Appearance</div>
+
+                    <div class="reader-font-controls">
+                        <button type="button"
+                                class="reader-control-btn"
+                                id="decreaseFont"
+                                aria-label="Decrease font size">
+                            A−
+                        </button>
+
+                        <span class="reader-font-label" id="fontSizeLabel">
+                            19px
+                        </span>
+
+                        <button type="button"
+                                class="reader-control-btn"
+                                id="increaseFont"
+                                aria-label="Increase font size">
+                            A+
+                        </button>
+                    </div>
+                </div>
+
+                <div class="reader-tool-card">
+                    <div class="reader-tool-title">Reading Theme</div>
+
+                    <div class="reader-themes">
+                        <button type="button"
+                                class="reader-theme-btn theme-light-btn active"
+                                data-theme="light"
+                                aria-label="Light theme">
+                        </button>
+
+                        <button type="button"
+                                class="reader-theme-btn theme-sepia-btn"
+                                data-theme="sepia"
+                                aria-label="Sepia theme">
+                        </button>
+
+                        <button type="button"
+                                class="reader-theme-btn theme-dark-btn"
+                                data-theme="dark"
+                                aria-label="Dark theme">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="reader-tool-card">
+                    <div class="reader-tool-title">Chapter Progress</div>
+
+                    <div class="reader-progress-label">
+                        <span>Reading journey</span>
+                        <span>{{ chapter.chapter_number }}/{{ chapter_count }}</span>
+                    </div>
+
+                    <div class="reader-chapter-progress">
+                        <div style="width: {% widthratio chapter.chapter_number chapter_count 100 %}%"></div>
+                    </div>
+
+                    <p class="reader-sidebar-note">
+                        Keep going. Every chapter brings you closer to the end of the story.
+                    </p>
+                </div>
+
+            </aside>
+
+        </div>
+
+        <footer class="reader-footer">
+            Reading is an adventure. Keep exploring with PupilAura.
+        </footer>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const readerPage = document.getElementById("readerPage");
+    const readerContent = document.getElementById("readerContent");
+    const fontSizeLabel = document.getElementById("fontSizeLabel");
+    const progressBar = document.getElementById("readingProgress");
+
+    const decreaseButton = document.getElementById("decreaseFont");
+    const increaseButton = document.getElementById("increaseFont");
+
+    const themeButtons = document.querySelectorAll(".reader-theme-btn");
+
+    let fontSize = 19;
+
+    function updateFontSize() {
+        readerContent.style.fontSize = fontSize + "px";
+        fontSizeLabel.textContent = fontSize + "px";
+    }
+
+    decreaseButton.addEventListener("click", function () {
+        if (fontSize > 15) {
+            fontSize--;
+            updateFontSize();
+        }
+    });
+
+    increaseButton.addEventListener("click", function () {
+        if (fontSize < 26) {
+            fontSize++;
+            updateFontSize();
+        }
+    });
+
+    themeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            const theme = button.dataset.theme;
+
+            readerPage.classList.remove(
+                "theme-sepia",
+                "theme-dark"
+            );
+
+            if (theme === "sepia") {
+                readerPage.classList.add("theme-sepia");
+            }
+
+            if (theme === "dark") {
+                readerPage.classList.add("theme-dark");
+            }
+
+            themeButtons.forEach(function (item) {
+                item.classList.remove("active");
+            });
+
+            button.classList.add("active");
+        });
+    });
+
+    function updateReadingProgress() {
+        const scrollableHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
+
+        const progress = scrollableHeight > 0
+            ? (window.scrollY / scrollableHeight) * 100
+            : 0;
+
+        progressBar.style.width = Math.min(progress, 100) + "%";
+    }
+
+    window.addEventListener("scroll", updateReadingProgress);
+    window.addEventListener("resize", updateReadingProgress);
+
+    updateReadingProgress();
+})();
+</script>
+
+{% endblock %}

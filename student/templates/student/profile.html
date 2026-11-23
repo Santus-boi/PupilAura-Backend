@@ -1,0 +1,546 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}My Profile | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="Manage your student profile, education level, school and class on PupilAura.">
+{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>Profile</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =====================================================
+       PROFILE PAGE
+    ===================================================== */
+    .pa-profile-hero {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 30px 34px;
+        margin-bottom: 22px;
+        border-radius: 21px;
+        background: linear-gradient(112deg, #1d4ed8 0%, #2563eb 57%, #4f46e5 100%);
+        color: white;
+        box-shadow: 0 12px 28px #2563eb20;
+    }
+
+    .pa-profile-hero::before {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        right: 8%;
+        top: -190px;
+        border: 1px solid #ffffff20;
+        border-radius: 50%;
+        box-shadow: 0 0 0 32px #ffffff08, 0 0 0 65px #ffffff06;
+    }
+
+    .pa-profile-hero-copy {
+        position: relative;
+        z-index: 1;
+        max-width: 560px;
+    }
+
+    .pa-profile-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        margin-bottom: 14px;
+        border: 1px solid #ffffff35;
+        border-radius: 20px;
+        background: #ffffff14;
+        color: #eff6ff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+    }
+
+    .pa-profile-hero h2 {
+        margin: 0 0 8px;
+        font: 800 clamp(22px, 2.4vw, 28px) "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.6px;
+        line-height: 1.3;
+    }
+
+    .pa-profile-hero p {
+        margin: 0;
+        color: #e2eaff;
+        font-size: 15px;
+        line-height: 1.7;
+        max-width: 500px;
+    }
+
+    .pa-profile-hero-icon {
+        position: relative;
+        z-index: 1;
+        width: 96px;
+        height: 96px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: 26px;
+        background: #ffffff14;
+        border: 1px solid #ffffff35;
+        color: #fff;
+        font-size: 44px;
+        transform: rotate(4deg);
+    }
+
+    /* Panel */
+    .pa-profile-panel {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: white;
+    }
+
+    .pa-profile-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 24px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .pa-profile-panel-icon {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: 13px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 20px;
+    }
+
+    .pa-profile-panel-head h3 {
+        margin: 0 0 3px;
+        font: 800 17px "Plus Jakarta Sans", sans-serif;
+        color: var(--ink);
+        letter-spacing: -0.3px;
+    }
+
+    .pa-profile-panel-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .pa-profile-panel-body {
+        padding: 24px;
+    }
+
+    /* Alerts */
+    .pa-profile-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 15px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .pa-profile-alert.success {
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+    }
+
+    .pa-profile-alert.error {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+    }
+
+    .pa-profile-alert i {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    /* Form */
+    .pa-field {
+        margin-bottom: 22px;
+    }
+
+    .pa-field:last-of-type {
+        margin-bottom: 26px;
+    }
+
+    .pa-field label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .pa-field-control {
+        position: relative;
+    }
+
+    .pa-field-icon {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        transform: translateY(-50%);
+        color: var(--primary);
+        font-size: 16px;
+        pointer-events: none;
+    }
+
+    .pa-field input,
+    .pa-field select {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 14px 11px 40px;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 14px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .pa-field input:focus,
+    .pa-field select:focus {
+        outline: none;
+        border-color: #93b4ff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
+
+    .pa-field input:disabled,
+    .pa-field select:disabled {
+        background: #f8fafc;
+        color: var(--muted);
+        cursor: not-allowed;
+    }
+
+    .pa-field-hint {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    /* Curriculum summary */
+    .pa-curriculum-summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px 17px;
+        margin-bottom: 22px;
+        border: 1px solid #dbeafe;
+        border-radius: 13px;
+        background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+    }
+
+    .pa-curriculum-summary i {
+        color: var(--primary);
+        font-size: 17px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .pa-curriculum-summary strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .pa-curriculum-summary p {
+        margin: 0;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* Actions */
+    .pa-profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 22px;
+        border-top: 1px dashed var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .pa-profile-hero {
+            padding: 26px 24px;
+        }
+        .pa-profile-hero-icon {
+            display: none;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .pa-profile-hero {
+            padding: 24px 20px;
+            border-radius: 17px;
+        }
+        .pa-profile-hero h2 { font-size: 20px; }
+        .pa-profile-hero p { font-size: 14px; }
+
+        .pa-profile-panel-head { padding: 18px 20px; }
+        .pa-profile-panel-body { padding: 20px; }
+        .pa-profile-actions {
+            flex-direction: column;
+        }
+        .pa-profile-actions .pa-btn-primary,
+        .pa-profile-actions .pa-btn-outline {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADING -->
+<section class="pa-page-heading">
+    <div>
+        <div class="pa-eyebrow">Student profile</div>
+        <h1>My Profile</h1>
+        <p>Manage your student information and keep your profile up to date.</p>
+    </div>
+</section>
+
+<!-- HERO -->
+<section class="pa-profile-hero">
+    <div class="pa-profile-hero-copy">
+        <div class="pa-profile-hero-tag">
+            <i class="bi bi-person-badge" aria-hidden="true"></i>
+            Your account
+        </div>
+        <h2>{{ request.user.first_name|default:"Your profile" }}{% if request.user.last_name %} {{ request.user.last_name }}{% endif %}</h2>
+        <p>
+            Keep your education details accurate so we can show you the
+            right lessons, assessments and exam preparation.
+        </p>
+    </div>
+    <div class="pa-profile-hero-icon" aria-hidden="true">
+        <i class="bi bi-person-fill"></i>
+    </div>
+</section>
+
+<!-- PANEL -->
+<section class="pa-profile-panel">
+
+    <header class="pa-profile-panel-head">
+        <div class="pa-profile-panel-icon">
+            <i class="bi bi-person-vcard-fill" aria-hidden="true"></i>
+        </div>
+        <div>
+            <h3>Personal information</h3>
+            <p>Update your student details below.</p>
+        </div>
+    </header>
+
+    <div class="pa-profile-panel-body">
+
+        {% if success_message %}
+            <div class="pa-profile-alert success" role="alert">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                <div>{{ success_message }}</div>
+            </div>
+        {% endif %}
+
+        {% if error_message %}
+            <div class="pa-profile-alert error" role="alert">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <div>{{ error_message }}</div>
+            </div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <!-- EMAIL -->
+            <div class="pa-field">
+                <label for="email">Email</label>
+                <div class="pa-field-control">
+                    <i class="bi bi-envelope-fill pa-field-icon" aria-hidden="true"></i>
+                    <input
+                        type="email"
+                        id="email"
+                        value="{{ student.user.email }}"
+                        disabled
+                    >
+                </div>
+                <p class="pa-field-hint">
+                    Your email address cannot be changed here.
+                </p>
+            </div>
+
+            <!-- EDUCATION LEVEL -->
+            <div class="pa-field">
+                <label for="curriculum_level">Education level</label>
+                <div class="pa-field-control">
+                    <i class="bi bi-mortarboard-fill pa-field-icon" aria-hidden="true"></i>
+                    <select name="curriculum_level" id="curriculum_level">
+                        <option value="">Select your education level</option>
+                        {% for level in education_levels %}
+                            <option
+                                value="{{ level.id }}"
+                                {% if student.curriculum_level_id == level.id %}selected{% endif %}
+                            >
+                                {{ level.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p class="pa-field-hint">
+                    Select the education level that matches your current school class.
+                </p>
+            </div>
+
+            <!-- SCHOOL -->
+            <div class="pa-field">
+                <label for="school">School</label>
+                <div class="pa-field-control">
+                    <i class="bi bi-building-fill pa-field-icon" aria-hidden="true"></i>
+                    <input
+                        type="text"
+                        name="school"
+                        id="school"
+                        value="{{ student.school }}"
+                        placeholder="Enter your school name"
+                    >
+                </div>
+            </div>
+
+            <!-- CLASS -->
+            <div class="pa-field">
+                <label for="school_class">School class</label>
+                <div class="pa-field-control">
+                    <i class="bi bi-journal-bookmark-fill pa-field-icon" aria-hidden="true"></i>
+                    <select name="school_class" id="school_class">
+                        <option value="">Select your class</option>
+                        {% for school_class in school_classes %}
+                            <option
+                                value="{{ school_class.id }}"
+                                data-level-id="{{ school_class.education_level_id }}"
+                                {% if student.school_class_id == school_class.id %}selected{% endif %}
+                            >
+                                {{ school_class.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p class="pa-field-hint">
+                    Your available classes will be filtered according to your education level.
+                </p>
+            </div>
+
+            <!-- CURRICULUM SUMMARY -->
+            <div class="pa-curriculum-summary" id="curriculumSummary">
+                <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                <div>
+                    <strong>Curriculum</strong>
+                    <p id="curriculumSummaryText">
+                        Select your education level and class.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="pa-profile-actions">
+                <button type="submit" class="pa-btn-primary">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    Save changes
+                </button>
+                <a href="{% url 'student_dashboard' %}" class="pa-btn-outline">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    Back to dashboard
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =====================================================
+       CURRICULUM SELECTOR
+       Filters school classes by education level and updates
+       the summary panel.
+    ===================================================== */
+    (function () {
+        const curriculumLevel = document.getElementById("curriculum_level");
+        const schoolClass = document.getElementById("school_class");
+        const curriculumSummaryText = document.getElementById("curriculumSummaryText");
+
+        if (!curriculumLevel || !schoolClass || !curriculumSummaryText) return;
+
+        function updateSchoolClasses() {
+            const selectedLevel = curriculumLevel.value;
+            const classOptions = schoolClass.querySelectorAll("option[data-level-id]");
+
+            classOptions.forEach(function (option) {
+                const optionLevel = option.dataset.levelId;
+
+                if (!selectedLevel || optionLevel === selectedLevel) {
+                    option.hidden = false;
+                } else {
+                    option.hidden = true;
+                    if (option.selected) {
+                        option.selected = false;
+                    }
+                }
+            });
+
+            schoolClass.disabled = !selectedLevel;
+            updateCurriculumSummary();
+        }
+
+        function updateCurriculumSummary() {
+            const levelOption = curriculumLevel.options[curriculumLevel.selectedIndex];
+            const classOption = schoolClass.options[schoolClass.selectedIndex];
+
+            const levelName = levelOption && levelOption.value ? levelOption.text.trim() : "";
+            const className = classOption && classOption.value ? classOption.text.trim() : "";
+
+            if (levelName && className) {
+                curriculumSummaryText.textContent = levelName + " → " + className;
+            } else if (levelName) {
+                curriculumSummaryText.textContent = levelName + " → Select your school class.";
+            } else {
+                curriculumSummaryText.textContent = "Select your education level and class.";
+            }
+        }
+
+        curriculumLevel.addEventListener("change", function () {
+            schoolClass.value = "";
+            updateSchoolClasses();
+        });
+
+        schoolClass.addEventListener("change", function () {
+            updateCurriculumSummary();
+        });
+
+        // Apply the correct filter on page load
+        updateSchoolClasses();
+    })();
+</script>
+{% endblock %}

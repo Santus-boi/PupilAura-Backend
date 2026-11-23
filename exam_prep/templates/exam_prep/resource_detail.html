@@ -1,0 +1,1676 @@
+
+{% extends "exam_prep/base.html" %}
+{% load static %}
+
+{% block title %}{{ resource.title }} | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="{{ resource.description|default:resource.title }} — {{ resource.subject.name }} {{ resource.year.year }} on PupilAura.">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #eff6ff;
+        --success: #16a34a;
+        --success-light: #f0fdf4;
+        --warning: #d97706;
+        --warning-light: #fffbeb;
+        --purple: #7c3aed;
+        --purple-light: #f5f3ff;
+        --rose: #e11d48;
+        --rose-light: #ffe9ee;
+        --teal: #0891b2;
+        --teal-light: #ecfeff;
+        --text: #172033;
+        --text-secondary: #4b5563;
+        --text-muted: #6b7280;
+        --background: #f5f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --border: #e5e7eb;
+        --border-light: #eef0f3;
+        --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
+        --shadow: 0 8px 30px rgba(15,23,42,.07);
+        --shadow-lg: 0 18px 45px rgba(15,23,42,.10);
+        --radius-sm: 10px;
+        --radius: 16px;
+        --radius-lg: 22px;
+        --container: 1240px;
+        --body-size: 1.02rem;
+        --body-line-height: 1.85;
+        --transition: .2s ease;
+    }
+
+    .lesson-page {
+        min-height: 100vh;
+        padding: 28px 18px 70px;
+        background: var(--background);
+    }
+    .lesson-container {
+        width: 100%;
+        max-width: var(--container);
+        margin: 0 auto;
+    }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        font-size: .86rem;
+    }
+    .breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 650;
+    }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-separator { color: #9ca3af; }
+    .breadcrumb-current {
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    /* HERO */
+    .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        color: white;
+        background: linear-gradient(135deg,#2563eb 0%,#4338ca 100%);
+        border-radius: var(--radius-lg);
+        padding: 46px;
+        margin-bottom: 22px;
+        box-shadow: 0 20px 50px rgba(37,99,235,.20);
+    }
+    .lesson-hero::before {
+        content: "";
+        position: absolute;
+        width: 330px;
+        height: 330px;
+        right: -140px;
+        top: -160px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+    }
+    .lesson-hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 90px;
+        bottom: -130px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.05);
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 920px;
+    }
+    .subject-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        margin-bottom: 17px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 999px;
+        background: rgba(255,255,255,.12);
+        color: white;
+        font-size: .78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+    .subject-label i { color: #c7d2fe; }
+    .lesson-hero h1 {
+        margin: 0 0 16px;
+        color: white;
+        font-size: clamp(2rem,5vw,3.35rem);
+        line-height: 1.12;
+        font-weight: 850;
+        letter-spacing: -.035em;
+        overflow-wrap: anywhere;
+    }
+    .lesson-description {
+        max-width: 850px;
+        margin: 0;
+        color: rgba(255,255,255,.91);
+        font-size: 1.06rem;
+        line-height: 1.8;
+    }
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 26px;
+    }
+    .hero-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 34px;
+        padding: 7px 12px;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 9px;
+        background: rgba(255,255,255,.11);
+        color: white;
+        font-size: .82rem;
+        font-weight: 650;
+    }
+    .hero-meta-item i { color: #c7d2fe; }
+
+    /* PROGRESS */
+    .progress-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+    }
+    .progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 11px;
+    }
+    .progress-title {
+        font-size: .92rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+    .progress-status {
+        font-size: .86rem;
+        font-weight: 750;
+        color: var(--primary);
+    }
+    .progress-track {
+        width: 100%;
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5e7eb;
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg,var(--primary),#6366f1);
+        transition: width .4s ease;
+    }
+
+    /* LAYOUT */
+    .lesson-layout {
+        display: grid;
+        grid-template-columns: minmax(0,1fr) 310px;
+        gap: 24px;
+        align-items: start;
+    }
+    .main-column, .sidebar { min-width: 0; }
+    .sidebar { position: sticky; top: 20px; }
+
+    /* TABS */
+    .section-navigation {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 9px;
+        margin-bottom: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        scrollbar-width: thin;
+    }
+    .section-navigation a {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 13px;
+        border-radius: 9px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: .84rem;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: var(--transition);
+    }
+    .section-navigation a:hover,
+    .section-navigation a.active {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    /* READING CARD */
+    .reading-card {
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+    }
+    .reading-header {
+        padding: 30px 36px 26px;
+        border-bottom: 1px solid var(--border);
+    }
+    .reading-eyebrow {
+        margin-bottom: 7px;
+        color: var(--primary);
+        font-size: .75rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+    }
+    .reading-header h2 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.65rem;
+        line-height: 1.35;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+    .reading-body { padding: 38px; }
+
+    /* STRUCTURED CONTENT */
+    .lesson-section {
+        margin-bottom: 34px;
+        scroll-margin-top: 25px;
+    }
+    .lesson-section:last-child { margin-bottom: 0; }
+    .lesson-section-title {
+        margin-bottom: 16px;
+        color: var(--text);
+        font-size: 1.5rem;
+        line-height: 1.35;
+        font-weight: 820;
+        letter-spacing: -.018em;
+    }
+    .lesson-text {
+        color: #3f4858;
+        font-size: var(--body-size);
+        line-height: var(--body-line-height);
+    }
+    .lesson-text p { margin: 0 0 16px; }
+    .lesson-text p:last-child { margin-bottom: 0; }
+    .lesson-text ul, .lesson-text ol {
+        margin: 0 0 18px;
+        padding-left: 24px;
+    }
+    .lesson-text li {
+        margin-bottom: 8px;
+        line-height: 1.75;
+    }
+    .lesson-text strong { color: var(--text); font-weight: 750; }
+
+    .lb {
+        position: relative;
+        padding: 24px 26px;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition: transform var(--transition),box-shadow var(--transition);
+    }
+    .lb:last-child { margin-bottom: 0; }
+    .lb:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    .lb-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .lb-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        flex: 0 0 38px;
+        border-radius: 10px;
+        font-size: 1.05rem;
+    }
+    .lb-title {
+        margin: 0;
+        font-size: 1.02rem;
+        font-weight: 800;
+        letter-spacing: -.01em;
+    }
+    .lb-kicker {
+        display: block;
+        margin-top: 2px;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        opacity: .75;
+    }
+    .lb-body {
+        font-size: .98rem;
+        line-height: 1.85;
+        color: var(--text-secondary);
+    }
+    .lb-body p { margin: 0 0 14px; }
+    .lb-body p:last-child { margin-bottom: 0; }
+    .lb-body strong { color: var(--text); font-weight: 750; }
+    .lb-body ul, .lb-body ol {
+        margin: 0;
+        padding-left: 22px;
+    }
+    .lb-body li { margin-bottom: 8px; line-height: 1.7; }
+
+    .lb--definition {
+        background: linear-gradient(135deg,#eff6ff,#f8fbff);
+        border-color: #dbeafe;
+        border-left: 4px solid var(--primary);
+    }
+    .lb--definition .lb-icon {
+        background: linear-gradient(135deg,var(--primary),#4338ca);
+        color: white;
+    }
+    .lb--definition .lb-title { color: var(--primary-dark); }
+    .lb--definition .lb-kicker { color: var(--primary); }
+    .lb--definition .lb-body { color: #334155; }
+
+    .lb--example {
+        background: linear-gradient(135deg,#f5f3ff,#faf9ff);
+        border-color: #ddd6fe;
+        border-left: 4px solid var(--purple);
+    }
+    .lb--example .lb-icon {
+        background: linear-gradient(135deg,var(--purple),#6d28d9);
+        color: white;
+    }
+    .lb--example .lb-title { color: #5b21b6; }
+    .lb--example .lb-kicker { color: var(--purple); }
+    .lb--example .lb-body { color: #3f3a5c; }
+
+    .lb--keypoint {
+        background: linear-gradient(135deg,#f0fdf4,#fbfffc);
+        border-color: #dcfce7;
+        border-left: 4px solid var(--success);
+    }
+    .lb--keypoint .lb-icon {
+        background: linear-gradient(135deg,var(--success),#059669);
+        color: white;
+    }
+    .lb--keypoint .lb-title { color: #15803d; }
+    .lb--keypoint .lb-kicker { color: var(--success); }
+    .lb--keypoint .lb-body { color: #35503f; }
+
+    .lb--activity {
+        background: linear-gradient(135deg,#fffbeb,#fffdf7);
+        border-color: #fde68a;
+        border-left: 4px solid var(--warning);
+    }
+    .lb--activity .lb-icon {
+        background: linear-gradient(135deg,var(--warning),#b45309);
+        color: white;
+    }
+    .lb--activity .lb-title { color: #b45309; }
+    .lb--activity .lb-kicker { color: var(--warning); }
+    .lb--activity .lb-body { color: #5c3e1a; }
+
+    .lb--practical {
+        background: var(--surface-soft);
+        border-color: var(--border);
+        border-left: 4px solid #475569;
+    }
+    .lb--practical .lb-icon {
+        background: linear-gradient(135deg,#475569,#334155);
+        color: white;
+    }
+    .lb--practical .lb-title { color: #334155; }
+    .lb--practical .lb-kicker { color: #475569; }
+    .lb--practical .lb-body { color: #3b4453; }
+
+    .lb--note {
+        background: linear-gradient(135deg,var(--teal-light),#f7feff);
+        border-color: #cffafe;
+        border-left: 4px solid var(--teal);
+    }
+    .lb--note .lb-icon {
+        background: linear-gradient(135deg,var(--teal),#0369a1);
+        color: white;
+    }
+    .lb--note .lb-title { color: #0e7490; }
+    .lb--note .lb-kicker { color: var(--teal); }
+    .lb--note .lb-body { color: #165260; }
+
+    .lb--warning {
+        background: linear-gradient(135deg,var(--rose-light),#fff7f9);
+        border-color: #fecdd3;
+        border-left: 4px solid var(--rose);
+    }
+    .lb--warning .lb-icon {
+        background: linear-gradient(135deg,var(--rose),#be123c);
+        color: white;
+    }
+    .lb--warning .lb-title { color: #9f1239; }
+    .lb--warning .lb-kicker { color: var(--rose); }
+    .lb--warning .lb-body { color: #5c1e2e; }
+
+    .lb--plain {
+        background: var(--surface);
+        border-color: var(--border);
+        border-left: 4px solid var(--primary);
+    }
+    .lb--plain .lb-icon {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+    .lb--plain .lb-title { color: var(--text); }
+    .lb--plain .lb-kicker { color: var(--primary); }
+    .lb--plain .lb-body { color: var(--text-secondary); }
+
+    /* QUESTIONS */
+    .question-list { display: grid; gap: 14px; }
+    .question-card {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        transition: transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+    }
+    .question-card:hover {
+        transform: translateY(-2px);
+        border-color: #bfdbfe;
+        box-shadow: var(--shadow-sm);
+    }
+    .question-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: .7rem;
+        font-weight: 800;
+        letter-spacing: .03em;
+    }
+    .question-text {
+        margin-bottom: 15px;
+        color: var(--text);
+        font-size: .96rem;
+        font-weight: 700;
+        line-height: 1.65;
+        overflow-wrap: anywhere;
+    }
+    .question-image {
+        display: block;
+        max-width: 100%;
+        margin: 0 0 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+    .choices { display: grid; gap: 8px; }
+    .choice {
+        padding: 11px 13px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--text-secondary);
+        font-size: .86rem;
+        line-height: 1.6;
+    }
+
+    /* MEDIA */
+    .media-card {
+        padding: 20px;
+        margin-bottom: 15px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+    }
+    .media-card:last-child { margin-bottom: 0; }
+    .media-title {
+        margin-bottom: 7px;
+        color: var(--text);
+        font-size: 1.03rem;
+        font-weight: 780;
+    }
+    .media-description {
+        margin-bottom: 14px;
+        color: var(--text-secondary);
+        font-size: .92rem;
+        line-height: 1.7;
+    }
+
+    /* ASSESSMENT */
+    .assessment-card {
+        padding: 30px;
+        text-align: center;
+        background: linear-gradient(135deg,#eff6ff,#f5f3ff);
+        border: 1px solid #dbeafe;
+        border-radius: var(--radius);
+    }
+    .assessment-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 15px;
+        border-radius: 15px;
+        background: var(--primary);
+        color: white;
+        font-weight: 850;
+        font-size: 1.2rem;
+    }
+    .assessment-card h2 {
+        margin-bottom: 8px;
+        color: var(--text);
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+    .assessment-card p {
+        max-width: 600px;
+        margin: 0 auto 20px;
+        color: var(--text-secondary);
+        font-size: .95rem;
+        line-height: 1.75;
+    }
+    .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 11px 20px;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        font-size: .9rem;
+        font-weight: 750;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    .primary-button:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+    .resource-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 9px 14px;
+        border-radius: 9px;
+        background: var(--primary-light);
+        color: var(--primary);
+        text-decoration: none;
+        font-size: .84rem;
+        font-weight: 750;
+        transition: var(--transition);
+    }
+    .resource-button:hover {
+        background: #dbeafe;
+        color: var(--primary-dark);
+    }
+
+    /* MATERIAL */
+    .material-tile {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface-soft);
+    }
+    .material-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+    }
+    .material-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        border-radius: 12px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+    .material-info h3 {
+        margin: 0 0 4px;
+        color: var(--text);
+        font-size: .94rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+    .material-info p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: .8rem;
+        line-height: 1.6;
+    }
+
+    /* NAVIGATION */
+    .lesson-navigation {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .lesson-nav-card {
+        display: block;
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: inherit;
+        text-decoration: none;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+    .lesson-nav-card:hover {
+        border-color: #bfdbfe;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+    .nav-label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--text-muted);
+        font-size: .73rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+    .nav-title {
+        display: block;
+        color: var(--text);
+        font-size: .94rem;
+        line-height: 1.55;
+        font-weight: 750;
+    }
+
+    /* SIDEBAR */
+    .sidebar-card {
+        margin-bottom: 18px;
+        padding: 22px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
+    .sidebar-card:last-child { margin-bottom: 0; }
+    .sidebar-title {
+        margin-bottom: 17px;
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 820;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--border-light);
+        font-size: .87rem;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .info-label { color: var(--text-muted); }
+    .info-value {
+        color: var(--text);
+        font-weight: 750;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+    .status-active { color: var(--primary); }
+    .material-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .material-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-secondary);
+        font-size: .87rem;
+    }
+    .material-list li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .material-list a {
+        color: var(--primary);
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .material-list a:hover { text-decoration: underline; }
+    .material-check { color: var(--success); font-weight: 850; }
+
+    /* EMPTY */
+    .empty-state {
+        padding: 24px;
+        text-align: center;
+        color: var(--text-muted);
+        background: var(--surface-soft);
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--radius);
+        font-size: .9rem;
+        line-height: 1.7;
+    }
+    .empty-state i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+    .empty-state p { margin: 0; }
+
+    @media (max-width: 1050px) {
+        .lesson-layout { grid-template-columns: 1fr; }
+        .sidebar {
+            position: static;
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 18px;
+        }
+        .sidebar-card { margin-bottom: 0; }
+    }
+    @media (max-width: 700px) {
+        .lesson-page { padding: 15px 10px 45px; }
+        .lesson-hero { padding: 30px 22px; border-radius: 17px; }
+        .lesson-hero h1 { font-size: 2rem; }
+        .lesson-description { font-size: .96rem; line-height: 1.75; }
+        .hero-meta { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+        .hero-meta-item { justify-content: center; text-align: center; }
+        .reading-header { padding: 24px 20px 21px; }
+        .reading-header h2 { font-size: 1.4rem; }
+        .reading-body { padding: 22px 18px; }
+        .lesson-section { margin-bottom: 28px; }
+        .lesson-section-title { font-size: 1.3rem; }
+        .lb { padding: 20px; }
+        .lb-body { font-size: .94rem; }
+        .sidebar { grid-template-columns: 1fr; }
+        .lesson-navigation { grid-template-columns: 1fr; }
+        .material-tile { flex-direction: column; align-items: flex-start; }
+        .material-tile .primary-button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    @media (max-width: 480px) {
+        .breadcrumb { font-size: .76rem; line-height: 1.6; }
+        .lesson-hero { padding: 26px 18px; }
+        .lesson-hero h1 { font-size: 1.7rem; }
+        .hero-meta { grid-template-columns: 1fr; }
+        .hero-meta-item { width: 100%; }
+        .reading-body { padding: 18px 14px; }
+        .lb { padding: 18px; }
+        .lb-head { gap: 10px; }
+        .lb-icon {
+            width: 34px;
+            height: 34px;
+            font-size: .95rem;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            transition-duration: .01ms !important;
+            animation-duration: .01ms !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-page">
+    <div class="lesson-container">
+
+        <!-- BREADCRUMB -->
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'student_dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{% url 'exam_prep:home' %}">Exam Preparation</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{% url 'exam_prep:exam_detail' resource.exam.id %}">
+                {{ resource.exam.name }}
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{% url 'exam_prep:subject_detail' resource.subject.id %}">
+                {{ resource.subject.name }}
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{% url 'exam_prep:year_detail' resource.subject.id resource.year.id %}">
+                {{ resource.year.year }}
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">{{ resource.title }}</span>
+        </nav>
+
+        <!-- HERO -->
+        <header class="lesson-hero">
+            <div class="hero-content">
+                <div class="subject-label">
+                    {% if resource.resource_type == "past_questions" %}
+                        <i class="bi bi-file-earmark-text"></i> Past Questions
+                    {% elif resource.resource_type == "solutions" %}
+                        <i class="bi bi-check2-circle"></i> Solutions
+                    {% elif resource.resource_type == "lesson" %}
+                        <i class="bi bi-book"></i> Lesson
+                    {% elif resource.resource_type == "practical" %}
+                        <i class="bi bi-tools"></i> Practical
+                    {% elif resource.resource_type == "mock_exam" %}
+                        <i class="bi bi-pencil-square"></i> Mock Exam
+                    {% elif resource.resource_type == "revision" %}
+                        <i class="bi bi-arrow-repeat"></i> Revision
+                    {% elif resource.resource_type == "video" %}
+                        <i class="bi bi-play-circle"></i> Video
+                    {% elif resource.resource_type == "material" %}
+                        <i class="bi bi-file-earmark-pdf"></i> Study Material
+                    {% else %}
+                        <i class="bi bi-journal"></i> Resource
+                    {% endif %}
+                </div>
+
+                <h1>{{ resource.title }}</h1>
+
+                {% if resource.description %}
+                    <p class="lesson-description">{{ resource.description }}</p>
+                {% endif %}
+
+                <div class="hero-meta">
+                    <span class="hero-meta-item">
+                        <i class="bi bi-award-fill"></i>
+                        {{ resource.exam.name }}
+                    </span>
+                    <span class="hero-meta-item">
+                        <i class="bi bi-journal-bookmark"></i>
+                        {{ resource.subject.name }}
+                    </span>
+                    <span class="hero-meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        {{ resource.year.year }}
+                    </span>
+                    <span class="hero-meta-item">
+                        <i class="bi bi-collection"></i>
+                        {{ resource.get_resource_type_display }}
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- PROGRESS -->
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="progress-title">Resource progress</span>
+                <span class="progress-status">
+                    {% if current_view == "overview" %}
+                        Overview
+                    {% else %}
+                        Viewing {{ current_view|title }}
+                    {% endif %}
+                </span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill"
+                     style="width:{% if current_view == 'overview' %}35%{% else %}70%{% endif %};">
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYOUT -->
+        <div class="lesson-layout">
+
+            <main class="main-column">
+
+                <!-- TABS -->
+                <nav class="section-navigation" aria-label="Resource views">
+                    <a href="?view=overview"
+                       class="{% if current_view == 'overview' %}active{% endif %}">
+                        <i class="bi bi-info-circle"></i> Overview
+                    </a>
+
+                    {% if has_questions %}
+                        <a href="?view=questions"
+                           class="{% if current_view == 'questions' %}active{% endif %}">
+                            <i class="bi bi-question-circle"></i> Questions
+                        </a>
+                    {% endif %}
+
+                    {% if has_solutions %}
+                        <a href="?view=solutions"
+                           class="{% if current_view == 'solutions' %}active{% endif %}">
+                            <i class="bi bi-check2-circle"></i> Solutions
+                        </a>
+                    {% endif %}
+
+                    {% if has_lesson %}
+                        <a href="?view=lesson"
+                           class="{% if current_view == 'lesson' %}active{% endif %}">
+                            <i class="bi bi-book"></i> Lesson
+                        </a>
+                    {% endif %}
+
+                    {% if has_video %}
+                        <a href="?view=video"
+                           class="{% if current_view == 'video' %}active{% endif %}">
+                            <i class="bi bi-play-circle"></i> Video
+                        </a>
+                    {% endif %}
+
+                    {% if has_material %}
+                        <a href="?view=material"
+                           class="{% if current_view == 'material' %}active{% endif %}">
+                            <i class="bi bi-file-earmark-pdf"></i> Material
+                        </a>
+                    {% endif %}
+
+                    {% if has_practical %}
+                        <a href="?view=practical"
+                           class="{% if current_view == 'practical' %}active{% endif %}">
+                            <i class="bi bi-tools"></i> Practical
+                        </a>
+                    {% endif %}
+
+                    {% if has_revision %}
+                        <a href="?view=revision"
+                           class="{% if current_view == 'revision' %}active{% endif %}">
+                            <i class="bi bi-arrow-repeat"></i> Revision
+                        </a>
+                    {% endif %}
+
+                    {% if has_mock_exam %}
+                        <a href="?view=mock_exam"
+                           class="{% if current_view == 'mock_exam' %}active{% endif %}">
+                            <i class="bi bi-pencil-square"></i> Mock Exam
+                        </a>
+                    {% endif %}
+                </nav>
+
+                <article class="reading-card">
+
+                    <header class="reading-header">
+                        <div class="reading-eyebrow">
+                            {% if current_view == "overview" %}Overview
+                            {% elif current_view == "questions" %}Practice questions
+                            {% elif current_view == "solutions" %}Solutions
+                            {% elif current_view == "lesson" %}Lesson notes
+                            {% elif current_view == "video" %}Video lesson
+                            {% elif current_view == "material" %}Study material
+                            {% elif current_view == "practical" %}Practical
+                            {% elif current_view == "revision" %}Revision materials
+                            {% elif current_view == "mock_exam" %}Mock exam
+                            {% else %}Resource
+                            {% endif %}
+                        </div>
+
+                        <h2>
+                            {% if current_view == "overview" %}
+                                {{ resource.title }}
+                            {% elif current_view == "questions" %}
+                                Questions in this resource
+                            {% elif current_view == "video" %}
+                                Video lesson
+                            {% elif current_view == "material" %}
+                                Study material
+                            {% elif current_view == "practical" %}
+                                Practical guide
+                            {% elif current_view == "revision" %}
+                                Revision materials
+                            {% elif display_resource.title %}
+                                {{ display_resource.title }}
+                            {% else %}
+                                {{ resource.title }}
+                            {% endif %}
+                        </h2>
+                    </header>
+
+                    <div class="reading-body">
+
+                        <!-- OVERVIEW -->
+                        {% if current_view == "overview" %}
+                            <section class="lesson-section">
+                                {% if resource.content %}
+                                    {{ resource.content|safe }}
+                                {% elif resource.description %}
+                                    <div class="lb lb--plain">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-info-circle"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Overview</h3>
+                                                <span class="lb-kicker">About this resource</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ resource.description|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-info-circle"></i>
+                                        <p>No overview content has been added yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+
+                            {% if testable %}
+                                <section class="lesson-section">
+                                    <div class="assessment-card">
+                                        <div class="assessment-icon">
+                                            <i class="bi bi-play-fill"></i>
+                                        </div>
+                                        <h2>Ready to test yourself?</h2>
+                                        <p>
+                                            Start the test to answer the available
+                                            questions and receive your result.
+                                        </p>
+                                        <a href="{% url 'exam_prep:start_test' display_resource.id %}"
+                                           class="primary-button">
+                                            Start Test
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </section>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- QUESTIONS -->
+                        {% if current_view == "questions" %}
+                            <section class="lesson-section">
+
+                                {% if display_resource.file %}
+                                    <div class="media-card">
+                                        <h3 class="media-title">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                            Uploaded past-paper document
+                                        </h3>
+                                        <p class="media-description">
+                                            Open or download the uploaded examination
+                                            paper for reference and offline practice.
+                                        </p>
+                                        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                                            <a href="{{ display_resource.file.url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="primary-button">
+                                                <i class="bi bi-eye"></i>
+                                                Open document
+                                            </a>
+                                            <a href="{{ display_resource.file.url }}"
+                                               download
+                                               class="resource-button">
+                                                <i class="bi bi-download"></i>
+                                                Download paper
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if questions %}
+                                    <div class="question-list">
+                                        {% for question in questions %}
+                                            <article class="question-card">
+                                                <span class="question-number">
+                                                    Question {{ question.question_number }}
+                                                </span>
+
+                                                <div class="question-text">
+                                                    {{ question.question_text|linebreaksbr }}
+                                                </div>
+
+                                                {% if question.image %}
+                                                    <img src="{{ question.image.url }}"
+                                                         class="question-image"
+                                                         alt="Question {{ question.question_number }} image">
+                                                {% endif %}
+
+                                                {% if question.choices.all %}
+                                                    <div class="choices">
+                                                        {% for choice in question.choices.all %}
+                                                            <div class="choice">
+                                                                {{ choice.text }}
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </article>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-question-circle"></i>
+                                        <p>
+                                            No individual questions have been added
+                                            to this resource yet.
+                                        </p>
+                                    </div>
+                                {% endif %}
+
+                                {% if testable %}
+                                    <div class="assessment-card" style="margin-top:22px;">
+                                        <div class="assessment-icon">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </div>
+                                        <h2>Attempt these questions</h2>
+                                        <p>
+                                            Test your knowledge using the published
+                                            multiple-choice questions.
+                                        </p>
+                                        <a href="{% url 'exam_prep:start_test' display_resource.id %}"
+                                           class="primary-button">
+                                            Start Assessment
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- SOLUTIONS -->
+                        {% if current_view == "solutions" %}
+                            <section class="lesson-section">
+                                {% if display_resource.content %}
+                                    {{ display_resource.content|safe }}
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-check2-circle"></i>
+                                        <p>No solution content has been added yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- LESSON -->
+                        {% if current_view == "lesson" %}
+                            <section class="lesson-section">
+
+                                {% if display_resource.objectives %}
+                                    <div class="lb lb--definition">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-bullseye"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Learning objectives</h3>
+                                                <span class="lb-kicker">What you'll learn</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.objectives|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if display_resource.definitions %}
+                                    <div class="lb lb--definition">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-bookmark-star-fill"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Definitions</h3>
+                                                <span class="lb-kicker">Key terms</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.definitions|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if display_resource.content %}
+                                    {% if "## " in display_resource.content %}
+                                        {{ display_resource.content|safe }}
+                                    {% else %}
+                                        <div class="lb lb--plain">
+                                            <div class="lb-head">
+                                                <span class="lb-icon">
+                                                    <i class="bi bi-journal-text"></i>
+                                                </span>
+                                                <div>
+                                                    <h3 class="lb-title">Lesson notes</h3>
+                                                    <span class="lb-kicker">Read the content below</span>
+                                                </div>
+                                            </div>
+                                            <div class="lb-body">
+                                                {{ display_resource.content|linebreaks }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if display_resource.examples %}
+                                    <div class="lb lb--example">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-lightbulb-fill"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Examples</h3>
+                                                <span class="lb-kicker">See it in action</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.examples|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if display_resource.key_points %}
+                                    <div class="lb lb--keypoint">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Key points</h3>
+                                                <span class="lb-kicker">Remember these</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.key_points|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if display_resource.activity %}
+                                    <div class="lb lb--activity">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Class activity</h3>
+                                                <span class="lb-kicker">Practise what you learned</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.activity|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if display_resource.practical %}
+                                    <div class="lb lb--practical">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-tools"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Practical</h3>
+                                                <span class="lb-kicker">Hands-on guidance</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.practical|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if not display_resource.content and not display_resource.objectives and not display_resource.definitions and not display_resource.examples and not display_resource.key_points and not display_resource.activity and not display_resource.practical %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-book"></i>
+                                        <p>No lesson content has been added yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- VIDEO -->
+                        {% if current_view == "video" %}
+                            <section class="lesson-section">
+                                {% if display_resource.video_url %}
+                                    <div class="media-card">
+                                        <h3 class="media-title">
+                                            {{ display_resource.title }}
+                                        </h3>
+
+                                        {% if display_resource.description %}
+                                            <p class="media-description">
+                                                {{ display_resource.description }}
+                                            </p>
+                                        {% endif %}
+
+                                        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:13px;overflow:hidden;background:#000;">
+                                            <iframe src="{{ display_resource.video_url }}"
+                                                    title="{{ display_resource.title }}"
+                                                    style="width:100%;height:100%;border:0;"
+                                                    allowfullscreen></iframe>
+                                        </div>
+
+                                        <div style="margin-top:15px;">
+                                            <a href="{{ display_resource.video_url }}"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
+                                               class="resource-button">
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                                Open video in new tab
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-play-circle"></i>
+                                        <p>No video has been added to this resource yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- MATERIAL -->
+                        {% if current_view == "material" %}
+                            <section class="lesson-section">
+                                {% if display_resource.file %}
+                                    <div class="material-tile">
+                                        <div class="material-left">
+                                            <div class="material-icon">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                            </div>
+                                            <div class="material-info">
+                                                <h3>{{ display_resource.title }}</h3>
+                                                <p>
+                                                    Open or download the attached
+                                                    material for offline study.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <a href="{{ display_resource.file.url }}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="primary-button">
+                                            <i class="bi bi-download"></i>
+                                            Open / Download
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-file-earmark"></i>
+                                        <p>No study material has been attached yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- PRACTICAL -->
+                        {% if current_view == "practical" %}
+                            <section class="lesson-section">
+                                {% if display_resource.content %}
+                                    <div class="lb lb--practical">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-tools"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Practical guide</h3>
+                                                <span class="lb-kicker">Hands-on steps</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.content|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-tools"></i>
+                                        <p>No practical material has been added yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- REVISION -->
+                        {% if current_view == "revision" %}
+                            <section class="lesson-section">
+                                {% if display_resource.content %}
+                                    <div class="lb lb--note">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Revision materials</h3>
+                                                <span class="lb-kicker">Refresh your memory</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.content|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                        <p>No revision material has been added yet.</p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                        <!-- MOCK EXAM -->
+                        {% if current_view == "mock_exam" %}
+                            <section class="lesson-section">
+                                {% if display_resource.content %}
+                                    <div class="lb lb--warning">
+                                        <div class="lb-head">
+                                            <span class="lb-icon">
+                                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="lb-title">Mock exam instructions</h3>
+                                                <span class="lb-kicker">Read before you begin</span>
+                                            </div>
+                                        </div>
+                                        <div class="lb-body">
+                                            {{ display_resource.content|linebreaks }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if testable %}
+                                    <div class="assessment-card">
+                                        <div class="assessment-icon">
+                                            <i class="bi bi-play-fill"></i>
+                                        </div>
+                                        <h2>Mock exam ready</h2>
+                                        <p>
+                                            Start the mock examination when you
+                                            are ready to test your knowledge.
+                                        </p>
+                                        <a href="{% url 'exam_prep:start_test' display_resource.id %}"
+                                           class="primary-button">
+                                            Start Mock Exam
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="bi bi-pencil-square"></i>
+                                        <p>
+                                            No published multiple-choice mock
+                                            exam questions are available yet.
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </section>
+                        {% endif %}
+
+                    </div>
+                </article>
+
+                <!-- PREVIOUS / NEXT -->
+                <div class="lesson-navigation">
+                    <a href="{% url 'exam_prep:year_detail' resource.subject.id resource.year.id %}"
+                       class="lesson-nav-card">
+                        <span class="nav-label">← Back</span>
+                        <span class="nav-title">
+                            {{ resource.year.year }} resources
+                        </span>
+                    </a>
+
+                    <a href="{% url 'exam_prep:subject_detail' resource.subject.id %}"
+                       class="lesson-nav-card"
+                       style="text-align:right;">
+                        <span class="nav-label">Up →</span>
+                        <span class="nav-title">
+                            {{ resource.subject.name }}
+                        </span>
+                    </a>
+                </div>
+
+            </main>
+
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">Resource information</h3>
+
+                    <div class="info-row">
+                        <span class="info-label">Exam</span>
+                        <span class="info-value">{{ resource.exam.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Subject</span>
+                        <span class="info-value">{{ resource.subject.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">{{ resource.year.year }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Type</span>
+                        <span class="info-value">
+                            {{ resource.get_resource_type_display }}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">View</span>
+                        <span class="info-value status-active">
+                            {{ current_view|title }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">Available materials</h3>
+                    <ul class="material-list">
+                        {% if has_questions %}
+                            <li>
+                                <a href="?view=questions">Questions</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_solutions %}
+                            <li>
+                                <a href="?view=solutions">Solutions</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_lesson %}
+                            <li>
+                                <a href="?view=lesson">Lesson notes</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_video %}
+                            <li>
+                                <a href="?view=video">Video</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_material %}
+                            <li>
+                                <a href="?view=material">Study material</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_practical %}
+                            <li>
+                                <a href="?view=practical">Practical</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_revision %}
+                            <li>
+                                <a href="?view=revision">Revision</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                        {% if has_mock_exam %}
+                            <li>
+                                <a href="?view=mock_exam">Mock exam</a>
+                                <span class="material-check">✓</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">This resource</h3>
+                    <ul class="material-list">
+                        <li><a href="?view=overview">Overview</a></li>
+
+                        {% if has_questions %}
+                            <li><a href="?view=questions">Questions</a></li>
+                        {% endif %}
+                        {% if has_solutions %}
+                            <li><a href="?view=solutions">Solutions</a></li>
+                        {% endif %}
+                        {% if has_lesson %}
+                            <li><a href="?view=lesson">Lesson</a></li>
+                        {% endif %}
+                        {% if has_video %}
+                            <li><a href="?view=video">Video</a></li>
+                        {% endif %}
+                        {% if has_material %}
+                            <li><a href="?view=material">Material</a></li>
+                        {% endif %}
+                        {% if has_practical %}
+                            <li><a href="?view=practical">Practical</a></li>
+                        {% endif %}
+                        {% if has_revision %}
+                            <li><a href="?view=revision">Revision</a></li>
+                        {% endif %}
+                        {% if has_mock_exam %}
+                            <li><a href="?view=mock_exam">Mock exam</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}

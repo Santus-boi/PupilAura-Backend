@@ -1,0 +1,572 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}My Courses | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="Continue learning and track your progress across your school and tech courses on PupilAura.">
+{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>My Courses</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =====================================================
+       MY COURSES PAGE — page-only styles
+    ===================================================== */
+
+    /* SECTION HEADERS */
+    .pa-course-section {
+        margin-bottom: 34px;
+    }
+
+    .pa-course-section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .pa-course-section-title {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin: 0;
+        color: var(--ink);
+        font: 800 20px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+        line-height: 1.3;
+    }
+
+    .pa-course-section-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 15px;
+    }
+
+    .pa-course-section-icon.tech {
+        background: #f1edff;
+        color: #6f42c1;
+    }
+
+    .pa-course-section-desc {
+        margin: 6px 0 0 47px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    /* GRID */
+    .pa-course-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    /* CARD */
+    .pa-course-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .pa-course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.10);
+        border-color: rgba(37, 99, 235, 0.20);
+    }
+
+    .pa-course-card.tech:hover {
+        border-color: rgba(111, 66, 193, 0.22);
+    }
+
+    /* TYPE BADGE */
+    .pa-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        padding: 5px 9px;
+        margin-bottom: 16px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .pa-type-badge.school {
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+    .pa-type-badge.tech {
+        background: #f1edff;
+        color: #6f42c1;
+    }
+
+    /* TOP ROW */
+    .pa-course-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .pa-course-title-wrap {
+        min-width: 0;
+    }
+
+    .pa-course-title {
+        margin: 0 0 6px;
+        color: var(--ink);
+        font: 800 16px "Plus Jakarta Sans", sans-serif;
+        line-height: 1.4;
+        letter-spacing: -0.15px;
+        overflow-wrap: anywhere;
+    }
+
+    .pa-course-desc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.6;
+    }
+
+    .pa-completed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 10.5px;
+        font-weight: 800;
+    }
+
+    /* META CHIPS */
+    .pa-course-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .pa-meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        color: #596273;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .pa-meta-chip i {
+        color: var(--primary);
+        font-size: 11px;
+    }
+
+    .pa-course-card.tech .pa-meta-chip i {
+        color: #6f42c1;
+    }
+
+    /* PROGRESS */
+    .pa-course-progress {
+        margin-bottom: 18px;
+    }
+
+    .pa-progress-track {
+        width: 100%;
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e9eef5;
+    }
+
+    .pa-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--primary);
+        transition: width 0.3s ease;
+    }
+
+    .pa-progress-fill.purple {
+        background: #6f42c1;
+    }
+
+    .pa-progress-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 11.5px;
+    }
+
+    .pa-progress-info strong {
+        color: var(--ink);
+        font-weight: 800;
+    }
+
+    /* CARD ACTION */
+    .pa-course-action {
+        margin-top: auto;
+    }
+
+    .pa-course-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 14px;
+        border-radius: 11px;
+        color: white;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .pa-course-button.school {
+        background: var(--primary);
+        box-shadow: 0 10px 22px -10px rgba(37, 99, 235, 0.55);
+    }
+
+    .pa-course-button.school:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .pa-course-button.tech {
+        background: #6f42c1;
+        box-shadow: 0 10px 22px -10px rgba(111, 66, 193, 0.55);
+    }
+
+    .pa-course-button.tech:hover {
+        background: #59339d;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* EMPTY STATE */
+    .pa-course-empty {
+        padding: 60px 24px;
+        border: 1px dashed #cfd6df;
+        border-radius: 20px;
+        background:
+            radial-gradient(500px 260px at 50% 0%, rgba(37, 99, 235, 0.06), transparent 60%),
+            white;
+        text-align: center;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .pa-course-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin-bottom: 16px;
+        border-radius: 50%;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 28px;
+    }
+
+    .pa-course-empty h2 {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font: 800 20px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+    }
+
+    .pa-course-empty p {
+        max-width: 480px;
+        margin: 0 auto 22px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .pa-course-empty-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) {
+        .pa-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 650px) {
+        .pa-course-grid { grid-template-columns: 1fr; gap: 14px; }
+        .pa-course-card { padding: 18px; }
+        .pa-course-top { flex-direction: column; }
+        .pa-completed-badge { align-self: flex-start; }
+        .pa-course-section-title { font-size: 17px; }
+        .pa-course-section-desc { margin-left: 0; }
+        .pa-course-empty-actions { flex-direction: column; }
+        .pa-course-empty-actions .pa-btn-primary,
+        .pa-course-empty-actions .pa-btn-outline { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADING -->
+<section class="pa-page-heading">
+    <div>
+        <div class="pa-eyebrow">Your enrolled courses</div>
+        <h1>My Courses</h1>
+        <p>Continue learning and track your progress across your courses.</p>
+    </div>
+</section>
+
+<!-- SCHOOL CURRICULUM -->
+{% if enrollments %}
+    <section class="pa-course-section">
+
+        <div class="pa-course-section-head">
+            <h2 class="pa-course-section-title">
+                <span class="pa-course-section-icon">
+                    <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                </span>
+                School Curriculum
+            </h2>
+        </div>
+        <p class="pa-course-section-desc">Your enrolled school subjects.</p>
+
+        <div class="pa-course-grid">
+            {% for enrollment in enrollments %}
+                <article class="pa-course-card">
+
+                    <span class="pa-type-badge school">
+                        <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                        School Curriculum
+                    </span>
+
+                    <div class="pa-course-top">
+                        <div class="pa-course-title-wrap">
+                            <h3 class="pa-course-title">{{ enrollment.subject.name }}</h3>
+                            <p class="pa-course-desc">
+                                {{ enrollment.subject.school_class.name }}
+                                {% if enrollment.subject.school_class.education_level %}
+                                    · {{ enrollment.subject.school_class.education_level.name }}
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        {% if enrollment.completed %}
+                            <span class="pa-completed-badge">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                Completed
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="pa-course-meta">
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-book" aria-hidden="true"></i>
+                            {{ enrollment.total_lessons }} Lessons
+                        </span>
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-check-circle" aria-hidden="true"></i>
+                            {{ enrollment.completed_lessons }} Completed
+                        </span>
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-graph-up" aria-hidden="true"></i>
+                            {{ enrollment.progress }}%
+                        </span>
+                    </div>
+
+                    <div class="pa-course-progress">
+                        <div class="pa-progress-track">
+                            <div class="pa-progress-fill"
+                                 role="progressbar"
+                                 style="width: {{ enrollment.progress }}%;"
+                                 aria-valuenow="{{ enrollment.progress }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"></div>
+                        </div>
+                        <div class="pa-progress-info">
+                            <span>Course progress</span>
+                            <strong>{{ enrollment.progress }}%</strong>
+                        </div>
+                    </div>
+
+                    {% if enrollment.first_lesson %}
+                        <div class="pa-course-action">
+                            <a href="{% url 'student_lesson_detail' enrollment.first_lesson.id %}"
+                               class="pa-course-button school">
+                                {% if enrollment.completed %}
+                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                                    Review course
+                                {% else %}
+                                    <i class="bi bi-play-fill" aria-hidden="true"></i>
+                                    Continue learning
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                </article>
+            {% endfor %}
+        </div>
+
+    </section>
+{% endif %}
+
+<!-- TECH ACADEMY -->
+{% if tech_enrollments %}
+    <section class="pa-course-section">
+
+        <div class="pa-course-section-head">
+            <h2 class="pa-course-section-title">
+                <span class="pa-course-section-icon tech">
+                    <i class="bi bi-laptop-fill" aria-hidden="true"></i>
+                </span>
+                Tech Academy
+            </h2>
+        </div>
+        <p class="pa-course-section-desc">Your technology and digital-skills courses.</p>
+
+        <div class="pa-course-grid">
+            {% for enrollment in tech_enrollments %}
+                <article class="pa-course-card tech">
+
+                    <span class="pa-type-badge tech">
+                        <i class="bi bi-laptop-fill" aria-hidden="true"></i>
+                        Tech Academy
+                    </span>
+
+                    <div class="pa-course-top">
+                        <div class="pa-course-title-wrap">
+                            <h3 class="pa-course-title">{{ enrollment.course.title }}</h3>
+                            <p class="pa-course-desc">
+                                {{ enrollment.course.description|truncatewords:25 }}
+                            </p>
+                        </div>
+
+                        {% if enrollment.completed %}
+                            <span class="pa-completed-badge">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                Completed
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="pa-course-meta">
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-collection" aria-hidden="true"></i>
+                            {{ enrollment.total_lessons }} Lessons
+                        </span>
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-check-circle" aria-hidden="true"></i>
+                            {{ enrollment.completed_lessons }} Completed
+                        </span>
+                        <span class="pa-meta-chip">
+                            <i class="bi bi-graph-up" aria-hidden="true"></i>
+                            {{ enrollment.progress }}%
+                        </span>
+                    </div>
+
+                    <div class="pa-course-progress">
+                        <div class="pa-progress-track">
+                            <div class="pa-progress-fill purple"
+                                 role="progressbar"
+                                 style="width: {{ enrollment.progress }}%;"
+                                 aria-valuenow="{{ enrollment.progress }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"></div>
+                        </div>
+                        <div class="pa-progress-info">
+                            <span>Course progress</span>
+                            <strong>{{ enrollment.progress }}%</strong>
+                        </div>
+                    </div>
+
+                    {% if enrollment.current_lesson %}
+                        <div class="pa-course-action">
+                            <a href="{% url 'tech:tech_lesson_detail' enrollment.current_lesson.id %}"
+                               class="pa-course-button tech">
+                                {% if enrollment.completed %}
+                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                                    Review course
+                                {% else %}
+                                    <i class="bi bi-play-fill" aria-hidden="true"></i>
+                                    Continue learning
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                </article>
+            {% endfor %}
+        </div>
+
+    </section>
+{% endif %}
+
+<!-- EMPTY STATE -->
+{% if not enrollments and not tech_enrollments %}
+    <div class="pa-course-empty">
+
+        <div class="pa-course-empty-icon">
+            <i class="bi bi-book" aria-hidden="true"></i>
+        </div>
+
+        <h2>No courses yet</h2>
+
+        <p>
+            You have not enrolled in any courses yet. Start learning today.
+        </p>
+
+        <div class="pa-course-empty-actions">
+            <a href="{% url 'student_classes' %}" class="pa-btn-primary">
+                <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                Explore school curriculum
+            </a>
+            <a href="{% url 'tech:tech_home' %}" class="pa-btn-outline">
+                <i class="bi bi-laptop" aria-hidden="true"></i>
+                Explore Tech Academy
+            </a>
+        </div>
+
+    </div>
+{% endif %}
+
+{% endblock %}

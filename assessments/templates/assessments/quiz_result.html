@@ -1,0 +1,969 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ quiz.title }} Result | PupilAura</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        body {
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .result-container {
+            max-width: 950px;
+            margin: 40px auto;
+        }
+
+        .result-header {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .result-icon {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            margin-bottom: 15px;
+        }
+
+        .passed-icon {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .failed-icon {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .pending-icon {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .result-message {
+            color: #6b7280;
+        }
+
+        .assessment-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .lesson-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .week-badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .term-badge {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .assessment-path {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 7px;
+            align-items: center;
+            margin-top: 18px;
+        }
+
+        .path-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: #4b5563;
+            font-size: 0.8rem;
+        }
+
+        .path-arrow {
+            color: #9ca3af;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-box {
+            min-width: 150px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .answer-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .question-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 7px;
+        }
+
+        .question-type {
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 6px;
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .answer-box {
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .correct-answer {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .wrong-answer {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .neutral-answer {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+
+        .answer-label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .points-earned {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 12px;
+        }
+
+        .actions-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .attempts-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 576px) {
+
+            .result-container {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+            .result-header,
+            .answer-card,
+            .actions-card,
+            .attempts-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .result-score {
+                font-size: 38px;
+            }
+
+            .stat-box {
+                width: 100%;
+            }
+
+            .assessment-path {
+                flex-direction: column;
+            }
+
+            .path-arrow {
+                display: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container result-container">
+
+    <div class="result-header">
+
+        {% if assessment_type == "Lesson Assessment" %}
+
+            <div class="assessment-badge lesson-badge">
+                <i class="bi bi-journal-check"></i>
+                Lesson Assessment
+            </div>
+
+        {% elif assessment_type == "Week Assessment" %}
+
+            <div class="assessment-badge week-badge">
+                <i class="bi bi-calendar2-check"></i>
+                Week Assessment
+            </div>
+
+        {% elif assessment_type == "Term Assessment" %}
+
+            <div class="assessment-badge term-badge">
+                <i class="bi bi-award"></i>
+                Term Assessment
+            </div>
+
+        {% endif %}
+
+
+        {% if has_pending_review %}
+
+            <div class="result-icon pending-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+
+            <h1 class="h3 fw-bold">
+                Assessment Submitted
+            </h1>
+
+            <p class="result-message">
+
+                Your assessment has been submitted successfully.
+
+                Your written answer is waiting for manual review.
+
+                Your final score and pass status will be updated
+                after your answer has been reviewed.
+
+            </p>
+
+        {% elif attempt.passed %}
+
+            <div class="result-icon passed-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+            <h1 class="h3 fw-bold">
+                Assessment Passed!
+            </h1>
+
+            <p class="result-message">
+
+                Congratulations! You passed this assessment.
+
+                {% if assessment_type == "Lesson Assessment" %}
+
+                    The lesson has been marked as completed.
+
+                {% elif assessment_type == "Week Assessment" %}
+
+                    You successfully completed the weekly assessment.
+
+                {% elif assessment_type == "Term Assessment" %}
+
+                    You successfully completed the term assessment.
+
+                {% endif %}
+
+            </p>
+
+        {% else %}
+
+            <div class="result-icon failed-icon">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+
+            <h1 class="h3 fw-bold">
+                Assessment Not Passed
+            </h1>
+
+            <p class="result-message">
+
+                Keep learning and try the assessment again
+                when you're ready.
+
+            </p>
+
+        {% endif %}
+
+
+        {% if has_pending_review %}
+
+            <div class="result-score">
+                Pending
+            </div>
+
+        {% else %}
+
+            <div class="result-score">
+                {{ attempt.percentage|floatformat:0 }}%
+            </div>
+
+        {% endif %}
+
+
+        <div class="text-muted">
+            {{ quiz.title }}
+        </div>
+
+
+        <div class="assessment-path">
+
+            {% if subject %}
+
+                <span class="path-item">
+                    <i class="bi bi-book"></i>
+                    {{ subject.name }}
+                </span>
+
+            {% endif %}
+
+
+            {% if term %}
+
+                <span class="path-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+
+                <span class="path-item">
+                    <i class="bi bi-calendar3"></i>
+                    {{ term.name }}
+                </span>
+
+            {% endif %}
+
+
+            {% if week %}
+
+                <span class="path-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+
+                <span class="path-item">
+                    <i class="bi bi-calendar-week"></i>
+                    Week {{ week.number }}
+
+                    {% if week.title %}
+                        — {{ week.title }}
+                    {% endif %}
+                </span>
+
+            {% endif %}
+
+
+            {% if lesson %}
+
+                <span class="path-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+
+                <span class="path-item">
+                    <i class="bi bi-journal-text"></i>
+                    {{ lesson.title }}
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="stats-row">
+
+            <div class="stat-box">
+
+                <div class="stat-value">
+
+                    {{ score }}/{{ total_points }}
+
+                </div>
+
+                <div class="stat-label">
+                    Automatically Graded
+                </div>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <div class="stat-value">
+
+                    {% if has_pending_review %}
+                        Pending
+                    {% else %}
+                        {{ attempt.percentage|floatformat:0 }}%
+                    {% endif %}
+
+                </div>
+
+                <div class="stat-label">
+                    Final Score
+                </div>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <div class="stat-value">
+                    {{ quiz.pass_mark }}%
+                </div>
+
+                <div class="stat-label">
+                    Pass Mark
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <h2 class="h4 fw-bold mb-3">
+
+        <i class="bi bi-list-check me-1"></i>
+
+        Answer Review
+
+    </h2>
+
+
+    {% for answer in answers %}
+
+        <div class="answer-card">
+
+            <div class="question-number">
+
+                Question {{ forloop.counter }}
+
+            </div>
+
+
+            {% if answer.question.question_type == "objective" %}
+
+                <div class="question-type">
+
+                    <i class="bi bi-ui-radios-grid me-1"></i>
+
+                    Multiple Choice
+
+                </div>
+
+            {% elif answer.question.question_type == "theory" %}
+
+                <div class="question-type">
+
+                    <i class="bi bi-pencil-square me-1"></i>
+
+                    Theory
+
+                </div>
+
+            {% elif answer.question.question_type == "practical" %}
+
+                <div class="question-type">
+
+                    <i class="bi bi-tools me-1"></i>
+
+                    Practical
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="question-text">
+
+                {{ answer.question.text }}
+
+            </div>
+
+
+            {% if answer.question.question_type == "objective" %}
+
+                {% if answer.selected_choice %}
+
+                    {% if answer.is_correct %}
+
+                        <div class="answer-box correct-answer">
+
+                            <div class="answer-label text-success">
+
+                                <i class="bi bi-check-circle me-1"></i>
+
+                                Your Answer
+
+                            </div>
+
+                            {{ answer.selected_choice.text }}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="answer-box wrong-answer">
+
+                            <div class="answer-label text-danger">
+
+                                <i class="bi bi-x-circle me-1"></i>
+
+                                Your Answer
+
+                            </div>
+
+                            {{ answer.selected_choice.text }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <div class="answer-box neutral-answer">
+
+                        <div class="answer-label text-muted">
+
+                            <i class="bi bi-dash-circle me-1"></i>
+
+                            Your Answer
+
+                        </div>
+
+                        No answer selected.
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if not answer.is_correct %}
+
+                    {% for choice in answer.question.choices.all %}
+
+                        {% if choice.is_correct %}
+
+                            <div class="answer-box correct-answer">
+
+                                <div class="answer-label text-success">
+
+                                    <i class="bi bi-check-circle me-1"></i>
+
+                                    Correct Answer
+
+                                </div>
+
+                                {{ choice.text }}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                {% endif %}
+
+
+            {% else %}
+
+                {% if answer.text_answer %}
+
+                    <div class="answer-box neutral-answer">
+
+                        <div class="answer-label text-primary">
+
+                            <i class="bi bi-pencil-square me-1"></i>
+
+                            Your Answer
+
+                        </div>
+
+                        <div class="mt-2">
+
+                            {{ answer.text_answer|linebreaksbr }}
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="answer-box neutral-answer">
+
+                        <div class="answer-label text-muted">
+
+                            <i class="bi bi-dash-circle me-1"></i>
+
+                            Your Answer
+
+                        </div>
+
+                        No answer provided.
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if answer.reviewed %}
+
+                    <div class="alert alert-success mt-3 mb-0">
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        This answer has been manually reviewed.
+
+                    </div>
+
+                {% else %}
+
+                    <div class="alert alert-warning mt-3 mb-0">
+
+                        <i class="bi bi-clock-history me-1"></i>
+
+                        This answer is awaiting manual review.
+
+                    </div>
+
+                {% endif %}
+
+            {% endif %}
+
+
+            <div class="points-earned">
+
+                {% if answer.question.question_type == "objective" %}
+
+                    {% if answer.is_correct %}
+
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+
+                    {% else %}
+
+                        <i class="bi bi-x-circle-fill text-danger me-1"></i>
+
+                    {% endif %}
+
+                {% elif answer.reviewed %}
+
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+
+                {% else %}
+
+                    <i class="bi bi-clock-fill text-warning me-1"></i>
+
+                {% endif %}
+
+
+                {{ answer.points_earned }}/{{ answer.question.points }}
+
+                point{{ answer.question.points|pluralize }}
+
+
+                {% if answer.question.question_type != "objective" %}
+
+                    {% if answer.reviewed %}
+
+                        · Manually Graded
+
+                    {% else %}
+
+                        · Awaiting manual grading
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <div class="alert alert-info">
+
+            <i class="bi bi-info-circle me-1"></i>
+
+            No answers were recorded for this attempt.
+
+        </div>
+
+    {% endfor %}
+
+
+    <div class="actions-card">
+
+        <div class="row g-2">
+
+            <div class="col-md-6">
+
+                {% if assessment_type == "Lesson Assessment" and lesson %}
+
+                    <a
+                        href="{% url 'student_lesson_detail' lesson.id %}"
+                        class="btn btn-primary btn-lg w-100"
+                    >
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Lesson
+
+                    </a>
+
+                {% elif assessment_type == "Week Assessment" and week %}
+
+                    <a
+                        href="{% url 'student_lessons' week.id %}"
+                        class="btn btn-primary btn-lg w-100"
+                    >
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Week
+
+                    </a>
+
+                {% elif assessment_type == "Term Assessment" and term %}
+
+                    <a
+                        href="{% url 'student_weeks' term.id %}"
+                        class="btn btn-primary btn-lg w-100"
+                    >
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Term
+
+                    </a>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'student_assessments' %}"
+                        class="btn btn-primary btn-lg w-100"
+                    >
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Assessments
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <a
+                    href="{% url 'quiz_detail' quiz.id %}"
+                    class="btn btn-outline-primary btn-lg w-100"
+                >
+
+                    <i class="bi bi-arrow-repeat me-1"></i>
+
+                    Try Again
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {% if previous_attempts %}
+
+        <div class="attempts-card">
+
+            <h2 class="h5 fw-bold mb-3">
+
+                <i class="bi bi-clock-history me-1"></i>
+
+                Your Attempts
+
+            </h2>
+
+
+            <div class="table-responsive">
+
+                <table class="table align-middle mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Date</th>
+                            <th>Score</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for previous_attempt in previous_attempts %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{ previous_attempt.started_at|date:"M d, Y H:i" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if previous_attempt.answers.filter %}
+
+                                        {{ previous_attempt.percentage|floatformat:0 }}%
+
+                                    {% else %}
+
+                                        {{ previous_attempt.percentage|floatformat:0 }}%
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if previous_attempt.passed %}
+
+                                        <span class="badge text-bg-success">
+                                            Passed
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge text-bg-danger">
+                                            Not Passed
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+
+</html>

@@ -1,0 +1,946 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ story.title }} | PupilAura Stories{% endblock %}
+
+{% block content %}
+
+<style>
+.story-detail-page {
+    background: #f4f6ff;
+    min-height: 100vh;
+    padding: 35px 0 80px;
+}
+
+.story-detail-container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 0 22px;
+}
+
+/* BACK LINK */
+
+.story-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #64748b;
+    text-decoration: none;
+    margin-bottom: 23px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.story-back-link:hover {
+    color: #4f46e5;
+    transform: translateX(-4px);
+}
+
+/* HERO */
+
+.story-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 45px;
+    border-radius: 30px;
+    background: linear-gradient(125deg, #17164d 0%, #352b91 48%, #7138bd 100%);
+    box-shadow: 0 22px 55px rgba(49, 46, 129, .19);
+}
+
+.story-hero::before {
+    content: "";
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    right: -130px;
+    top: -200px;
+    background: rgba(255, 255, 255, .08);
+    z-index: -1;
+}
+
+.story-hero::after {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    right: 25%;
+    bottom: -220px;
+    background: rgba(236, 72, 153, .15);
+    z-index: -1;
+}
+
+.story-hero-decoration {
+    position: absolute;
+    right: 38%;
+    top: 35px;
+    color: rgba(255,255,255,.09);
+    font-size: 105px;
+    transform: rotate(-18deg);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.story-main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* COVER */
+
+.story-cover-wrapper {
+    position: relative;
+    max-width: 300px;
+    margin: auto;
+    perspective: 1000px;
+}
+
+.story-cover {
+    display: block;
+    width: 100%;
+    height: 410px;
+    object-fit: cover;
+    border-radius: 17px;
+    border: 5px solid rgba(255,255,255,.2);
+    box-shadow:
+        0 25px 45px rgba(0,0,0,.35),
+        8px 8px 0 rgba(255,255,255,.08);
+    transition: transform .4s ease, box-shadow .4s ease;
+}
+
+.story-cover-wrapper:hover .story-cover {
+    transform: translateY(-8px) rotate(-2deg);
+    box-shadow: 0 35px 55px rgba(0,0,0,.4);
+}
+
+.story-cover-placeholder {
+    height: 410px;
+    border-radius: 17px;
+    border: 5px solid rgba(255,255,255,.2);
+    background: linear-gradient(145deg, #f472b6, #8b5cf6, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 85px;
+    box-shadow: 0 25px 45px rgba(0,0,0,.3);
+}
+
+.story-cover-caption {
+    position: absolute;
+    left: 50%;
+    bottom: -17px;
+    transform: translateX(-50%);
+    padding: 9px 17px;
+    border-radius: 30px;
+    background: white;
+    color: #4338ca;
+    font-size: 11px;
+    font-weight: 850;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(0,0,0,.16);
+}
+
+/* HERO INFORMATION */
+
+.story-detail-info {
+    color: white;
+}
+
+.story-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #ddd6fe;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 19px;
+}
+
+.story-eyebrow i {
+    color: #fbbf24;
+    font-size: 16px;
+}
+
+.story-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 19px;
+}
+
+.story-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 13px;
+    border-radius: 30px;
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.17);
+    color: white;
+    font-size: 11px;
+    font-weight: 750;
+    backdrop-filter: blur(8px);
+}
+
+.story-label.rating {
+    background: rgba(251,191,36,.18);
+    color: #fde68a;
+    border-color: rgba(251,191,36,.25);
+}
+
+.story-label.audience {
+    background: rgba(244,114,182,.16);
+    color: #fbcfe8;
+}
+
+.story-label.featured {
+    background: rgba(251,191,36,.2);
+    color: #fde68a;
+}
+
+.story-title {
+    font-size: clamp(32px, 4.5vw, 49px);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.12;
+    letter-spacing: -1.7px;
+    margin-bottom: 15px;
+}
+
+.story-author {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #c7d2fe;
+    font-size: 13px;
+    margin-bottom: 22px;
+}
+
+.story-author i {
+    font-size: 17px;
+}
+
+.story-description {
+    color: #e0e7ff;
+    font-size: 15px;
+    line-height: 1.9;
+    max-width: 620px;
+    white-space: pre-line;
+}
+
+.story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+    margin: 25px 0;
+}
+
+.story-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.11);
+    border: 1px solid rgba(255,255,255,.13);
+    color: #f1f5f9;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.story-meta-item i {
+    font-size: 16px;
+    color: #fbbf24;
+}
+
+/* HERO ACTIONS */
+
+.story-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 29px;
+}
+
+.story-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 14px 21px;
+    border-radius: 12px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 13px;
+    transition: .25s ease;
+}
+
+.story-btn-primary {
+    background: linear-gradient(135deg, #fbbf24, #f97316);
+    color: #431407;
+    box-shadow: 0 8px 20px rgba(249,115,22,.25);
+}
+
+.story-btn-primary:hover {
+    background: linear-gradient(135deg, #fcd34d, #fb923c);
+    color: #431407;
+    transform: translateY(-4px);
+    box-shadow: 0 13px 25px rgba(249,115,22,.35);
+}
+
+.story-btn-outline {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.35);
+    color: white;
+}
+
+.story-btn-outline:hover {
+    background: white;
+    color: #4338ca;
+    border-color: white;
+    transform: translateY(-3px);
+}
+
+.story-actions form {
+    margin: 0;
+}
+
+/* CHAPTER SECTION */
+
+.story-chapters {
+    margin-top: 38px;
+    padding: 35px;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 12px 40px rgba(30, 41, 59, .05);
+}
+
+.chapter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 28px;
+}
+
+.chapter-heading {
+    color: #172033;
+    font-size: 26px;
+    font-weight: 850;
+    margin-bottom: 7px;
+}
+
+.chapter-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
+}
+
+.chapter-count {
+    padding: 9px 15px;
+    background: #eef2ff;
+    color: #4f46e5;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* COLORFUL CHAPTER GRID */
+
+.chapter-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.chapter-item {
+    --chapter-a: #4f46e5;
+    --chapter-b: #7c3aed;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 205px;
+    padding: 24px;
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    color: white;
+    background: linear-gradient(135deg, var(--chapter-a), var(--chapter-b));
+    box-shadow: 0 10px 22px rgba(79,70,229,.16);
+    transition: transform .35s ease, box-shadow .35s ease;
+    isolation: isolate;
+}
+
+.chapter-item:nth-child(6n + 2) {
+    --chapter-a: #0891b2;
+    --chapter-b: #06b6d4;
+}
+
+.chapter-item:nth-child(6n + 3) {
+    --chapter-a: #db2777;
+    --chapter-b: #f43f5e;
+}
+
+.chapter-item:nth-child(6n + 4) {
+    --chapter-a: #ea580c;
+    --chapter-b: #f59e0b;
+}
+
+.chapter-item:nth-child(6n + 5) {
+    --chapter-a: #059669;
+    --chapter-b: #10b981;
+}
+
+.chapter-item:nth-child(6n + 6) {
+    --chapter-a: #7c3aed;
+    --chapter-b: #a855f7;
+}
+
+.chapter-item::before {
+    content: "";
+    position: absolute;
+    width: 175px;
+    height: 175px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    right: -65px;
+    top: -65px;
+    z-index: -1;
+    transition: transform .45s ease;
+}
+
+.chapter-item::after {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    right: 25px;
+    bottom: -75px;
+    z-index: -1;
+    transition: transform .45s ease;
+}
+
+.chapter-item:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-9px) scale(1.015);
+    box-shadow: 0 20px 35px rgba(30,41,59,.2);
+}
+
+.chapter-item:hover::before {
+    transform: scale(1.5);
+}
+
+.chapter-item:hover::after {
+    transform: scale(1.4);
+}
+
+.chapter-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.chapter-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.19);
+    border: 1px solid rgba(255,255,255,.24);
+    color: white;
+    font-size: 17px;
+    font-weight: 850;
+    backdrop-filter: blur(8px);
+}
+
+.chapter-book-icon {
+    font-size: 25px;
+    color: rgba(255,255,255,.7);
+    transition: transform .3s ease;
+}
+
+.chapter-item:hover .chapter-book-icon {
+    transform: rotate(-12deg) scale(1.2);
+}
+
+.chapter-info {
+    margin-top: 27px;
+}
+
+.chapter-label {
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,.76);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.chapter-title {
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.chapter-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,.2);
+}
+
+.chapter-read {
+    font-size: 12px;
+    font-weight: 750;
+    color: rgba(255,255,255,.9);
+}
+
+.chapter-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.2);
+    color: white;
+    transition: .3s ease;
+}
+
+.chapter-item:hover .chapter-arrow {
+    background: white;
+    color: var(--chapter-a);
+    transform: translateX(4px);
+}
+
+.no-chapters {
+    text-align: center;
+    padding: 55px 20px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 18px;
+    color: #64748b;
+}
+
+.no-chapters i {
+    display: block;
+    font-size: 40px;
+    margin-bottom: 12px;
+    color: #94a3b8;
+}
+
+.no-chapters p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 992px) {
+    .story-hero {
+        padding: 35px;
+    }
+
+    .story-main {
+        grid-template-columns: 250px 1fr;
+        gap: 32px;
+    }
+
+    .story-cover,
+    .story-cover-placeholder {
+        height: 350px;
+    }
+
+    .chapter-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .story-detail-page {
+        padding-top: 25px;
+    }
+
+    .story-hero {
+        padding: 30px 24px 35px;
+        border-radius: 23px;
+    }
+
+    .story-main {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    .story-cover-wrapper {
+        max-width: 235px;
+    }
+
+    .story-cover,
+    .story-cover-placeholder {
+        height: 310px;
+    }
+
+    .story-detail-info {
+        text-align: center;
+    }
+
+    .story-labels,
+    .story-meta,
+    .story-actions {
+        justify-content: center;
+    }
+
+    .story-author {
+        justify-content: center;
+    }
+
+    .story-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .story-chapters {
+        padding: 25px 20px;
+    }
+
+    .chapter-heading {
+        font-size: 23px;
+    }
+}
+
+@media (max-width: 520px) {
+    .story-detail-container {
+        padding: 0 13px;
+    }
+
+    .story-hero {
+        padding: 27px 17px 32px;
+        border-radius: 19px;
+    }
+
+    .story-title {
+        font-size: 31px;
+    }
+
+    .story-cover-wrapper {
+        max-width: 205px;
+    }
+
+    .story-cover,
+    .story-cover-placeholder {
+        height: 275px;
+    }
+
+    .story-description {
+        font-size: 14px;
+    }
+
+    .story-actions {
+        flex-direction: column;
+    }
+
+    .story-actions form {
+        width: 100%;
+    }
+
+    .story-btn {
+        width: 100%;
+    }
+
+    .story-chapters {
+        padding: 23px 15px;
+        border-radius: 19px;
+    }
+
+    .chapter-header {
+        align-items: flex-start;
+    }
+
+    .chapter-heading {
+        font-size: 21px;
+    }
+
+    .chapter-subtitle {
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .chapter-list {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .chapter-item {
+        min-height: 190px;
+        padding: 21px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .story-detail-page *,
+    .story-detail-page *::before,
+    .story-detail-page *::after {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
+</style>
+
+<section class="story-detail-page">
+    <div class="story-detail-container">
+
+        <a href="{% url 'play_learn:story_library' %}"
+           class="story-back-link">
+            <i class="bi bi-arrow-left"></i>
+            Back to Stories &amp; Novels
+        </a>
+
+        <!-- PREMIUM STORY HERO -->
+        <div class="story-hero">
+
+            <i class="bi bi-book-half story-hero-decoration"></i>
+
+            <div class="story-main">
+
+                <div class="story-cover-wrapper">
+
+                    {% if story.cover %}
+                        <img src="{{ story.cover.url }}"
+                             alt="{{ story.title }}"
+                             class="story-cover">
+                    {% else %}
+                        <div class="story-cover-placeholder">
+                            <i class="bi bi-book-half"></i>
+                        </div>
+                    {% endif %}
+
+                    <span class="story-cover-caption">
+                        <i class="bi bi-stars me-1"></i>
+                        Your next great read
+                    </span>
+
+                </div>
+
+                <div class="story-detail-info">
+
+                    <div class="story-eyebrow">
+                        <i class="bi bi-stars"></i>
+                        PUPILAURA STORY COLLECTION
+                    </div>
+
+                    <div class="story-labels">
+
+                        <span class="story-label">
+                            <i class="bi bi-bookmark"></i>
+                            {{ story.get_genre_display }}
+                        </span>
+
+                        <span class="story-label audience">
+                            <i class="bi bi-people"></i>
+                            {{ story.get_audience_display }}
+                        </span>
+
+                        <span class="story-label rating">
+                            <i class="bi bi-shield-check"></i>
+                            {{ story.get_content_rating_display }}
+                        </span>
+
+                        {% if story.is_featured %}
+                            <span class="story-label featured">
+                                <i class="bi bi-star-fill"></i>
+                                Featured
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <h1 class="story-title">
+                        {{ story.title }}
+                    </h1>
+
+                    <p class="story-author">
+                        <i class="bi bi-person-circle"></i>
+                        By {{ story.author_name|default:"PupilAura Editorial Team" }}
+                    </p>
+
+                    <div class="story-description">
+                        {{ story.description }}
+                    </div>
+
+                    <div class="story-meta">
+
+                        <span class="story-meta-item">
+                            <i class="bi bi-journal-bookmark"></i>
+                            {{ chapters|length }} Chapter{{ chapters|length|pluralize }}
+                        </span>
+
+                        <span class="story-meta-item">
+                            <i class="bi bi-calendar3"></i>
+                            Added {{ story.created_at|date:"M d, Y" }}
+                        </span>
+
+                    </div>
+
+                    <div class="story-actions">
+
+                        {% if chapters %}
+                            <a href="{% url 'play_learn:read_story_chapter' story.slug chapters.0.chapter_number %}"
+                               class="story-btn story-btn-primary">
+                                <i class="bi bi-book-half"></i>
+                                Start Reading
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if user.is_authenticated %}
+
+                            <form method="POST"
+                                  action="{% url 'play_learn:toggle_story_bookmark' story.slug %}">
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="story-btn story-btn-outline">
+
+                                    {% if bookmark %}
+                                        <i class="bi bi-bookmark-check-fill"></i>
+                                        Remove from My Library
+                                    {% else %}
+                                        <i class="bi bi-bookmark-plus"></i>
+                                        Add to My Library
+                                    {% endif %}
+
+                                </button>
+                            </form>
+
+                        {% else %}
+
+                            <a href="{% url 'login' %}"
+                               class="story-btn story-btn-outline">
+                                <i class="bi bi-bookmark-plus"></i>
+                                Sign in to Save
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- COLORFUL CHAPTER SECTION -->
+        <div class="story-chapters">
+
+            <div class="chapter-header">
+
+                <div>
+                    <h2 class="chapter-heading">
+                        <i class="bi bi-journal-richtext me-2"></i>
+                        Explore Chapters
+                    </h2>
+
+                    <p class="chapter-subtitle">
+                        Every chapter brings a new part of the story.
+                    </p>
+                </div>
+
+                {% if chapters %}
+                    <span class="chapter-count">
+                        {{ chapters|length }} Chapters
+                    </span>
+                {% endif %}
+
+            </div>
+
+            {% if chapters %}
+
+                <div class="chapter-list">
+
+                    {% for chapter in chapters %}
+
+                        <a href="{% url 'play_learn:read_story_chapter' story.slug chapter.chapter_number %}"
+                           class="chapter-item">
+
+                            <div class="chapter-top">
+
+                                <span class="chapter-number">
+                                    {{ chapter.chapter_number|stringformat:"02d" }}
+                                </span>
+
+                                <i class="bi bi-book-half chapter-book-icon"></i>
+
+                            </div>
+
+                            <div class="chapter-info">
+
+                                <div class="chapter-label">
+                                    Chapter {{ chapter.chapter_number }}
+                                </div>
+
+                                <h3 class="chapter-title">
+                                    {{ chapter.title }}
+                                </h3>
+
+                            </div>
+
+                            <div class="chapter-bottom">
+
+                                <span class="chapter-read">
+                                    Start reading
+                                </span>
+
+                                <span class="chapter-arrow">
+                                    <i class="bi bi-arrow-right"></i>
+                                </span>
+
+                            </div>
+
+                        </a>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="no-chapters">
+                    <i class="bi bi-journal-x"></i>
+                    <p>No published chapters are available yet.</p>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

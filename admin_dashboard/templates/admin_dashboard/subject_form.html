@@ -1,0 +1,260 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if edit_mode %}Edit Subject{% else %}Add Subject{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if edit_mode %}Edit Subject{% else %}Add Subject{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if edit_mode %}
+        Update this subject's curriculum information.
+    {% else %}
+        Create a subject and assign it to a school class.
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SUBJECT FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Curriculum structure info list */
+    .curriculum-info-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .curriculum-info-item:first-child {
+        padding-top: 0;
+    }
+
+    .curriculum-info-item:last-of-type {
+        border-bottom: 0;
+    }
+
+    .curriculum-info-label {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .curriculum-info-value {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .curriculum-info-note {
+        background: #eff6ff;
+        color: #1e40af;
+        padding: 13px;
+        border-radius: 10px;
+        font-size: 11px;
+        margin-top: 18px;
+        line-height: 1.6;
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .curriculum-info-note {
+            background: #172554;
+            color: #bfdbfe;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:subjects' %}">Subjects</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if edit_mode %}Edit{% else %}Add{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if edit_mode %}Edit Subject{% else %}Add Subject{% endif %}
+                    </h1>
+                    <p>
+                        {% if edit_mode %}
+                            Update this subject's curriculum information.
+                        {% else %}
+                            Create a subject and assign it to a school class.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:subjects' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="content-grid">
+
+    <!-- FORM CARD -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Subject Information</h2>
+            <p>Enter the subject details below.</p>
+        </div>
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Subject Name -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">
+                        Subject Name
+                        {% if form.name.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ form.name }}
+
+                    {% if form.name.errors %}
+                        <ul class="error-list">
+                            {% for error in form.name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if form.name.help_text %}
+                        <div class="help-text">{{ form.name.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- School Class -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.school_class.id_for_label }}">
+                        School Class
+                        {% if form.school_class.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ form.school_class }}
+
+                    {% if form.school_class.errors %}
+                        <ul class="error-list">
+                            {% for error in form.school_class.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if form.school_class.help_text %}
+                        <div class="help-text">{{ form.school_class.help_text }}</div>
+                    {% else %}
+                        <div class="help-text">
+                            Select the school class where this subject will be taught.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:subjects' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i>
+                        {% if edit_mode %}Save Changes{% else %}Create Subject{% endif %}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- CURRICULUM STRUCTURE -->
+    <aside class="card">
+        <div class="card-header">
+            <h2>Curriculum Structure</h2>
+            <p>Where this subject fits.</p>
+        </div>
+
+        <div class="card-body">
+
+            <div class="curriculum-info-item">
+                <div class="curriculum-info-label">Education Level</div>
+                <div class="curriculum-info-value">
+                    {% if subject and subject.school_class %}
+                        {{ subject.school_class.education_level.name }}
+                    {% else %}
+                        Not assigned
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="curriculum-info-item">
+                <div class="curriculum-info-label">School Class</div>
+                <div class="curriculum-info-value">
+                    {% if subject and subject.school_class %}
+                        {{ subject.school_class.name }}
+                    {% else %}
+                        Not assigned
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="curriculum-info-item">
+                <div class="curriculum-info-label">Subject</div>
+                <div class="curriculum-info-value">
+                    {% if subject %}{{ subject.name }}{% else %}New Subject{% endif %}
+                </div>
+            </div>
+
+            <div class="curriculum-info-note">
+                After creating a subject, you can add terms.
+                Each term can contain weeks, and each week can
+                contain lessons and learning materials.
+            </div>
+
+        </div>
+    </aside>
+
+</section>
+
+{% endblock %}

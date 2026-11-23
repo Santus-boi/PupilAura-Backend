@@ -1,0 +1,611 @@
+
+{% extends "base.html" %}
+
+{% block title %}Number Ninja | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    .ninja-game {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .ninja-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .ninja-header h1 {
+        color: #7c3aed;
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 900;
+    }
+
+    .ninja-header p { color: #64748b; }
+
+    .ninja-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .ninja-stat {
+        background: white;
+        padding: 14px 8px;
+        text-align: center;
+        border-radius: 15px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 5px 15px rgba(0,0,0,.04);
+    }
+
+    .ninja-stat small {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .ninja-stat strong {
+        display: block;
+        font-size: 25px;
+        color: #312e81;
+        margin-top: 5px;
+    }
+
+    .ninja-settings {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .ninja-settings select,
+    .ninja-settings button {
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid #ddd6fe;
+        font-weight: 700;
+    }
+
+    .ninja-settings button {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .ninja-settings button:hover { background: #5b21b6; }
+
+    .ninja-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg, #312e81, #7c3aed, #2563eb);
+        border-radius: 25px;
+        padding: 35px 22px;
+        color: white;
+        text-align: center;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px rgba(49,46,129,.2);
+    }
+
+    .ninja-card::before,
+    .ninja-card::after {
+        content: "✦";
+        position: absolute;
+        color: rgba(255,255,255,.15);
+        font-size: 90px;
+        pointer-events: none;
+    }
+
+    .ninja-card::before {
+        top: 5px;
+        left: 20px;
+    }
+
+    .ninja-card::after {
+        bottom: 5px;
+        right: 20px;
+    }
+
+    .ninja-character {
+        font-size: 65px;
+        margin-bottom: 10px;
+        animation: ninjaFloat 2s ease-in-out infinite;
+    }
+
+    @keyframes ninjaFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-9px); }
+    }
+
+    .ninja-instruction {
+        font-size: 14px;
+        color: #ddd6fe;
+        margin-bottom: 12px;
+    }
+
+    .ninja-question {
+        font-size: clamp(2.5rem, 8vw, 4rem);
+        font-weight: 900;
+        margin: 10px 0 25px;
+        letter-spacing: 2px;
+    }
+
+    .ninja-answers {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(100px, 180px));
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .ninja-answer {
+        padding: 17px;
+        background: white;
+        color: #312e81;
+        border: 3px solid transparent;
+        border-radius: 15px;
+        font-size: 23px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: .15s;
+    }
+
+    .ninja-answer:hover:not(:disabled) {
+        transform: translateY(-4px);
+        border-color: #facc15;
+        background: #fefce8;
+    }
+
+    .ninja-answer:disabled { cursor: not-allowed; }
+
+    .ninja-answer.correct {
+        background: #bbf7d0;
+        border-color: #16a34a;
+        color: #166534;
+    }
+
+    .ninja-answer.wrong {
+        background: #fecaca;
+        border-color: #dc2626;
+        color: #991b1b;
+    }
+
+    .ninja-feedback {
+        min-height: 30px;
+        margin-top: 20px;
+        font-weight: 800;
+        font-size: 17px;
+    }
+
+    .ninja-progress {
+        height: 10px;
+        background: rgba(255,255,255,.2);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+        max-width: 500px;
+        margin: 20px auto 0;
+    }
+
+    .ninja-progress-bar {
+        height: 100%;
+        width: 100%;
+        background: #facc15;
+        transition: width .3s;
+    }
+
+    .ninja-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        background: rgba(30,27,75,.94);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 25px;
+    }
+
+    .ninja-overlay.hidden { display: none; }
+
+    .ninja-overlay h2 {
+        font-size: clamp(2rem, 6vw, 3rem);
+        font-weight: 900;
+    }
+
+    .ninja-overlay p {
+        color: #e0e7ff;
+        line-height: 1.8;
+    }
+
+    .ninja-overlay button {
+        border: none;
+        border-radius: 12px;
+        padding: 13px 25px;
+        background: #facc15;
+        color: #312e81;
+        font-weight: 900;
+        cursor: pointer;
+        margin-top: 12px;
+    }
+
+    .ninja-bottom {
+        text-align: center;
+        color: #64748b;
+        margin-top: 15px;
+        font-size: 13px;
+    }
+
+    @media(max-width: 600px) {
+        .ninja-game { padding: 10px; }
+
+        .ninja-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .ninja-stat { padding: 10px; }
+
+        .ninja-card {
+            min-height: 420px;
+            padding: 25px 12px;
+        }
+
+        .ninja-answer { padding: 15px 8px; }
+    }
+</style>
+
+<div class="ninja-game">
+    <div class="ninja-header">
+        <h1>🥷 Number Ninja</h1>
+        <p>Sharpen your mind. Solve quickly. Become a maths champion!</p>
+    </div>
+
+    <div class="ninja-stats">
+        <div class="ninja-stat">
+            <small>⭐ Score</small>
+            <strong id="score">0</strong>
+        </div>
+
+        <div class="ninja-stat">
+            <small>⏱️ Time</small>
+            <strong id="time">60</strong>
+        </div>
+
+        <div class="ninja-stat">
+            <small>🔥 Streak</small>
+            <strong id="streak">0</strong>
+        </div>
+
+        <div class="ninja-stat">
+            <small>❤️ Lives</small>
+            <strong id="lives">3</strong>
+        </div>
+    </div>
+
+    <div class="ninja-settings">
+        <select id="operation" aria-label="Choose arithmetic operation">
+            <option value="mixed">Mixed Operations</option>
+            <option value="addition">Addition</option>
+            <option value="subtraction">Subtraction</option>
+            <option value="multiplication">Multiplication</option>
+            <option value="division">Division</option>
+        </select>
+
+        <select id="difficulty" aria-label="Choose difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button type="button" id="startButton">▶ Start Training</button>
+    </div>
+
+    <div class="ninja-card">
+        <div class="ninja-overlay" id="overlay">
+            <div class="ninja-character">🥷</div>
+            <h2>Ready, Ninja?</h2>
+            <p>
+                Solve as many questions as possible before time runs out.
+                You have three lives. Choose your operation and difficulty!
+            </p>
+            <button type="button" id="overlayStart">Start Challenge</button>
+        </div>
+
+        <div class="ninja-character">🥷</div>
+
+        <div class="ninja-instruction" id="instruction">
+            Choose the correct answer
+        </div>
+
+        <div class="ninja-question" id="question">
+            5 + 3 = ?
+        </div>
+
+        <div class="ninja-answers" id="answers">
+            <button class="ninja-answer" type="button">8</button>
+            <button class="ninja-answer" type="button">6</button>
+            <button class="ninja-answer" type="button">9</button>
+            <button class="ninja-answer" type="button">7</button>
+        </div>
+
+        <div class="ninja-feedback" id="feedback" aria-live="polite">
+            Your training starts here!
+        </div>
+
+        <div class="ninja-progress">
+            <div class="ninja-progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="ninja-bottom">
+        Correct answers earn points. Consecutive correct answers build your streak!
+    </div>
+</div>
+
+<script>
+(() => {
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const streakEl = document.getElementById("streak");
+    const livesEl = document.getElementById("lives");
+
+    const operationEl = document.getElementById("operation");
+    const difficultyEl = document.getElementById("difficulty");
+    const startButton = document.getElementById("startButton");
+    const overlayStart = document.getElementById("overlayStart");
+    const overlay = document.getElementById("overlay");
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const feedbackEl = document.getElementById("feedback");
+    const instructionEl = document.getElementById("instruction");
+    const progressBar = document.getElementById("progressBar");
+
+    const settings = {
+        easy: { duration: 60, min: 1, max: 10, points: 10 },
+        medium: { duration: 60, min: 5, max: 20, points: 15 },
+        hard: { duration: 60, min: 10, max: 50, points: 20 }
+    };
+
+    let score = 0;
+    let timeLeft = 60;
+    let streak = 0;
+    let lives = 3;
+    let correctAnswer = null;
+    let running = false;
+    let timer = null;
+    let nextQuestionTimer = null;
+    let questionLocked = false;
+
+    function updateStats() {
+        scoreEl.textContent = score;
+        timeEl.textContent = timeLeft;
+        streakEl.textContent = streak;
+        livesEl.textContent = lives;
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function generateQuestion() {
+        if (!running) return;
+
+        questionLocked = false;
+
+        const level = settings[difficultyEl.value];
+        const min = level.min;
+        const max = level.max;
+
+        let operation = operationEl.value;
+
+        if (operation === "mixed") {
+            operation = [
+                "addition",
+                "subtraction",
+                "multiplication",
+                "division"
+            ][randomInt(0, 3)];
+        }
+
+        let a = randomInt(min, max);
+        let b = randomInt(min, max);
+        let answer;
+        let symbol;
+
+        switch (operation) {
+            case "addition":
+                answer = a + b;
+                symbol = "+";
+                break;
+
+            case "subtraction":
+                if (b > a) [a, b] = [b, a];
+                answer = a - b;
+                symbol = "−";
+                break;
+
+            case "multiplication":
+                answer = a * b;
+                symbol = "×";
+                break;
+
+            case "division":
+                b = randomInt(1, Math.max(2, Math.floor(max / 2)));
+                answer = randomInt(1, max);
+                a = answer * b;
+                symbol = "÷";
+                break;
+        }
+
+        correctAnswer = answer;
+        questionEl.textContent = `${a} ${symbol} ${b} = ?`;
+        instructionEl.textContent = "Choose the correct answer";
+
+        const options = new Set([answer]);
+
+        while (options.size < 4) {
+            const offset = randomInt(1, Math.max(5, Math.ceil(answer * 0.3)));
+            const candidate = Math.random() < 0.5
+                ? answer + offset
+                : answer - offset;
+
+            if (candidate >= 0 && candidate !== answer) {
+                options.add(candidate);
+            }
+        }
+
+        answersEl.innerHTML = "";
+
+        shuffle([...options]).forEach(value => {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "ninja-answer";
+            button.textContent = value;
+
+            button.addEventListener("click", () => checkAnswer(value, button));
+
+            answersEl.appendChild(button);
+        });
+
+        feedbackEl.textContent = "Think fast, Ninja!";
+    }
+
+    function checkAnswer(selected, button) {
+        if (!running || questionLocked) return;
+
+        questionLocked = true;
+
+        const buttons = [...answersEl.querySelectorAll("button")];
+
+        buttons.forEach(item => {
+            item.disabled = true;
+
+            if (Number(item.textContent) === correctAnswer) {
+                item.classList.add("correct");
+            }
+        });
+
+        if (selected === correctAnswer) {
+            streak++;
+
+            const level = settings[difficultyEl.value];
+            const bonus = Math.min(streak - 1, 5) * 5;
+
+            score += level.points + bonus;
+
+            feedbackEl.textContent = streak >= 3
+                ? `🔥 Ninja streak! +${level.points + bonus} points!`
+                : `Excellent! +${level.points} points!`;
+
+        } else {
+            button.classList.add("wrong");
+            lives--;
+            streak = 0;
+
+            feedbackEl.textContent = `Not quite! The answer was ${correctAnswer}.`;
+        }
+
+        updateStats();
+
+        if (lives <= 0) {
+            nextQuestionTimer = setTimeout(finishGame, 900);
+            return;
+        }
+
+        nextQuestionTimer = setTimeout(generateQuestion, 900);
+    }
+
+    function finishGame() {
+        if (!running) return;
+
+        running = false;
+
+        clearInterval(timer);
+        clearTimeout(nextQuestionTimer);
+
+        const level = difficultyEl.value;
+        const title = score >= 300
+            ? "Legendary Ninja! 🏆"
+            : score >= 150
+                ? "Excellent Training! 🌟"
+                : "Keep Practising! 💪";
+
+        overlay.innerHTML = `
+            <div class="ninja-character">🥷</div>
+            <h2>${title}</h2>
+            <p>Final score: <strong>${score}</strong></p>
+            <p>Difficulty: ${level.toUpperCase()}</p>
+            <p>Lives remaining: ${lives}</p>
+            <button type="button" id="playAgain">Train Again</button>
+        `;
+
+        overlay.classList.remove("hidden");
+
+        document.getElementById("playAgain")
+            .addEventListener("click", startGame);
+
+        startButton.textContent = "↻ Train Again";
+        feedbackEl.textContent = "Training completed!";
+        instructionEl.textContent = "Challenge finished";
+    }
+
+    function startGame() {
+        clearInterval(timer);
+        clearTimeout(nextQuestionTimer);
+
+        score = 0;
+        streak = 0;
+        lives = 3;
+
+        timeLeft = settings[difficultyEl.value].duration;
+        running = true;
+        questionLocked = false;
+
+        updateStats();
+
+        overlay.classList.add("hidden");
+        startButton.textContent = "Training Running...";
+
+        generateQuestion();
+
+        timer = setInterval(() => {
+            timeLeft--;
+            updateStats();
+
+            progressBar.style.width =
+                `${(timeLeft / settings[difficultyEl.value].duration) * 100}%`;
+
+            if (timeLeft <= 0) finishGame();
+        }, 1000);
+
+        progressBar.style.width = "100%";
+    }
+
+    startButton.addEventListener("click", () => {
+        if (!running) startGame();
+    });
+
+    overlayStart.addEventListener("click", startGame);
+
+    updateStats();
+})();
+</script>
+{% endblock %}

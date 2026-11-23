@@ -1,0 +1,1256 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Stock Market Simulator | PupilAura{% endblock %}
+
+{% block content %}
+<style>
+.stock-game {
+    --sm-blue: #2563eb;
+    --sm-dark: #172033;
+    --sm-muted: #64748b;
+    color: var(--sm-dark);
+    padding: 16px 0 35px;
+}
+
+.stock-game * { box-sizing: border-box; }
+
+.sm-hero {
+    background: linear-gradient(120deg, #101c35, #1d4ed8);
+    color: white;
+    padding: 25px;
+    border-radius: 17px;
+    margin-bottom: 18px;
+}
+
+.sm-hero h1 {
+    font-size: clamp(25px, 3vw, 35px);
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.sm-hero p {
+    color: #dbeafe;
+    margin: 0;
+    font-size: 14px;
+}
+
+.sm-card {
+    background: white;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    padding: 15px;
+    height: 100%;
+    box-shadow: 0 3px 12px rgba(15,23,42,.035);
+}
+
+.sm-card h5 {
+    font-size: 15px;
+    font-weight: 850;
+    margin-bottom: 12px;
+}
+
+.sm-stat {
+    background: #f8fafc;
+    padding: 13px;
+    border-radius: 11px;
+    height: 100%;
+}
+
+.sm-stat small {
+    display: block;
+    color: var(--sm-muted);
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.sm-stat strong {
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.sm-muted { color: var(--sm-muted); }
+.sm-positive { color: #15803d !important; }
+.sm-negative { color: #dc2626 !important; }
+
+.sm-btn {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-weight: 750;
+    transition: .2s;
+}
+
+.sm-btn:hover { transform: translateY(-1px); }
+.sm-buy { background: #15803d; color: white; }
+.sm-sell { background: #dc2626; color: white; }
+.sm-primary { background: #2563eb; color: white; }
+.sm-light { background: #eff6ff; color: #1d4ed8; }
+.sm-dark { background: #172033; color: white; }
+
+.sm-input {
+    width: 100%;
+    border: 1px solid #dbe2ea;
+    padding: 9px 11px;
+    border-radius: 9px;
+    outline: none;
+}
+
+.sm-input:focus { border-color: #2563eb; }
+
+.sm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.sm-table th {
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 10px 7px;
+    border-bottom: 1px solid #e5eaf1;
+    white-space: nowrap;
+}
+
+.sm-table td {
+    padding: 12px 7px;
+    border-bottom: 1px solid #f0f2f5;
+    vertical-align: middle;
+}
+
+.sm-stock-row {
+    cursor: pointer;
+    transition: .15s;
+}
+
+.sm-stock-row:hover,
+.sm-stock-row.selected {
+    background: #eff6ff;
+}
+
+.sm-symbol {
+    font-weight: 900;
+    color: #1d4ed8;
+}
+
+.sm-company {
+    font-weight: 750;
+    font-size: 13px;
+}
+
+.sm-sector {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.sm-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.sm-news {
+    background: #eff6ff;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 13px;
+}
+
+.sm-log {
+    padding: 9px;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.sm-progress {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.sm-progress div {
+    height: 100%;
+    background: #2563eb;
+    transition: width .3s;
+}
+
+#smChart {
+    width: 100%;
+    height: 220px;
+    display: block;
+}
+
+.sm-hidden { display: none !important; }
+
+.sm-holding {
+    border-bottom: 1px solid #edf0f4;
+    padding: 10px 0;
+    font-size: 13px;
+}
+
+.sm-holding:last-child { border-bottom: 0; }
+
+#smActivity {
+    max-height: 230px;
+    overflow-y: auto;
+}
+
+@media(max-width: 767px) {
+    .sm-hero { padding: 19px; }
+    .sm-card { padding: 12px; }
+    .sm-stat strong { font-size: 16px; }
+    .sm-table { font-size: 11px; }
+    .sm-table th { font-size: 9px; }
+    .sm-table td { padding: 10px 5px; }
+    #smChart { height: 180px; }
+}
+
+/* Compact stock market dashboard cards */
+#smGame .sm-card {
+    height: auto !important;
+    padding: 12px !important;
+}
+
+#smGame .sm-card h5 {
+    font-size: 14px;
+    margin-bottom: 9px;
+}
+
+#smGame .sm-card p {
+    margin-bottom: 7px;
+}
+
+#smGame .sm-stat {
+    padding: 10px;
+}
+
+#smGame .sm-stat strong {
+    font-size: 17px;
+}
+
+#smGame .sm-news {
+    padding: 9px;
+}
+
+#smGame .sm-holding {
+    padding: 7px 0;
+}
+
+#smGame .sm-log {
+    padding: 7px 9px;
+    margin-bottom: 5px;
+}
+
+#smGame .mb-3 {
+    margin-bottom: .65rem !important;
+}
+
+#smGame .mt-3 {
+    margin-top: .65rem !important;
+}
+
+@media (max-width: 767px) {
+    #smGame .sm-card {
+        padding: 10px !important;
+    }
+
+    #smGame .sm-stat strong {
+        font-size: 15px;
+    }
+}
+
+</style>
+
+<div class="container stock-game">
+
+    <div class="sm-hero">
+        <span class="badge bg-warning text-dark mb-2">ADULT STRATEGY ARCADE</span>
+        <h1>📈 Stock Market Simulator</h1>
+        <p>
+            Invest virtual money, analyse companies, react to market events
+            and build a profitable investment portfolio.
+        </p>
+    </div>
+
+    <!-- INTRO -->
+    <section id="smIntro">
+        <div class="sm-card">
+            <h3 class="fw-bold">Welcome to the Market</h3>
+            <p class="sm-muted">
+                You have ₦1,000,000 in virtual investment capital.
+                Your challenge is to grow your wealth over 20 trading days.
+            </p>
+
+            <div class="row g-3 my-3">
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Starting capital</small>
+                        <strong>₦1M</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Companies</small>
+                        <strong>6</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Trading days</small>
+                        <strong>20</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Trading fee</small>
+                        <strong>0.1%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning small">
+                This is an educational simulation. All money is virtual.
+                Stock movements are simulated and do not represent real market prices.
+            </div>
+
+            <button class="sm-btn sm-primary w-100" id="smStart">
+                Enter the Stock Market →
+            </button>
+        </div>
+    </section>
+
+    <!-- MAIN GAME -->
+    <section id="smGame" class="sm-hidden">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h4 class="fw-bold mb-1">Investment Dashboard</h4>
+                <span class="sm-tag">Trading Day <span id="smDay">1</span> / 20</span>
+            </div>
+            <div class="text-end">
+                <small class="sm-muted">Market status</small>
+                <div class="fw-bold text-success">● OPEN</div>
+            </div>
+        </div>
+
+        <div class="sm-progress mb-3">
+            <div id="smDayProgress" style="width:5%"></div>
+        </div>
+
+        <!-- TOP STATS -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="sm-stat">
+                    <small>💵 Available cash</small>
+                    <strong id="smCash">₦0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sm-stat">
+                    <small>📊 Portfolio value</small>
+                    <strong id="smPortfolio">₦0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sm-stat">
+                    <small>💎 Total wealth</small>
+                    <strong id="smWealth">₦0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sm-stat">
+                    <small>📈 Total return</small>
+                    <strong id="smReturn">0%</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+
+            <!-- STOCK MARKET -->
+            <div class="col-lg-7">
+
+                <div class="sm-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">🏢 Stock Exchange</h5>
+                        <span class="sm-tag">6 Listed Companies</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="sm-table">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Price</th>
+                                    <th>Change</th>
+                                    <th>Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="smStockTable"></tbody>
+                        </table>
+                    </div>
+                    <small class="sm-muted">
+                        Select a company to inspect its price history and trade.
+                    </small>
+                </div>
+
+                <!-- SELECTED STOCK -->
+                <div class="sm-card mb-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <span class="sm-tag" id="smSelectedSymbol">NEX</span>
+                            <h4 class="fw-bold mt-2 mb-1" id="smSelectedName">Nexus Energy</h4>
+                            <small class="sm-muted" id="smSelectedSector">Energy</small>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="fw-bold mb-1" id="smSelectedPrice">₦0</h3>
+                            <small id="smSelectedChange">0%</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <canvas id="smChart"></canvas>
+                    </div>
+                    <small class="sm-muted">Historical simulated share price</small>
+                </div>
+
+                <!-- TRADE PANEL -->
+                <div class="sm-card mb-3">
+                    <h5>💹 Execute Trade</h5>
+
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-5">
+                            <label class="small fw-bold mb-1">Number of shares</label>
+                            <input type="number" min="1" max="100000"
+                                   value="10" id="smQuantity" class="sm-input">
+                        </div>
+                        <div class="col-md-7">
+                            <label class="small fw-bold mb-1">Estimated transaction value</label>
+                            <div class="fw-bold fs-5" id="smTradeEstimate">₦0</div>
+                        </div>
+                    </div>
+
+                    <div class="small sm-muted mt-2" id="smTradeInfo">
+                        Select a company to begin trading.
+                    </div>
+
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <button class="sm-btn sm-buy w-100" id="smBuy">
+                                Buy Shares
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="sm-btn sm-sell w-100" id="smSell">
+                                Sell Shares
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PORTFOLIO -->
+                <div class="sm-card">
+                    <h5>💼 My Investment Portfolio</h5>
+                    <div id="smHoldings">
+                        <p class="sm-muted small">You have not purchased any shares.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="col-lg-5">
+
+                <div class="sm-card mb-3">
+                    <h5>📰 Market Intelligence</h5>
+                    <div class="sm-news mb-3" id="smNews">
+                        The market is open. Watch for your first market update.
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span>Market sentiment</span>
+                        <strong id="smSentiment">Neutral</strong>
+                    </div>
+
+                    <div class="sm-progress">
+                        <div id="smSentimentBar" style="width:50%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3 small">
+                        <span>Market volatility</span>
+                        <strong id="smVolatility">Moderate</strong>
+                    </div>
+                </div>
+
+                <div class="sm-card mb-3">
+                    <h5>📋 Investment Performance</h5>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="sm-muted">Initial capital</span>
+                        <strong>₦1,000,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="sm-muted">Realized profit/loss</span>
+                        <strong id="smRealized">₦0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="sm-muted">Unrealized profit/loss</span>
+                        <strong id="smUnrealized">₦0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="sm-muted">Dividends received</span>
+                        <strong id="smDividends">₦0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total investment return</strong>
+                        <strong id="smTotalReturn">₦0</strong>
+                    </div>
+                </div>
+
+                <div class="sm-card mb-3">
+                    <h5>📜 Trading History</h5>
+                    <div id="smActivity">
+                        <div class="sm-log">Your trading activity will appear here.</div>
+                    </div>
+                </div>
+
+                <div class="sm-card">
+                    <h5>⏭️ Trading Session</h5>
+                    <p class="small sm-muted">
+                        When you finish trading for the day, advance the market.
+                        Share prices will change and new events may occur.
+                    </p>
+                    <button class="sm-btn sm-primary w-100" id="smNextDay">
+                        Close Market & Advance Day →
+                    </button>
+                    <small class="sm-muted d-block mt-2 text-center">
+                        Trading days remaining: <strong id="smRemaining">19</strong>
+                    </small>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- RESULTS -->
+    <section id="smResults" class="sm-hidden">
+        <div class="sm-card text-center py-5">
+            <div class="display-1 mb-3" id="smResultIcon">🏆</div>
+            <h2 class="fw-bold" id="smResultTitle">Trading Complete!</h2>
+            <p class="sm-muted" id="smResultDescription"></p>
+
+            <div class="row g-3 my-4 text-start">
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Final wealth</small>
+                        <strong id="smFinalWealth">₦0</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Total return</small>
+                        <strong id="smFinalReturn">0%</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Realized profit</small>
+                        <strong id="smFinalProfit">₦0</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="sm-stat">
+                        <small>Dividends</small>
+                        <strong id="smFinalDividends">₦0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold" id="smFinalRating"></h3>
+            <p class="sm-muted" id="smFinalFeedback"></p>
+
+            <button class="sm-btn sm-primary mt-3" onclick="location.reload()">
+                Start a New Investment Game ↻
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    const INITIAL_CAPITAL = 1000000;
+    const TRADING_FEE = 0.001;
+    const TOTAL_DAYS = 20;
+
+    const originalCompanies = [
+        {
+            symbol: "NEX",
+            name: "Nexus Energy",
+            sector: "Energy",
+            price: 125,
+            volatility: 0.045,
+            risk: "High",
+            dividend: 0.012
+        },
+        {
+            symbol: "MOB",
+            name: "MobileCore",
+            sector: "Technology",
+            price: 210,
+            volatility: 0.065,
+            risk: "Very High",
+            dividend: 0
+        },
+        {
+            symbol: "AGR",
+            name: "AgroPrime",
+            sector: "Agriculture",
+            price: 85,
+            volatility: 0.035,
+            risk: "Medium",
+            dividend: 0.018
+        },
+        {
+            symbol: "FIN",
+            name: "First Capital",
+            sector: "Banking",
+            price: 165,
+            volatility: 0.025,
+            risk: "Low",
+            dividend: 0.025
+        },
+        {
+            symbol: "MED",
+            name: "MediHealth",
+            sector: "Healthcare",
+            price: 140,
+            volatility: 0.03,
+            risk: "Medium",
+            dividend: 0.015
+        },
+        {
+            symbol: "CON",
+            name: "BuildRight",
+            sector: "Construction",
+            price: 95,
+            volatility: 0.055,
+            risk: "High",
+            dividend: 0.008
+        }
+    ];
+
+    let state = null;
+    let selectedSymbol = "NEX";
+    let marketMood = 0;
+    let marketNews = "";
+    let tradingOpen = false;
+
+    const money = value =>
+        "₦" + Math.round(value).toLocaleString("en-NG");
+
+    const percent = value =>
+        (value >= 0 ? "+" : "") + value.toFixed(2) + "%";
+
+    function selectedStock() {
+        return state.stocks.find(s => s.symbol === selectedSymbol);
+    }
+
+    function holdingValue(stock) {
+        return stock.shares * stock.price;
+    }
+
+    function portfolioValue() {
+        return state.stocks.reduce(
+            (total, stock) => total + holdingValue(stock), 0
+        );
+    }
+
+    function unrealizedProfit() {
+        return state.stocks.reduce((total, stock) => {
+            return total + (stock.price - stock.averageCost) * stock.shares;
+        }, 0);
+    }
+
+    function totalWealth() {
+        return state.cash + portfolioValue();
+    }
+
+    function totalReturn() {
+        return totalWealth() - INITIAL_CAPITAL;
+    }
+
+    function addLog(message, type = "") {
+        const entry = document.createElement("div");
+        entry.className = "sm-log " + type;
+        entry.textContent = message;
+        $("smActivity").prepend(entry);
+
+        while ($("smActivity").children.length > 15) {
+            $("smActivity").lastElementChild.remove();
+        }
+    }
+
+    function updateStats() {
+        const portfolio = portfolioValue();
+        const wealth = totalWealth();
+        const change = totalReturn();
+        const returnRate = (change / INITIAL_CAPITAL) * 100;
+
+        $("smCash").textContent = money(state.cash);
+        $("smPortfolio").textContent = money(portfolio);
+        $("smWealth").textContent = money(wealth);
+        $("smReturn").textContent = percent(returnRate);
+
+        $("smReturn").className =
+            change >= 0 ? "sm-positive" : "sm-negative";
+
+        $("smRealized").textContent = money(state.realizedProfit);
+        $("smRealized").className =
+            state.realizedProfit >= 0 ? "sm-positive" : "sm-negative";
+
+        const unrealized = unrealizedProfit();
+        $("smUnrealized").textContent = money(unrealized);
+        $("smUnrealized").className =
+            unrealized >= 0 ? "sm-positive" : "sm-negative";
+
+        $("smDividends").textContent = money(state.dividends);
+        $("smTotalReturn").textContent = money(change);
+        $("smTotalReturn").className =
+            change >= 0 ? "sm-positive" : "sm-negative";
+
+        $("smDay").textContent = state.day;
+        $("smDayProgress").style.width =
+            (state.day / TOTAL_DAYS * 100) + "%";
+
+        $("smRemaining").textContent = TOTAL_DAYS - state.day;
+    }
+
+    function renderStocks() {
+        $("smStockTable").innerHTML = state.stocks.map(stock => {
+            const change = stock.lastChange || 0;
+            const selected = stock.symbol === selectedSymbol;
+
+            return `
+                <tr class="sm-stock-row ${selected ? "selected" : ""}"
+                    data-symbol="${stock.symbol}">
+                    <td>
+                        <div class="sm-symbol">${stock.symbol}</div>
+                        <div class="sm-company">${stock.name}</div>
+                        <div class="sm-sector">${stock.sector}</div>
+                    </td>
+                    <td class="fw-bold">${money(stock.price)}</td>
+                    <td class="${change >= 0 ? "sm-positive" : "sm-negative"}">
+                        ${percent(change)}
+                    </td>
+                    <td><span class="sm-tag">${stock.risk}</span></td>
+                </tr>
+            `;
+        }).join("");
+
+        $("smStockTable").querySelectorAll("[data-symbol]").forEach(row => {
+            row.addEventListener("click", () => {
+                selectedSymbol = row.dataset.symbol;
+                renderStocks();
+                renderSelectedStock();
+                updateEstimate();
+            });
+        });
+    }
+
+    function drawChart() {
+        const canvas = $("smChart");
+        const rect = canvas.getBoundingClientRect();
+        const width = Math.max(280, rect.width);
+        const height = 220;
+        const ratio = window.devicePixelRatio || 1;
+
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
+
+        const stock = selectedStock();
+        const values = stock.history;
+        const min = Math.min(...values) * .97;
+        const max = Math.max(...values) * 1.03;
+        const range = Math.max(1, max - min);
+
+        const left = 45;
+        const right = width - 12;
+        const top = 15;
+        const bottom = height - 25;
+
+        const x = i => left + (i / Math.max(1, values.length - 1)) * (right - left);
+        const y = value => bottom - ((value - min) / range) * (bottom - top);
+
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.font = "10px Arial";
+        ctx.fillStyle = "#64748b";
+        ctx.strokeStyle = "#e5eaf1";
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i <= 4; i++) {
+            const gridY = top + (i / 4) * (bottom - top);
+            const value = max - (i / 4) * range;
+
+            ctx.beginPath();
+            ctx.moveTo(left, gridY);
+            ctx.lineTo(right, gridY);
+            ctx.stroke();
+
+            ctx.fillText(
+                Math.round(value).toLocaleString("en-NG"),
+                2,
+                gridY + 3
+            );
+        }
+
+        const rising = values[values.length - 1] >= values[0];
+        const lineColor = rising ? "#16a34a" : "#dc2626";
+
+        ctx.beginPath();
+        values.forEach((value, index) => {
+            if (index === 0) {
+                ctx.moveTo(x(index), y(value));
+            } else {
+                ctx.lineTo(x(index), y(value));
+            }
+        });
+
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.lineTo(x(values.length - 1), bottom);
+        ctx.lineTo(x(0), bottom);
+        ctx.closePath();
+
+        const gradient = ctx.createLinearGradient(0, top, 0, bottom);
+        gradient.addColorStop(0, "rgba(37,99,235,.20)");
+        gradient.addColorStop(1, "rgba(37,99,235,0)");
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
+    }
+
+    function renderSelectedStock() {
+        const stock = selectedStock();
+
+        $("smSelectedSymbol").textContent = stock.symbol;
+        $("smSelectedName").textContent = stock.name;
+        $("smSelectedSector").textContent = stock.sector;
+        $("smSelectedPrice").textContent = money(stock.price);
+
+        const change = stock.lastChange || 0;
+        $("smSelectedChange").textContent = percent(change);
+        $("smSelectedChange").className =
+            change >= 0 ? "sm-positive" : "sm-negative";
+
+        const owned = stock.shares || 0;
+
+        $("smTradeInfo").textContent =
+            "You currently own " + owned + " shares of " + stock.symbol +
+            ". Transaction fee: 0.1%.";
+
+        drawChart();
+    }
+
+    function renderHoldings() {
+        const owned = state.stocks.filter(stock => stock.shares > 0);
+
+        if (!owned.length) {
+            $("smHoldings").innerHTML =
+                '<p class="sm-muted small">You have not purchased any shares.</p>';
+            return;
+        }
+
+        $("smHoldings").innerHTML = owned.map(stock => {
+            const value = holdingValue(stock);
+            const profit = (stock.price - stock.averageCost) * stock.shares;
+
+            return `
+                <div class="sm-holding d-flex justify-content-between gap-2">
+                    <div>
+                        <strong>${stock.symbol}</strong>
+                        <div class="sm-muted">${stock.shares} shares</div>
+                    </div>
+                    <div class="text-end">
+                        <strong>${money(value)}</strong>
+                        <div class="${profit >= 0 ? "sm-positive" : "sm-negative"}">
+                            ${money(profit)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function updateEstimate() {
+        const quantity = Number($("smQuantity").value);
+        const stock = selectedStock();
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            $("smTradeEstimate").textContent = "Enter a valid quantity";
+            return;
+        }
+
+        const cost = quantity * stock.price;
+        const fee = cost * TRADING_FEE;
+
+        $("smTradeEstimate").textContent =
+            money(cost + fee) + " including fee";
+    }
+
+    function buyShares() {
+        if (!tradingOpen) return;
+
+        const stock = selectedStock();
+        const quantity = Number($("smQuantity").value);
+
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000) {
+            alert("Enter a valid quantity between 1 and 100,000.");
+            return;
+        }
+
+        const value = quantity * stock.price;
+        const fee = value * TRADING_FEE;
+        const totalCost = value + fee;
+
+        if (totalCost > state.cash) {
+            alert("Insufficient cash for this purchase, including the trading fee.");
+            return;
+        }
+
+        const oldInvestment = stock.averageCost * stock.shares;
+        const newInvestment = oldInvestment + value + fee;
+        const newShares = stock.shares + quantity;
+
+        state.cash -= totalCost;
+        stock.shares = newShares;
+        stock.averageCost = newInvestment / newShares;
+
+        addLog(
+            "BOUGHT " + quantity + " " + stock.symbol +
+            " shares for " + money(totalCost),
+            "sm-positive"
+        );
+
+        refreshGame();
+    }
+
+    function sellShares() {
+        if (!tradingOpen) return;
+
+        const stock = selectedStock();
+        const quantity = Number($("smQuantity").value);
+
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000) {
+            alert("Enter a valid quantity between 1 and 100,000.");
+            return;
+        }
+
+        if (quantity > stock.shares) {
+            alert("You do not own enough shares to sell that quantity.");
+            return;
+        }
+
+        const value = quantity * stock.price;
+        const fee = value * TRADING_FEE;
+        const proceeds = value - fee;
+        const costBasis = quantity * stock.averageCost;
+        const realized = proceeds - costBasis;
+
+        state.cash += proceeds;
+        state.realizedProfit += realized;
+
+        stock.shares -= quantity;
+
+        if (stock.shares === 0) {
+            stock.averageCost = 0;
+        }
+
+        addLog(
+            "SOLD " + quantity + " " + stock.symbol +
+            " shares. Realized P/L: " + money(realized),
+            realized >= 0 ? "sm-positive" : "sm-negative"
+        );
+
+        refreshGame();
+    }
+
+    const events = [
+        {
+            title: "Positive economic outlook",
+            message: "Economic confidence is improving. Investors are becoming more optimistic.",
+            mood: 0.012
+        },
+        {
+            title: "Interest rate concerns",
+            message: "Interest rate uncertainty is creating pressure across the stock market.",
+            mood: -0.018
+        },
+        {
+            title: "Technology breakthrough",
+            message: "A major technology breakthrough is attracting investor interest.",
+            sector: "Technology",
+            effect: 0.09,
+            mood: 0.005
+        },
+        {
+            title: "Agricultural boom",
+            message: "Strong agricultural output is improving sentiment in the agriculture sector.",
+            sector: "Agriculture",
+            effect: 0.08,
+            mood: 0.006
+        },
+        {
+            title: "Energy supply disruption",
+            message: "Supply problems are creating uncertainty in the energy market.",
+            sector: "Energy",
+            effect: -0.09,
+            mood: -0.012
+        },
+        {
+            title: "Banking confidence",
+            message: "Improved banking confidence is attracting new investors.",
+            sector: "Banking",
+            effect: 0.07,
+            mood: 0.008
+        },
+        {
+            title: "Healthcare investment",
+            message: "New healthcare investment is improving sector sentiment.",
+            sector: "Healthcare",
+            effect: 0.07,
+            mood: 0.006
+        },
+        {
+            title: "Construction slowdown",
+            message: "Construction activity is slowing, affecting companies in the sector.",
+            sector: "Construction",
+            effect: -0.08,
+            mood: -0.006
+        },
+        {
+            title: "Market uncertainty",
+            message: "Investors are cautious. Expect larger price movements today.",
+            volatility: 1.7,
+            mood: -0.008
+        },
+        {
+            title: "Strong consumer confidence",
+            message: "Consumer confidence has improved, supporting the broader market.",
+            mood: 0.02
+        }
+    ];
+
+    function advanceMarket() {
+        if (!tradingOpen) return;
+
+        const event = events[Math.floor(Math.random() * events.length)];
+        marketMood = event.mood || 0;
+
+        state.stocks.forEach(stock => {
+            const randomMovement =
+                (Math.random() * 2 - 1) * stock.volatility *
+                (event.volatility || 1);
+
+            const sectorEffect =
+                stock.sector === event.sector ? event.effect : 0;
+
+            const movement = randomMovement + marketMood + sectorEffect;
+
+            const oldPrice = stock.price;
+
+            stock.price = Math.max(
+                5,
+                Math.round(stock.price * (1 + movement) * 100) / 100
+            );
+
+            stock.lastChange =
+                ((stock.price - oldPrice) / oldPrice) * 100;
+
+            stock.history.push(stock.price);
+
+            if (stock.history.length > 21) {
+                stock.history.shift();
+            }
+        });
+
+        state.day++;
+
+        // Dividend payment every fifth trading day.
+        if (state.day % 5 === 0) {
+            let totalDividend = 0;
+
+            state.stocks.forEach(stock => {
+                if (stock.shares > 0 && stock.dividend > 0) {
+                    const payment =
+                        stock.shares * stock.price * stock.dividend;
+
+                    totalDividend += payment;
+                }
+            });
+
+            if (totalDividend > 0) {
+                state.cash += totalDividend;
+                state.dividends += totalDividend;
+
+                addLog(
+                    "Dividend payment received: " + money(totalDividend),
+                    "sm-positive"
+                );
+            }
+        }
+
+        $("smNews").textContent =
+            event.title + ": " + event.message;
+
+        const sentiment = Math.max(
+            0, Math.min(100, 50 + marketMood * 1200)
+        );
+
+        $("smSentiment").textContent =
+            sentiment > 60 ? "Bullish" :
+            sentiment < 40 ? "Bearish" : "Neutral";
+
+        $("smSentimentBar").style.width = sentiment + "%";
+        $("smVolatility").textContent =
+            event.volatility ? "High" : "Moderate";
+
+        addLog(
+            "Day " + state.day + ": " + event.title,
+            marketMood >= 0 ? "sm-positive" : "sm-negative"
+        );
+
+        if (state.day > TOTAL_DAYS) {
+            finishGame();
+            return;
+        }
+
+        refreshGame();
+    }
+
+    function refreshGame() {
+        updateStats();
+        renderStocks();
+        renderSelectedStock();
+        renderHoldings();
+        updateEstimate();
+    }
+
+    function finishGame() {
+        tradingOpen = false;
+
+        $("smGame").classList.add("sm-hidden");
+        $("smResults").classList.remove("sm-hidden");
+
+        const wealth = totalWealth();
+        const profit = wealth - INITIAL_CAPITAL;
+        const rate = profit / INITIAL_CAPITAL * 100;
+
+        let rating;
+        let feedback;
+        let icon;
+
+        if (rate >= 50) {
+            rating = "Investment Master";
+            feedback = "Excellent portfolio growth. You made strong investment decisions.";
+            icon = "👑";
+        } else if (rate >= 20) {
+            rating = "Skilled Investor";
+            feedback = "Strong performance. Your portfolio delivered impressive growth.";
+            icon = "🏆";
+        } else if (rate >= 5) {
+            rating = "Growing Investor";
+            feedback = "You achieved positive returns. Keep improving your market analysis.";
+            icon = "📈";
+        } else if (rate >= 0) {
+            rating = "Conservative Investor";
+            feedback = "You protected your capital and finished with a small positive return.";
+            icon = "🛡️";
+        } else if (rate > -15) {
+            rating = "Learning Investor";
+            feedback = "Your portfolio lost value. Review diversification and risk management.";
+            icon = "📚";
+        } else {
+            rating = "High-Risk Investor";
+            feedback = "Your losses were significant. Avoid concentrating too much capital in volatile stocks.";
+            icon = "📉";
+        }
+
+        $("smResultIcon").textContent = icon;
+        $("smResultTitle").textContent = "Trading Session Complete!";
+        $("smResultDescription").textContent =
+            "You completed 20 trading days in the virtual stock market.";
+
+        $("smFinalWealth").textContent = money(wealth);
+        $("smFinalReturn").textContent = percent(rate);
+        $("smFinalProfit").textContent = money(state.realizedProfit);
+        $("smFinalDividends").textContent = money(state.dividends);
+        $("smFinalRating").textContent = rating;
+        $("smFinalFeedback").textContent = feedback;
+    }
+
+    function startGame() {
+        state = {
+            day: 1,
+            cash: INITIAL_CAPITAL,
+            realizedProfit: 0,
+            dividends: 0,
+            stocks: originalCompanies.map(company => ({
+                ...company,
+                shares: 0,
+                averageCost: 0,
+                lastChange: 0,
+                history: [company.price]
+            }))
+        };
+
+        selectedSymbol = "NEX";
+        marketMood = 0;
+        tradingOpen = true;
+
+        $("smIntro").classList.add("sm-hidden");
+        $("smGame").classList.remove("sm-hidden");
+
+        $("smNews").textContent =
+            "The exchange has opened. Analyse the companies before investing.";
+
+        addLog("You entered the market with ₦1,000,000 in virtual capital.");
+
+        refreshGame();
+    }
+
+    $("smStart").addEventListener("click", startGame);
+    $("smBuy").addEventListener("click", buyShares);
+    $("smSell").addEventListener("click", sellShares);
+    $("smNextDay").addEventListener("click", advanceMarket);
+    $("smQuantity").addEventListener("input", updateEstimate);
+
+    window.addEventListener("resize", () => {
+        if (tradingOpen) drawChart();
+    });
+
+})();
+</script>
+{% endblock %}

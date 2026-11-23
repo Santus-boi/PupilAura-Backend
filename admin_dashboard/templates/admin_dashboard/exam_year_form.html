@@ -1,0 +1,357 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Year Management{% endblock %}
+{% block page_subtitle %}{{ page_subtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM YEAR FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px 20px;
+    }
+
+    .form-group {
+        min-width: 0;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Context banner (selected examination) */
+    .exam-context {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 25px;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #1e40af;
+    }
+
+    .exam-context-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .exam-context span {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 3px;
+        color: #3b82f6;
+    }
+
+    .exam-context strong {
+        font-size: 14px;
+    }
+
+    /* Publish checkbox box */
+    .publish-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 17px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface-soft);
+    }
+
+    .publish-box input {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .publish-box label {
+        display: block;
+        font-size: 13px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .publish-box p {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* Form footer (below body) */
+    .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 20px 22px;
+        background: var(--surface-soft);
+        border-top: 1px solid var(--border);
+    }
+
+    .footer-note {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 550px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .form-group.full-width {
+            grid-column: auto;
+        }
+        .form-footer {
+            align-items: stretch;
+            flex-direction: column;
+            padding: 18px 16px;
+        }
+        .footer-actions {
+            flex-direction: column-reverse;
+        }
+        .footer-actions .btn {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .exam-context {
+            background: #172554;
+            border-color: #1d4ed8;
+            color: #dbeafe;
+        }
+        .exam-context span {
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">{{ exam.name }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_years' exam.id %}">Exam Years</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ page_title }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-{% if is_edit %}pencil-square{% else %}calendar-plus{% endif %}"></i>
+                </div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p>{{ page_subtitle }}</p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_years' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> Back to Exam Years
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-journal-bookmark-fill" style="margin-right:6px;"></i>
+                {{ exam.name }}
+            </span>
+            {% if is_edit and exam_year %}
+                <span class="meta-badge">
+                    {% if exam_year.published %}● Published{% else %}● Unpublished{% endif %}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <div class="card-header">
+        <h2>Exam Year Information</h2>
+        <p>
+            {% if is_edit %}
+                Update the year and publication settings below.
+            {% else %}
+                Add a past-question year for this examination.
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Exam context banner -->
+            <div class="exam-context">
+                <div class="exam-context-icon" aria-hidden="true">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div>
+                    <span>Selected examination</span>
+                    <strong>{{ exam.name }}</strong>
+                </div>
+            </div>
+
+            <div class="form-grid">
+
+                <!-- Examination -->
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.exam.id_for_label }}">
+                        Examination <span class="required">*</span>
+                    </label>
+                    {{ form.exam }}
+                    {% if form.exam.errors %}
+                        <ul class="error-list">
+                            {% for error in form.exam.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <span class="help-text">
+                        The examination this year belongs to.
+                    </span>
+                </div>
+
+                <!-- Year -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.year.id_for_label }}">
+                        Exam Year <span class="required">*</span>
+                    </label>
+                    {{ form.year }}
+                    {% if form.year.errors %}
+                        <ul class="error-list">
+                            {% for error in form.year.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <span class="help-text">
+                        Enter the examination year, for example 2025.
+                    </span>
+                </div>
+
+                <!-- Order -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Display Order
+                    </label>
+                    {{ form.order }}
+                    {% if form.order.errors %}
+                        <ul class="error-list">
+                            {% for error in form.order.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <span class="help-text">
+                        Enter 0 or a higher number to control ordering.
+                    </span>
+                </div>
+
+                <!-- Publish -->
+                <div class="form-group full-width">
+                    <div class="publish-box">
+                        {{ form.published }}
+                        <div>
+                            <label for="{{ form.published.id_for_label }}">
+                                Publish this exam year
+                            </label>
+                            <p>
+                                Published years can be made available to
+                                students, depending on the public-facing views.
+                            </p>
+                            {% if form.published.errors %}
+                                <ul class="error-list">
+                                    {% for error in form.published.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Form footer -->
+        <div class="form-footer">
+            <div class="footer-note">
+                <span class="required">*</span> Required field
+            </div>
+
+            <div class="footer-actions">
+                {% if is_edit and exam_year %}
+                    <a
+                        href="{% url 'admin_dashboard:exam_year_detail' exam_year.id %}"
+                        class="btn btn-secondary"
+                    >
+                        Cancel
+                    </a>
+                {% else %}
+                    <a
+                        href="{% url 'admin_dashboard:exam_years' exam.id %}"
+                        class="btn btn-secondary"
+                    >
+                        Cancel
+                    </a>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2"></i> {{ form_action }}
+                </button>
+            </div>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}

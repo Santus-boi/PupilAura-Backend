@@ -1,0 +1,326 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Tech Lesson" }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ page_title|default:"Tech Lesson" }}{% endblock %}
+{% block page_subtitle %}Create and manage technology lesson content{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH LESSON FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .lesson-form-card {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    /* 2-column form grid */
+    .lesson-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .lesson-form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .lesson-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .lesson-form-group .form-label {
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    /* Large text areas for specific fields */
+    .lesson-form-group textarea.content-field {
+        min-height: 240px;
+    }
+
+    .lesson-form-group textarea.practical-field,
+    .lesson-form-group textarea.project-field {
+        min-height: 180px;
+    }
+
+    .lesson-form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.6;
+    }
+
+    /* Published checkbox card */
+    .published-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+        cursor: pointer;
+    }
+
+    .published-card input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .published-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .published-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .published-description {
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Responsive */
+    @media (max-width: 850px) {
+        .lesson-form-grid {
+            grid-template-columns: 1fr;
+        }
+        .lesson-form-group.full {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lessons' %}">Tech Lessons</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ page_title|default:"Tech Lesson" }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-play-btn"></i>
+                </div>
+                <div>
+                    <h1>{{ page_title|default:"Tech Lesson" }}</h1>
+                    <p>
+                        Create and manage technology lesson content,
+                        practical activities, projects, and publication
+                        settings.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card lesson-form-card">
+    <div class="card-header">
+        <h2>{{ form_title|default:"Tech Lesson Details" }}</h2>
+        <p>Fill in the information below to configure this lesson.</p>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="lesson-form-grid">
+
+                <!-- Module -->
+                <div class="lesson-form-group">
+                    <label class="form-label" for="{{ form.module.id_for_label }}">
+                        Module <span class="required">*</span>
+                    </label>
+                    {{ form.module }}
+                    {% if form.module.errors %}
+                        <ul class="error-list">
+                            {% for error in form.module.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Select the technology module this lesson belongs to.
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="lesson-form-group">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Lesson Title <span class="required">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <ul class="error-list">
+                            {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="lesson-form-group full">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <ul class="error-list">
+                            {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Give students a short overview of what this lesson covers.
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="lesson-form-group full">
+                    <label class="form-label" for="{{ form.content.id_for_label }}">
+                        Lesson Content
+                    </label>
+                    <textarea
+                        name="{{ form.content.html_name }}"
+                        id="{{ form.content.id_for_label }}"
+                        class="form-control content-field"
+                        placeholder="Enter the main lesson content..."
+                    >{{ form.content.value|default_if_none:"" }}</textarea>
+                    {% if form.content.errors %}
+                        <ul class="error-list">
+                            {% for error in form.content.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Enter the main teaching material for this lesson.
+                    </div>
+                </div>
+
+                <!-- Practical -->
+                <div class="lesson-form-group">
+                    <label class="form-label" for="{{ form.practical.id_for_label }}">
+                        Practical Activity
+                    </label>
+                    <textarea
+                        name="{{ form.practical.html_name }}"
+                        id="{{ form.practical.id_for_label }}"
+                        class="form-control practical-field"
+                        placeholder="Enter practical exercises or activities..."
+                    >{{ form.practical.value|default_if_none:"" }}</textarea>
+                    {% if form.practical.errors %}
+                        <ul class="error-list">
+                            {% for error in form.practical.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Add exercises or activities students should complete.
+                    </div>
+                </div>
+
+                <!-- Project -->
+                <div class="lesson-form-group">
+                    <label class="form-label" for="{{ form.project.id_for_label }}">
+                        Project
+                    </label>
+                    <textarea
+                        name="{{ form.project.html_name }}"
+                        id="{{ form.project.id_for_label }}"
+                        class="form-control project-field"
+                        placeholder="Describe the project for this lesson..."
+                    >{{ form.project.value|default_if_none:"" }}</textarea>
+                    {% if form.project.errors %}
+                        <ul class="error-list">
+                            {% for error in form.project.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Describe any project students should complete.
+                    </div>
+                </div>
+
+                <!-- Order -->
+                <div class="lesson-form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Lesson Order <span class="required">*</span>
+                    </label>
+                    {{ form.order }}
+                    {% if form.order.errors %}
+                        <ul class="error-list">
+                            {% for error in form.order.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">
+                        Determines where this lesson appears inside the module.
+                    </div>
+                </div>
+
+                <!-- Published -->
+                <div class="lesson-form-group">
+                    <label class="form-label">Publication</label>
+                    <label class="published-card">
+                        {{ form.published }}
+                        <span class="published-text">
+                            <span class="published-title">Publish Lesson</span>
+                            <span class="published-description">
+                                Make this lesson available to students.
+                            </span>
+                        </span>
+                    </label>
+                    {% if form.published.errors %}
+                        <ul class="error-list">
+                            {% for error in form.published.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <a href="{% url 'admin_dashboard:tech_lessons' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2"></i>
+                {{ submit_text|default:"Save Lesson" }}
+            </button>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}

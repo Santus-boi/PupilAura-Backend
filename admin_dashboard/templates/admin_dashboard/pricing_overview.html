@@ -1,0 +1,653 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Pricing Overview | PupilAura Admin{% endblock %}
+
+{% block page_title %}Pricing Overview{% endblock %}
+{% block page_subtitle %}Review and manage prices for school learning, exam preparation, and technology courses{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       PRICING OVERVIEW — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Stats: base uses 4-col at desktop — good fit */
+    .pricing-stats {
+        margin-bottom: 28px;
+    }
+
+    /* Pricing card */
+    .pricing-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .pricing-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+
+    .pricing-card-header h2,
+    .pricing-card-header h3 {
+        color: var(--text);
+        font-size: 16px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .pricing-card-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .section-count {
+        background: #eff6ff;
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .section-summary {
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .section-summary strong {
+        color: var(--text);
+    }
+
+    /* Toolbar / search */
+    .pricing-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .pricing-search {
+        flex: 1;
+        min-width: 220px;
+        position: relative;
+    }
+
+    .pricing-search i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+    }
+
+    .pricing-search input {
+        width: 100%;
+        padding: 11px 14px 11px 40px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        font-size: 13px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .pricing-search input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Pricing table */
+    .pricing-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .pricing-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 720px;
+    }
+
+    .pricing-table thead {
+        background: var(--surface-soft);
+    }
+
+    .pricing-table th {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 800;
+        padding: 13px 20px;
+        text-align: left;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .pricing-table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+        font-size: 13px;
+    }
+
+    .pricing-table tbody tr:hover {
+        background: var(--surface-soft);
+    }
+
+    .item-name {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .item-description {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .price-value {
+        color: var(--text);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 20px;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-paid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-free {
+        background: #f1f5f9;
+        color: var(--muted);
+    }
+
+    /* Small inline action button (used in table) */
+    .inline-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 11px;
+        border-radius: 7px;
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .inline-action:hover {
+        background: #dbeafe;
+        border-color: var(--primary);
+        color: var(--primary-dark, #1d4ed8);
+    }
+
+    /* Edit-price card body */
+    .edit-price-body {
+        padding: 22px 24px;
+    }
+
+    /* Empty state (smaller than base .empty-state) */
+    .pricing-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .pricing-empty i {
+        display: block;
+        font-size: 26px;
+        margin-bottom: 10px;
+        color: var(--muted);
+    }
+
+    .pricing-empty .fw-semibold {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    /* Utility for JS visibility toggles */
+    .is-hidden {
+        display: none !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .pricing-card-header {
+            padding: 18px;
+        }
+        .section-summary {
+            padding: 12px 18px;
+        }
+        .edit-price-body {
+            padding: 18px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pricing-search {
+            min-width: 100%;
+        }
+    }
+
+    /* Dark mode overrides for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .section-count {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .status-paid {
+            background: rgba(22, 163, 74, 0.16);
+            color: #86efac;
+        }
+        .status-free {
+            background: rgba(148, 163, 184, 0.15);
+            color: #cbd5e1;
+        }
+        .inline-action {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #3b82f6;
+            color: #93c5fd;
+        }
+        .inline-action:hover {
+            background: rgba(37, 99, 235, 0.2);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Pricing Overview</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div>
+                    <h1>Pricing Overview</h1>
+                    <p>
+                        Review and manage prices for school learning, exam preparation,
+                        and technology courses.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_items }} item{{ total_items|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ paid_items }} paid · {{ free_items }} free
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- EDIT PRICE FORM -->
+{% if edit_item and price_form %}
+    <section class="pricing-card" id="editPriceForm">
+        <div class="pricing-card-header">
+            <div>
+                <h3>Edit Price</h3>
+                <p>Update the price for <strong>{{ edit_item }}</strong></p>
+            </div>
+            <span class="section-count">
+                <i class="bi bi-pencil-square" style="margin-right:4px;"></i>
+                Editing
+            </span>
+        </div>
+
+        <div class="edit-price-body">
+            <form method="post"
+                  action="?edit_type={{ edit_type }}&amp;edit_id={{ edit_item.pk }}">
+                {% csrf_token %}
+
+                {% if price_form.non_field_errors %}
+                    <div class="non-field-errors">
+                        <ul class="error-list">
+                            {% for error in price_form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ price_form.price.id_for_label }}">
+                        {{ price_form.price.label }}
+                        {% if price_form.price.field.required %}
+                            <span class="required">*</span>
+                        {% endif %}
+                    </label>
+
+                    {{ price_form.price }}
+
+                    {% if price_form.price.errors %}
+                        <ul class="error-list">
+                            {% for error in price_form.price.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    <div class="help-text">
+                        Enter a price in naira. Use 0 or leave the field
+                        blank to make the item free. Negative prices are
+                        not allowed.
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:pricing_overview' %}"
+                       class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i> Save Price
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endif %}
+
+<!-- STATS -->
+<section class="stats-grid pricing-stats">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-collection"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_items }}</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ paid_items }}</div>
+            <div class="stat-label">Paid Items</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-gift"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ free_items }}</div>
+            <div class="stat-label">Free Items</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-wallet2"></i>
+        </div>
+        <div>
+            <div class="stat-value">₦{{ paid_value_formatted|default:"0.00" }}</div>
+            <div class="stat-label">Combined Listed Price</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- SEARCH TOOLBAR -->
+<section class="pricing-toolbar">
+    <div class="pricing-search">
+        <i class="bi bi-search"></i>
+        <input
+            type="search"
+            id="pricingSearch"
+            placeholder="Search pricing items..."
+            aria-label="Search pricing items"
+        >
+    </div>
+
+    <button type="button" class="btn btn-secondary" id="clearPricingSearch">
+        <i class="bi bi-arrow-counterclockwise"></i> Clear Search
+    </button>
+</section>
+
+<!-- PRICING SECTIONS -->
+{% for section in pricing_sections %}
+    <section class="pricing-card pricing-section" data-section="{{ section.title|lower }}">
+
+        <div class="pricing-card-header">
+            <div>
+                <h2>{{ section.title }}</h2>
+                {% if section.description %}
+                    <p>{{ section.description }}</p>
+                {% endif %}
+            </div>
+            <span class="section-count">
+                {{ section.total_count }} item{{ section.total_count|pluralize }}
+            </span>
+        </div>
+
+        <div class="section-summary">
+            <span><strong>{{ section.paid_count }}</strong> paid</span>
+            <span><strong>{{ section.free_count }}</strong> free</span>
+            <span><strong>{{ section.total_count }}</strong> total</span>
+        </div>
+
+        {% if section.items %}
+            <div class="pricing-table-wrapper">
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in section.items %}
+                            <tr class="pricing-row"
+                                data-search="{{ item|lower }} {{ section.title|lower }}">
+
+                                <td>
+                                    <div class="item-name">{{ item }}</div>
+
+                                    {% if section.model_key == "exam_subject" and item.exam %}
+                                        <div class="item-description">Exam: {{ item.exam }}</div>
+                                    {% elif section.model_key == "exam_resource" and item.exam %}
+                                        <div class="item-description">Exam: {{ item.exam }}</div>
+                                    {% elif section.model_key == "tech_module" and item.course %}
+                                        <div class="item-description">Course: {{ item.course }}</div>
+                                    {% elif section.model_key == "tech_lesson" and item.module %}
+                                        <div class="item-description">Module: {{ item.module }}</div>
+                                    {% elif section.model_key == "tech_lesson_resource" and item.lesson %}
+                                        <div class="item-description">Lesson: {{ item.lesson }}</div>
+                                    {% elif section.model_key == "course" and item.title %}
+                                        <div class="item-description">Independent course</div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="price-value">
+                                        {% if item.price is not None %}
+                                            ₦{{ item.display_price_formatted }}
+                                        {% else %}
+                                            Free
+                                        {% endif %}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if item.is_paid %}
+                                        <span class="status-badge status-paid">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Paid
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-free">
+                                            <i class="bi bi-gift"></i>
+                                            Free
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <a href="?edit_type={{ section.model_key }}&amp;edit_id={{ item.pk }}#editPriceForm"
+                                       class="inline-action">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Edit Price
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pricing-empty section-no-results is-hidden">
+                <i class="bi bi-search"></i>
+                <div>No items in this section match your search.</div>
+            </div>
+        {% else %}
+            <div class="pricing-empty">
+                <i class="bi bi-inbox"></i>
+                <div class="fw-semibold">No items available</div>
+                <p>There are no items in this pricing section yet.</p>
+            </div>
+        {% endif %}
+    </section>
+{% empty %}
+    <section class="pricing-card">
+        <div class="pricing-empty">
+            <i class="bi bi-inbox"></i>
+            <div class="fw-semibold">No pricing items found</div>
+            <p>Pricing items will appear here when they are created.</p>
+        </div>
+    </section>
+{% endfor %}
+
+<div id="pricingGlobalEmpty" class="pricing-card pricing-empty is-hidden">
+    <i class="bi bi-search"></i>
+    <div class="fw-semibold">No matching items found</div>
+    <p>Try another search term.</p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("pricingSearch");
+    const clearButton = document.getElementById("clearPricingSearch");
+    const sections = document.querySelectorAll(".pricing-section");
+    const globalEmpty = document.getElementById("pricingGlobalEmpty");
+
+    function filterPricingItems() {
+        const query = searchInput.value.trim().toLowerCase();
+        let totalVisible = 0;
+
+        sections.forEach(function (section) {
+            const rows = section.querySelectorAll(".pricing-row");
+            const noResults = section.querySelector(".section-no-results");
+            let visibleInSection = 0;
+
+            rows.forEach(function (row) {
+                const searchableText =
+                    (row.getAttribute("data-search") || "").toLowerCase();
+
+                const matches = searchableText.includes(query);
+                row.classList.toggle("is-hidden", !matches);
+
+                if (matches) {
+                    visibleInSection++;
+                    totalVisible++;
+                }
+            });
+
+            if (noResults) {
+                noResults.classList.toggle(
+                    "is-hidden",
+                    query === "" || visibleInSection > 0
+                );
+            }
+
+            section.classList.toggle(
+                "is-hidden",
+                query !== "" && visibleInSection === 0
+            );
+        });
+
+        if (globalEmpty) {
+            globalEmpty.classList.toggle(
+                "is-hidden",
+                query === "" || totalVisible > 0
+            );
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", filterPricingItems);
+    }
+
+    if (clearButton && searchInput) {
+        clearButton.addEventListener("click", function () {
+            searchInput.value = "";
+            filterPricingItems();
+            searchInput.focus();
+        });
+    }
+});
+</script>
+{% endblock %}

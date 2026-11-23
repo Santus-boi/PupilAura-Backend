@@ -1,0 +1,233 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Edit Video{% else %}Add Video{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if object %}Edit Video{% else %}Add Video{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    Add a video that students can use as part of {{ lesson.title }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       LESSON VIDEO FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .video-form-card {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Per-field wrapper */
+    .video-field {
+        margin-bottom: 20px;
+    }
+
+    .video-field:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .video-field label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .video-field textarea {
+        min-height: 130px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .video-field input::placeholder,
+    .video-field textarea::placeholder {
+        color: var(--muted);
+    }
+
+    .video-field.has-error input:not([type="checkbox"]),
+    .video-field.has-error textarea,
+    .video-field.has-error select {
+        border-color: var(--danger);
+    }
+
+    .video-field.has-error input:not([type="checkbox"]):focus,
+    .video-field.has-error textarea:focus,
+    .video-field.has-error select:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    /* Checkbox row */
+    .video-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .video-checkbox-row input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--primary);
+    }
+
+    .video-checkbox-row label {
+        margin: 0;
+        cursor: pointer;
+    }
+
+    /* Form actions */
+    .video-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .video-form-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+        .video-form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:lesson_content' lesson.id %}">
+        {{ lesson.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if object %}Edit Video{% else %}Add Video{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-{% if object %}pencil-square{% else %}camera-video{% endif %}"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if object %}Edit Lesson Video{% else %}Add Lesson Video{% endif %}
+                    </h1>
+                    <p>
+                        Add a video that students can use as part of
+                        <strong>{{ lesson.title }}</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-book" style="margin-right:6px;"></i>
+                {{ lesson.title }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card video-form-card">
+    <div class="card-header">
+        <h2>Video Details</h2>
+        <p>Enter the video information below.</p>
+    </div>
+
+    <div class="card-body">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="video-field{% if field.errors %} has-error{% endif %}">
+
+                    {% if field.name == "published" %}
+                        <div class="video-checkbox-row">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                        </div>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                        <span class="help-text">{{ field.help_text }}</span>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <ul class="error-list">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <div class="video-form-actions">
+                <a
+                    href="{% url 'admin_dashboard:lesson_content' lesson.id %}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}
+                        <i class="bi bi-check2"></i> Update Video
+                    {% else %}
+                        <i class="bi bi-plus-lg"></i> Add Video
+                    {% endif %}
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

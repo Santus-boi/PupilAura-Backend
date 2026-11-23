@@ -1,0 +1,378 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detective Case Files | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+.detective-page{max-width:1150px;margin:auto;padding:28px 16px 55px;color:#e5e7eb;background:#0b1220;min-height:85vh;border-radius:18px}
+.detective-header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+.detective-header h1{font-weight:900;margin:0;color:#fff}
+.detective-header p{color:#94a3b8;margin:6px 0 0}
+.case-tag{background:#7f1d1d;color:#fecaca;padding:7px 12px;border-radius:30px;font-size:12px;font-weight:800;letter-spacing:1px}
+.case-banner{background:linear-gradient(120deg,#172554,#1e293b);border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:22px}
+.case-banner h2{font-weight:850;color:#fff}
+.case-banner p{color:#cbd5e1;line-height:1.8;margin-bottom:0}
+.case-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.case-stat{background:#0f172a;padding:10px 15px;border-radius:10px;border:1px solid #334155}
+.case-stat strong{display:block;color:#fff;font-size:18px}
+.case-stat span{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
+.detective-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.detective-panel{background:#111c2e;border:1px solid #29374c;border-radius:15px;padding:19px}
+.detective-panel h3{font-size:17px;font-weight:850;color:#fff;margin:0 0 15px}
+.panel-subtitle{color:#94a3b8;font-size:12px;margin-top:-9px;margin-bottom:14px}
+.evidence-card,.suspect-card{background:#17243a;border:1px solid #334155;border-radius:12px;padding:14px;margin-bottom:10px}
+.evidence-card h4,.suspect-card h4{font-size:14px;font-weight:800;color:#f8fafc;margin:0 0 7px}
+.evidence-card p,.suspect-card p{font-size:13px;color:#cbd5e1;line-height:1.65;margin:0}
+.evidence-card button,.suspect-card button{margin-top:10px;background:#263b5a;border:1px solid #475569;color:#bfdbfe;padding:7px 11px;border-radius:8px;font-size:12px;font-weight:700}
+.evidence-card button:hover,.suspect-card button:hover{background:#334d70}
+.evidence-card.inspected{border-color:#0d9488}
+.evidence-card.inspected button{background:#115e59;color:#ccfbf1}
+.suspect-avatar{font-size:29px;margin-bottom:5px}
+.statement{display:none;margin-top:10px;background:#0b1220;border-left:3px solid #d97706;padding:11px;border-radius:6px;color:#fcd34d;font-size:13px;line-height:1.6}
+.timeline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #29374c;font-size:13px}
+.timeline-item:last-child{border:0}
+.timeline-time{min-width:65px;color:#fbbf24;font-weight:800}
+.timeline-text{color:#cbd5e1;line-height:1.5}
+.clue-check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;color:#cbd5e1;font-size:13px;border-bottom:1px solid #29374c}
+.clue-check input{margin-top:3px;accent-color:#0d9488}
+.verdict-panel{margin-top:18px;background:#17243a;border:1px solid #475569;border-radius:15px;padding:20px}
+.verdict-panel h3{color:#fff;font-weight:850}
+.verdict-panel label{display:block;color:#cbd5e1;font-size:13px;font-weight:700;margin:13px 0 6px}
+.verdict-panel select,.verdict-panel textarea{width:100%;background:#0b1220;color:#fff;border:1px solid #475569;border-radius:9px;padding:11px}
+.verdict-panel textarea{min-height:95px;resize:vertical}
+.detective-btn{background:#b45309;color:#fff;border:0;padding:12px 17px;border-radius:9px;font-weight:850;margin-top:15px}
+.detective-btn:hover{background:#d97706}
+.detective-btn:disabled{opacity:.5}
+.case-result{display:none;margin-top:18px;padding:20px;border-radius:14px;background:#102d2a;border:1px solid #0f766e}
+.case-result h3{color:#99f6e4;font-weight:900}
+.case-result p{color:#ccfbf1;line-height:1.7}
+.case-result button{background:#0f766e;color:white;border:0;padding:10px 15px;border-radius:8px;font-weight:700}
+.case-warning{font-size:12px;color:#94a3b8;margin-top:10px}
+@media(max-width:720px){.detective-grid{grid-template-columns:1fr}.detective-page{padding:17px 9px 35px}.case-banner{padding:17px}.detective-panel{padding:14px}}
+</style>
+
+<div class="detective-page">
+    <header class="detective-header">
+        <div>
+            <h1>🕵️ Detective Case Files</h1>
+            <p>Observe carefully. Question everything. Trust the evidence.</p>
+        </div>
+        <a href="{% url 'play_learn:home' %}" class="btn btn-outline-light">← Exit Investigation</a>
+    </header>
+
+    <section class="case-banner">
+        <span class="case-tag">CONFIDENTIAL CASE 001</span>
+        <h2 class="mt-3">The Missing Diamond 💎</h2>
+        <p>
+            At 8:30 PM, the owner of Blackwood Manor discovered that a rare
+            diamond had disappeared from a locked display case. Three people
+            were inside the mansion. The security system recorded a brief
+            power interruption. Your job is to determine who took the diamond,
+            how they did it, and which evidence proves your conclusion.
+        </p>
+        <div class="case-stats">
+            <div class="case-stat"><strong id="timer">00:00</strong><span>Investigation time</span></div>
+            <div class="case-stat"><strong id="inspectedCount">0/6</strong><span>Evidence inspected</span></div>
+            <div class="case-stat"><strong id="score">0</strong><span>Investigation points</span></div>
+        </div>
+    </section>
+
+    <div class="detective-grid">
+        <section class="detective-panel">
+            <h3>🔍 Evidence Room</h3>
+            <p class="panel-subtitle">Inspect all six pieces of evidence. Details matter.</p>
+
+            <article class="evidence-card" data-evidence="1">
+                <h4>Evidence 01 — The Display Case</h4>
+                <p>The diamond was missing at 8:30 PM. The display case showed no signs of forced entry. Its lock was still intact.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+
+            <article class="evidence-card" data-evidence="2">
+                <h4>Evidence 02 — Security Log</h4>
+                <p>The mansion's camera system went offline at 8:14 PM and resumed recording at 8:19 PM.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+
+            <article class="evidence-card" data-evidence="3">
+                <h4>Evidence 03 — Muddy Footprints</h4>
+                <p>Several muddy shoeprints were found between the display room and the conservatory. The prints measured approximately size 10.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+
+            <article class="evidence-card" data-evidence="4">
+                <h4>Evidence 04 — The Conservatory Soil</h4>
+                <p>The conservatory contains a rare reddish clay soil. Fresh traces of the same soil were found on the footprints.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+
+            <article class="evidence-card" data-evidence="5">
+                <h4>Evidence 05 — The Kitchen Record</h4>
+                <p>The kitchen assistant recorded who entered and left the kitchen during the evening.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+
+            <article class="evidence-card" data-evidence="6">
+                <h4>Evidence 06 — The Security Key</h4>
+                <p>The security room was accessed using a physical key shortly before the camera interruption.</p>
+                <button type="button" class="inspect-btn">Inspect evidence</button>
+            </article>
+        </section>
+
+        <div>
+            <section class="detective-panel">
+                <h3>👤 Suspect Profiles</h3>
+                <p class="panel-subtitle">Question each suspect and compare their statements.</p>
+
+                <article class="suspect-card">
+                    <div class="suspect-avatar">🧑‍💼</div>
+                    <h4>Victor Hale — The Butler</h4>
+                    <p>Has worked at Blackwood Manor for eight years. Knows the house and its security arrangements.</p>
+                    <button type="button" class="question-btn">Question Victor</button>
+                    <div class="statement">
+                        "I was in the kitchen from 8:00 until 8:30. I never went near the display room. I wear size 10 shoes."
+                    </div>
+                </article>
+
+                <article class="suspect-card">
+                    <div class="suspect-avatar">👩</div>
+                    <h4>Clara Blackwood — The Niece</h4>
+                    <p>Recently argued with the owner about the family inheritance. Had access to the display room.</p>
+                    <button type="button" class="question-btn">Question Clara</button>
+                    <div class="statement">
+                        "I was in the lounge making a phone call from 8:05 until 8:22. You can check my call record."
+                    </div>
+                </article>
+
+                <article class="suspect-card">
+                    <div class="suspect-avatar">🧔</div>
+                    <h4>Marcus Reed — The Security Guard</h4>
+                    <p>Responsible for monitoring the cameras and securing the property.</p>
+                    <button type="button" class="question-btn">Question Marcus</button>
+                    <div class="statement">
+                        "I was at the front gate checking a delivery. I did not enter the security room or touch the camera system."
+                    </div>
+                </article>
+            </section>
+
+            <section class="detective-panel mt-3">
+                <h3>🕒 Investigation Timeline</h3>
+                <p class="panel-subtitle">Reconstruct the evening using verified records.</p>
+
+                <div class="timeline-item">
+                    <span class="timeline-time">8:05 PM</span>
+                    <span class="timeline-text">Clara's phone call begins, according to the phone record.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:12 PM</span>
+                    <span class="timeline-text">Victor leaves the kitchen, according to the kitchen assistant.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:14 PM</span>
+                    <span class="timeline-text">Security cameras go offline.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:16 PM</span>
+                    <span class="timeline-text">Security room key is recorded as being used.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:19 PM</span>
+                    <span class="timeline-text">Security cameras resume recording.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:25 PM</span>
+                    <span class="timeline-text">Victor returns to the kitchen.</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-time">8:30 PM</span>
+                    <span class="timeline-text">The missing diamond is discovered.</span>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section class="verdict-panel">
+        <h3>⚖️ Submit Your Final Verdict</h3>
+        <p class="panel-subtitle">Do not guess. Build your conclusion from the evidence.</p>
+
+        <label for="suspectChoice">Who do you believe stole the diamond?</label>
+        <select id="suspectChoice">
+            <option value="">Select a suspect</option>
+            <option value="victor">Victor Hale — The Butler</option>
+            <option value="clara">Clara Blackwood — The Niece</option>
+            <option value="marcus">Marcus Reed — The Security Guard</option>
+        </select>
+
+        <label for="methodChoice">What was the likely method?</label>
+        <select id="methodChoice">
+            <option value="">Select your theory</option>
+            <option value="camera">The suspect exploited the camera interruption and used the conservatory route.</option>
+            <option value="force">The suspect forced open the display case.</option>
+            <option value="window">The suspect entered through an outside window.</option>
+        </select>
+
+        <label>Which evidence supports your conclusion? Select all relevant clues.</label>
+        <div class="clue-check">
+            <input type="checkbox" id="clue1" value="security">
+            <label for="clue1">The camera interruption and security room key record.</label>
+        </div>
+        <div class="clue-check">
+            <input type="checkbox" id="clue2" value="footprints">
+            <label for="clue2">The size 10 footprints and matching conservatory soil.</label>
+        </div>
+        <div class="clue-check">
+            <input type="checkbox" id="clue3" value="kitchen">
+            <label for="clue3">The kitchen record contradicting Victor's statement.</label>
+        </div>
+        <div class="clue-check">
+            <input type="checkbox" id="clue4" value="clara">
+            <label for="clue4">Clara's phone record.</label>
+        </div>
+        <div class="clue-check">
+            <input type="checkbox" id="clue5" value="case">
+            <label for="clue5">The undamaged display case.</label>
+        </div>
+
+        <label for="reasoning">Explain your reasoning</label>
+        <textarea id="reasoning" placeholder="Explain how the evidence connects the suspect to the theft..."></textarea>
+
+        <button type="button" class="detective-btn" id="submitVerdict">Submit investigation</button>
+        <p class="case-warning">You can submit once. Review the evidence and suspect statements before making your decision.</p>
+    </section>
+
+    <section class="case-result" id="caseResult" aria-live="polite">
+        <h3 id="resultTitle">Investigation complete</h3>
+        <p id="resultMessage"></p>
+        <p><strong id="finalScore"></strong></p>
+        <button type="button" id="restartCase">Investigate again</button>
+    </section>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const evidenceCards = document.querySelectorAll(".evidence-card");
+    const inspectButtons = document.querySelectorAll(".inspect-btn");
+    const questionButtons = document.querySelectorAll(".question-btn");
+
+    const evidenceDetails = {
+        1: "The intact lock suggests the diamond was removed using legitimate access or a key. There is no evidence of a forced break-in.",
+        2: "The five-minute interruption created an opportunity to move without being recorded. It does not identify who caused the interruption.",
+        3: "The footprints connect the display room to the conservatory route. Their approximate size is consistent with one suspect's footwear.",
+        4: "The reddish clay is distinctive. It links the footprints to the conservatory rather than an ordinary outdoor path.",
+        5: "The kitchen assistant confirms Victor left at 8:12 PM and returned at 8:25 PM. His claim that he stayed in the kitchen continuously is false.",
+        6: "The security room key was used at 8:16 PM. Victor had routine access to the security room as part of his duties."
+    };
+
+    const inspected = new Set();
+    let score = 0;
+    let seconds = 0;
+    let timerInterval = setInterval(() => {
+        seconds++;
+        const min = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const sec = String(seconds % 60).padStart(2, "0");
+        document.getElementById("timer").textContent = min + ":" + sec;
+    }, 1000);
+
+    inspectButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const card = button.closest(".evidence-card");
+            const id = Number(card.dataset.evidence);
+
+            if (inspected.has(id)) return;
+
+            inspected.add(id);
+            score += 10;
+
+            const detail = document.createElement("p");
+            detail.className = "mt-3 mb-0";
+            detail.style.cssText = "color:#99f6e4;font-size:13px;line-height:1.7";
+            detail.textContent = "FORENSIC NOTE: " + evidenceDetails[id];
+
+            card.appendChild(detail);
+            card.classList.add("inspected");
+            button.textContent = "✓ Inspected";
+            document.getElementById("inspectedCount").textContent = inspected.size + "/6";
+            document.getElementById("score").textContent = score;
+        });
+    });
+
+    questionButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const statement = button.nextElementSibling;
+            const isVisible = statement.style.display === "block";
+
+            statement.style.display = isVisible ? "none" : "block";
+
+            if (!button.dataset.asked) {
+                button.dataset.asked = "true";
+                score += 5;
+                document.getElementById("score").textContent = score;
+            }
+        });
+    });
+
+    document.getElementById("submitVerdict").addEventListener("click", () => {
+        const suspect = document.getElementById("suspectChoice").value;
+        const method = document.getElementById("methodChoice").value;
+        const reasoning = document.getElementById("reasoning").value.trim();
+        const checkedClues = [...document.querySelectorAll(".clue-check input:checked")]
+            .map(input => input.value);
+
+        if (!suspect || !method || !reasoning || checkedClues.length < 2) {
+            alert("Choose a suspect, select a method, select at least two clues and explain your reasoning.");
+            return;
+        }
+
+        if (inspected.size < 6) {
+            alert("Inspect all six pieces of evidence before submitting your verdict.");
+            return;
+        }
+
+        clearInterval(timerInterval);
+
+        const correctSuspect = suspect === "victor";
+        const correctMethod = method === "camera";
+        const correctClues = ["security", "footprints", "kitchen"];
+        const clueScore = correctClues.filter(clue => checkedClues.includes(clue)).length;
+        const reasoningScore = reasoning.length >= 80 ? 15 : reasoning.length >= 35 ? 8 : 0;
+
+        let finalPoints = score;
+        finalPoints += correctSuspect ? 30 : 0;
+        finalPoints += correctMethod ? 20 : 0;
+        finalPoints += clueScore * 10;
+        finalPoints += reasoningScore;
+
+        const result = document.getElementById("caseResult");
+        const title = document.getElementById("resultTitle");
+        const message = document.getElementById("resultMessage");
+
+        if (correctSuspect && correctMethod && clueScore === 3) {
+            title.textContent = "🏆 Case solved!";
+            message.textContent =
+                "Excellent investigation. Victor Hale stole the diamond. He left the kitchen at 8:12 PM, used his access to the security room during the camera interruption, and used the conservatory route. The footprints, soil and kitchen record expose his false alibi.";
+        } else if (correctSuspect) {
+            title.textContent = "🔎 Suspect identified — incomplete case";
+            message.textContent =
+                "You identified Victor, but your evidence or explanation was incomplete. The kitchen record disproves his alibi, while the security key and conservatory footprints help establish how he carried out the theft.";
+        } else {
+            title.textContent = "❌ Case not solved";
+            message.textContent =
+                "Your verdict does not match the evidence. Review the timeline: Victor's claim that he stayed in the kitchen is contradicted by the kitchen assistant. The security key record and conservatory footprints provide further links.";
+        }
+
+        document.getElementById("finalScore").textContent = "Investigation score: " + finalPoints + " points";
+        result.style.display = "block";
+        document.getElementById("submitVerdict").disabled = true;
+        result.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    document.getElementById("restartCase").addEventListener("click", () => {
+        window.location.reload();
+    });
+})();
+</script>
+{% endblock %}

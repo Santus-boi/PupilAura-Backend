@@ -1,0 +1,533 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Tech Courses | PupilAura Admin{% endblock %}
+
+{% block page_title %}Tech Courses{% endblock %}
+{% block page_subtitle %}Manage technology courses and learning structure{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH COURSES LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Toolbar (search + add) */
+    .courses-toolbar {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .courses-search {
+        position: relative;
+        flex: 1;
+        max-width: 420px;
+    }
+
+    .courses-search input {
+        width: 100%;
+        padding: 11px 13px 11px 40px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        color: var(--text);
+        outline: none;
+        font-size: 13px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .courses-search input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .courses-search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+    }
+
+    /* Table min width */
+    .courses-table {
+        min-width: 1050px;
+    }
+
+    /* Course cell */
+    .course-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+    }
+
+    .course-thumbnail {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .course-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .course-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .course-description {
+        max-width: 320px;
+        color: var(--muted);
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .category-name {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Count badges */
+    .count-group {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .count-badge {
+        min-width: 32px;
+        padding: 6px 8px;
+        border-radius: 7px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .count-label {
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Price */
+    .price {
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .free-price {
+        color: var(--success);
+        font-weight: 700;
+    }
+
+    /* Search empty state */
+    .search-empty {
+        display: none;
+        padding: 55px 20px;
+        text-align: center;
+    }
+
+    .search-empty.show {
+        display: block;
+    }
+
+    .search-empty .empty-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 22px;
+    }
+
+    .search-empty h3 {
+        margin-bottom: 6px;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .search-empty p {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .courses-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .courses-search {
+            max-width: none;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .course-thumbnail {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .search-empty .empty-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span>Technology Learning</span>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Tech Courses</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-code-slash"></i>
+                </div>
+                <div>
+                    <h1>Tech Courses</h1>
+                    <p>
+                        Manage technology courses, organize learning
+                        modules, monitor lessons, and control course
+                        publication from one place.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:tech_course_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Tech Course
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_tech_courses|default:0 }} course{{ total_tech_courses|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ published_tech_courses|default:0 }} published
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-collection"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_courses|default:0 }}</div>
+            <div class="stat-label">Total Courses</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_tech_courses|default:0 }}</div>
+            <div class="stat-label">Published</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-clock-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ draft_tech_courses|default:0 }}</div>
+            <div class="stat-label">Draft Courses</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-layers-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_modules|default:0 }}</div>
+            <div class="stat-label">Modules</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- COURSES SECTION -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All Tech Courses</div>
+            <div class="section-description">
+                Manage technology courses and their learning structure.
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="courses-toolbar">
+        <div class="courses-search">
+            <i class="bi bi-search courses-search-icon" aria-hidden="true"></i>
+            <input
+                type="text"
+                id="courseSearch"
+                placeholder="Search courses or categories..."
+                autocomplete="off"
+                aria-label="Search courses"
+            >
+        </div>
+        <a href="{% url 'admin_dashboard:tech_course_create' %}" class="btn btn-blue">
+            <i class="bi bi-plus-lg"></i> Add Course
+        </a>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+        <table class="courses-table" id="coursesTable">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Category</th>
+                    <th>Modules</th>
+                    <th>Lessons</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="courseTableBody">
+                {% for course in courses %}
+                    <tr
+                        class="course-row"
+                        data-search="{{ course.title|lower }} {{ course.description|default:''|lower }} {{ course.category.name|default:''|lower }}"
+                    >
+                        <!-- Course -->
+                        <td>
+                            <div class="course-info">
+                                <div class="course-thumbnail">
+                                    {% if course.thumbnail %}
+                                        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                                    {% else %}
+                                        <i class="bi bi-code-square"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="course-title">{{ course.title }}</div>
+                                    <div class="course-description">
+                                        {% if course.description %}
+                                            {{ course.description }}
+                                        {% else %}
+                                            No description available
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Category -->
+                        <td>
+                            <div class="category-name">
+                                {% if course.category %}
+                                    {{ course.category.name }}
+                                {% else %}
+                                    No category
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Modules -->
+                        <td>
+                            <div class="count-group">
+                                <span class="count-badge">{{ course.module_count|default:0 }}</span>
+                                <span class="count-label">Modules</span>
+                            </div>
+                        </td>
+
+                        <!-- Lessons -->
+                        <td>
+                            <div class="count-group">
+                                <span class="count-badge">{{ course.lesson_count|default:0 }}</span>
+                                <span class="count-label">Lessons</span>
+                            </div>
+                        </td>
+
+                        <!-- Price -->
+                        <td>
+                            {% if course.price and course.price > 0 %}
+                                <span class="price">₦{{ course.price|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="free-price">Free</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            {% if course.published %}
+                                <span class="badge badge-green">
+                                    <span class="status-dot" aria-hidden="true"></span>
+                                    Published
+                                </span>
+                            {% else %}
+                                <span class="badge badge-orange">
+                                    <span class="status-dot" aria-hidden="true"></span>
+                                    Draft
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Created -->
+                        <td>
+                            <span style="color: var(--muted); font-size: 12px;">
+                                {{ course.created_at|date:"M d, Y" }}
+                            </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="action-group">
+                                <a
+                                    href="{% url 'admin_dashboard:tech_course_detail' course_id=course.id %}"
+                                    class="action-btn"
+                                    title="View Course"
+                                    aria-label="View {{ course.title }}"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a
+                                    href="{% url 'admin_dashboard:tech_course_edit' course_id=course.id %}"
+                                    class="action-btn"
+                                    title="Edit Course"
+                                    aria-label="Edit {{ course.title }}"
+                                >
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a
+                                    href="{% url 'admin_dashboard:tech_course_delete' course_id=course.id %}"
+                                    class="action-btn danger"
+                                    title="Delete Course"
+                                    aria-label="Delete {{ course.title }}"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" style="padding: 0;">
+                            <div class="empty-state">
+                                <div class="empty-icon" aria-hidden="true">
+                                    <i class="bi bi-collection"></i>
+                                </div>
+                                <h3>No Tech Courses Yet</h3>
+                                <p>
+                                    Create your first technology course
+                                    to begin building your learning platform.
+                                </p>
+                                <a href="{% url 'admin_dashboard:tech_course_create' %}" class="btn btn-blue">
+                                    <i class="bi bi-plus-lg"></i> Add First Course
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SEARCH EMPTY -->
+    <div class="search-empty" id="searchEmpty" aria-live="polite">
+        <div class="empty-icon" aria-hidden="true">
+            <i class="bi bi-search"></i>
+        </div>
+        <h3>No Courses Found</h3>
+        <p>Try a different course or category name.</p>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================================
+       COURSE SEARCH
+    ========================================================== */
+
+    const searchInput = document.getElementById("courseSearch");
+    const courseRows = document.querySelectorAll(".course-row");
+    const searchEmpty = document.getElementById("searchEmpty");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            courseRows.forEach(function (row) {
+                const searchText = (row.dataset.search || "").toLowerCase();
+
+                if (searchText.includes(searchValue)) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            if (searchEmpty) {
+                searchEmpty.classList.toggle(
+                    "show",
+                    searchValue !== "" && visibleCount === 0
+                );
+            }
+        });
+    }
+</script>
+{% endblock %}

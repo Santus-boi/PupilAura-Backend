@@ -1,0 +1,1000 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Exam Resource Generator | PupilAura{% endblock %}
+{% block page_title %}AI Exam Resource Generator{% endblock %}
+{% block page_subtitle %}Generate structured examination preparation resources{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:ai_index' %}">AI Studio</a>
+    <span>/</span>
+    <span class="breadcrumb-current">Exam Resource Generator</span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .generator-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .generator-hero {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 25px;
+        border-radius: 16px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        margin-bottom: 22px;
+    }
+
+    .generator-hero-icon {
+        width: 58px;
+        height: 58px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        background: rgba(37, 99, 235, .12);
+        color: var(--primary, #2563eb);
+        font-size: 25px;
+    }
+
+    .generator-hero h1 {
+        font-size: 23px;
+        font-weight: 750;
+        margin: 0 0 6px;
+        color: var(--text, inherit);
+    }
+
+    .generator-hero p {
+        margin: 0;
+        color: var(--muted, #64748b);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .generator-card {
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .generator-card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border, #e5e7eb);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .generator-card-header h2 {
+        font-size: 16px;
+        font-weight: 750;
+        color: var(--text, inherit);
+        margin: 0 0 5px;
+    }
+
+    .generator-card-header p {
+        color: var(--muted, #64748b);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .generator-card-body {
+        padding: 23px;
+    }
+
+    .generator-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 20px;
+        background: rgba(124, 58, 237, .12);
+        color: #8b5cf6;
+        font-size: 11px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .generator-form-group {
+        margin-bottom: 21px;
+    }
+
+    .generator-form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text, inherit);
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .generator-form-group .required {
+        color: #ef4444;
+    }
+
+    .generator-form-group .form-control,
+    .generator-form-group .form-select {
+        width: 100%;
+        min-height: 44px;
+        background: var(--input-bg, var(--surface-soft, var(--surface, #fff)));
+        color: var(--text, inherit);
+        border: 1px solid var(--border, #d1d5db);
+        border-radius: 9px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .generator-form-group .form-control:focus,
+    .generator-form-group .form-select:focus {
+        border-color: var(--primary, #2563eb);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .generator-form-group select option {
+        background: var(--surface, #fff);
+        color: var(--text, #111827);
+    }
+
+    .field-hint {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted, #64748b);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .exam-information {
+        padding: 13px 15px;
+        border: 1px solid var(--border, #e5e7eb);
+        background: var(--surface-soft, rgba(148, 163, 184, .08));
+        border-radius: 10px;
+        margin-bottom: 23px;
+    }
+
+    .exam-information-label {
+        color: var(--muted, #64748b);
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+        margin-bottom: 5px;
+    }
+
+    .exam-information-value {
+        color: var(--text, inherit);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .resource-guide {
+        border: 1px solid var(--border, #e5e7eb);
+        background: var(--surface-soft, rgba(148, 163, 184, .08));
+        border-radius: 11px;
+        padding: 16px;
+        margin-top: 18px;
+    }
+
+    .resource-guide-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 750;
+        color: var(--text, inherit);
+        margin-bottom: 8px;
+    }
+
+    .resource-guide-description {
+        color: var(--muted, #64748b);
+        font-size: 12px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .resource-guide-list {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--text, inherit);
+        font-size: 12px;
+        line-height: 1.9;
+    }
+
+    .guide-item {
+        display: none;
+    }
+
+    .guide-item.active {
+        display: block;
+    }
+
+    .side-information {
+        padding: 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border, #e5e7eb);
+        background: var(--surface-soft, rgba(148, 163, 184, .08));
+        margin-bottom: 15px;
+    }
+
+    .side-information-label {
+        color: var(--muted, #64748b);
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 7px;
+    }
+
+    .side-information-value {
+        color: var(--text, inherit);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .generation-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px;
+        border: 1px solid rgba(245, 158, 11, .3);
+        background: rgba(245, 158, 11, .08);
+        color: var(--text, inherit);
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .generation-warning i {
+        color: #f59e0b;
+        font-size: 17px;
+        flex-shrink: 0;
+    }
+
+    .generation-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 13px;
+        border: 1px solid rgba(37, 99, 235, .2);
+        background: rgba(37, 99, 235, .07);
+        border-radius: 10px;
+        margin-top: 15px;
+        color: var(--text, inherit);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .generation-info i {
+        color: var(--primary, #2563eb);
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .generator-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border, #e5e7eb);
+        margin-top: 24px;
+    }
+
+    .generator-actions .btn {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .generator-actions .btn-primary {
+        background: var(--primary, #2563eb);
+        color: #fff;
+        border: 1px solid var(--primary, #2563eb);
+    }
+
+    .generator-actions .btn-primary:hover {
+        opacity: .9;
+    }
+
+    .generator-actions .btn-secondary {
+        background: var(--surface-soft, transparent);
+        color: var(--text, inherit);
+        border: 1px solid var(--border, #d1d5db);
+    }
+
+    .resource-type-count {
+        color: var(--muted, #64748b);
+        font-size: 11px;
+        margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+        .generator-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .generator-hero {
+            padding: 18px;
+            align-items: flex-start;
+        }
+
+        .generator-hero h1 {
+            font-size: 19px;
+        }
+
+        .generator-card-body {
+            padding: 17px;
+        }
+
+        .generator-card-header {
+            padding: 17px;
+        }
+
+        .generator-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .generator-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<section class="generator-hero">
+    <div class="generator-hero-icon">
+        <i class="bi bi-stars"></i>
+    </div>
+
+    <div>
+        <h1>Generate Exam Resource</h1>
+        <p>
+            Create structured examination preparation materials
+            for a selected subject, year and topic.
+        </p>
+    </div>
+</section>
+
+
+<div class="generator-layout">
+
+    <!-- ============================================= -->
+    <!-- GENERATOR FORM -->
+    <!-- ============================================= -->
+
+    <section class="generator-card">
+
+        <div class="generator-card-header">
+            <div>
+                <h2>Resource Details</h2>
+                <p>Configure the resource you want the AI to generate.</p>
+            </div>
+
+            <span class="generator-badge">
+                <i class="bi bi-stars"></i>
+                AI Generator
+            </span>
+        </div>
+
+
+        <div class="generator-card-body">
+
+            <div class="exam-information">
+                <div class="exam-information-label">
+                    Selected Examination
+                </div>
+
+                <div class="exam-information-value">
+                    {{ exam }}
+                </div>
+            </div>
+
+
+            <form method="post" id="examResourceGeneratorForm">
+
+                {% csrf_token %}
+
+
+                <!-- SUBJECT -->
+
+                <div class="generator-form-group">
+
+                    <label for="subject">
+                        Subject <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="subject"
+                        id="subject"
+                        class="form-select"
+                        required
+                    >
+                        <option value="">Select subject</option>
+
+                        {% for subject in subjects %}
+                            <option
+                                value="{{ subject.pk }}"
+                                {% if form_data.subject|stringformat:"s" == subject.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ subject }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <small class="field-hint">
+                        Select the subject for which this resource will be generated.
+                    </small>
+
+                </div>
+
+
+                <!-- YEAR -->
+
+                <div class="generator-form-group">
+
+                    <label for="year">
+                        Examination Year <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="year"
+                        id="year"
+                        class="form-select"
+                        required
+                    >
+                        <option value="">Select examination year</option>
+
+                        {% for year in years %}
+                            <option
+                                value="{{ year.pk }}"
+                                {% if form_data.year|stringformat:"s" == year.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+
+                    <small class="field-hint">
+                        Select the examination year reference for this resource.
+                    </small>
+
+                </div>
+
+
+                <!-- RESOURCE TYPE -->
+
+                <div class="generator-form-group">
+
+                    <label for="resource_type">
+                        Resource Type <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="resource_type"
+                        id="resource_type"
+                        class="form-select"
+                        required
+                    >
+                        <option value="">Select resource type</option>
+
+                        <option
+                            value="past_questions"
+                            {% if form_data.resource_type == "past_questions" %}selected{% endif %}
+                        >
+                            Past Questions
+                        </option>
+
+                        <option
+                            value="solutions"
+                            {% if form_data.resource_type == "solutions" %}selected{% endif %}
+                        >
+                            Solutions / Answers
+                        </option>
+
+                        <option
+                            value="lesson"
+                            {% if form_data.resource_type == "lesson" %}selected{% endif %}
+                        >
+                            Exam Lesson
+                        </option>
+
+                        <option
+                            value="practical"
+                            {% if form_data.resource_type == "practical" %}selected{% endif %}
+                        >
+                            Practical
+                        </option>
+
+                        <option
+                            value="mock_exam"
+                            {% if form_data.resource_type == "mock_exam" %}selected{% endif %}
+                        >
+                            Mock Exam
+                        </option>
+
+                        <option
+                            value="revision"
+                            {% if form_data.resource_type == "revision" %}selected{% endif %}
+                        >
+                            Revision Materials
+                        </option>
+
+                    </select>
+
+                    <small class="field-hint">
+                        Select the type of examination resource to generate.
+                    </small>
+
+                    <div class="resource-type-count">
+                        Six resource types are available.
+                    </div>
+
+                </div>
+
+
+                
+<!-- TOPIC -->
+
+                <div class="generator-form-group">
+
+                    <label for="topic">
+        Topic <span class="required" id="topicRequired">*</span>
+        <span id="topicOptional" style="display:none; color:var(--muted); font-weight:500;">
+            (Optional)
+        </span>
+                    </label>
+
+    <input
+        type="text"
+        name="topic"
+        id="topic"
+        class="form-control"
+        value="{{ form_data.topic|default:'' }}"
+        placeholder="Example: Computer Networks"
+        maxlength="200"
+        required
+    >
+
+    <small class="field-hint" id="topicHint">
+        Enter a specific topic to improve the relevance and accuracy of the generated resource.
+    </small>
+
+                </div>
+
+
+
+                <!-- DIFFICULTY -->
+
+                <div class="generator-form-group">
+
+                    <label for="difficulty">
+                        Difficulty Level <span class="required">*</span>
+                    </label>
+
+                    <select
+                        name="difficulty"
+                        id="difficulty"
+                        class="form-select"
+                        required
+                    >
+                        <option
+                            value="easy"
+                            {% if form_data.difficulty == "easy" %}selected{% endif %}
+                        >
+                            Easy
+                        </option>
+
+                        <option
+                            value="medium"
+                            {% if form_data.difficulty == "medium" or not form_data.difficulty %}selected{% endif %}
+                        >
+                            Medium
+                        </option>
+
+                        <option
+                            value="hard"
+                            {% if form_data.difficulty == "hard" %}selected{% endif %}
+                        >
+                            Hard
+                        </option>
+
+                    </select>
+
+                    <small class="field-hint">
+                        Determines the complexity of the generated content and questions.
+                    </small>
+
+                </div>
+
+
+                <!-- RESOURCE TYPE GUIDE -->
+
+                <div class="resource-guide">
+
+                    <div class="resource-guide-title">
+                        <i class="bi bi-lightbulb"></i>
+                        <span id="guideTitle">Resource Generation Guide</span>
+                    </div>
+
+                    <div class="guide-item" data-resource="past_questions">
+                        <p class="resource-guide-description">
+                            Generate original examination-style practice questions with answer choices, correct answers and explanations.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>10 practice questions</li>
+                            <li>Multiple-choice and written questions where appropriate</li>
+                            <li>Answer choices and correct answers</li>
+                            <li>Detailed explanations</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="guide-item" data-resource="solutions">
+                        <p class="resource-guide-description">
+                            Generate independent examination-style questions with answers and detailed solutions. Existing Past Questions are not required.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>5 questions with solutions</li>
+                            <li>Correct answers</li>
+                            <li>Detailed workings and explanations</li>
+                            <li>Suitable for independent Solutions resources</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="guide-item" data-resource="lesson">
+                        <p class="resource-guide-description">
+                            Generate a complete examination lesson with teaching content and structured learning activities.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>Learning objectives</li>
+                            <li>Definitions and explanations</li>
+                            <li>Worked examples</li>
+                            <li>Key points and learning activities</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="guide-item" data-resource="practical">
+                        <p class="resource-guide-description">
+                            Generate a practical learning resource with equipment, procedures and expected results.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>Practical objectives</li>
+                            <li>Materials and equipment</li>
+                            <li>Step-by-step procedures</li>
+                            <li>Activities, results and safety notes</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="guide-item" data-resource="mock_exam">
+                        <p class="resource-guide-description">
+                            Generate a complete mock examination with instructions, timed duration, questions, marks and answer explanations.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>20 examination questions</li>
+                            <li>Examination instructions</li>
+                            <li>Duration and total marks</li>
+                            <li>Answer key and explanations</li>
+                        </ul>
+                    </div>
+
+
+                    <div class="guide-item" data-resource="revision">
+                        <p class="resource-guide-description">
+                            Generate focused revision materials to help students review important examination topics.
+                        </p>
+
+                        <ul class="resource-guide-list">
+                            <li>Topic summary</li>
+                            <li>Important facts and key points</li>
+                            <li>Relevant formulas</li>
+                            <li>Revision exercises</li>
+                        </ul>
+                    </div>
+
+
+                    <div id="defaultGuide" class="resource-guide-description">
+                        Select a resource type above to see exactly what the AI will generate.
+                    </div>
+
+                </div>
+
+
+                <!-- AI PROVENANCE INFORMATION -->
+
+                <div class="generation-info">
+                    <i class="bi bi-info-circle"></i>
+
+                    <div>
+                        AI-generated questions are original practice materials.
+                        They will not be presented as verified historical WAEC,
+                        NECO or JAMB questions.
+                    </div>
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="generator-actions">
+
+                    <a
+                        href="{% url 'admin_dashboard:exams' %}"
+                        class="btn btn-secondary"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        id="generateButton"
+                    >
+                        <i class="bi bi-stars"></i>
+                        Generate Resource
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ============================================= -->
+    <!-- GENERATION INFORMATION -->
+    <!-- ============================================= -->
+
+    <aside class="generator-card">
+
+        <div class="generator-card-header">
+            <div>
+                <h2>Generation Guide</h2>
+                <p>Important information before generation.</p>
+            </div>
+        </div>
+
+
+        <div class="generator-card-body">
+
+            <div class="side-information">
+
+                <div class="side-information-label">
+                    Examination
+                </div>
+
+                <div class="side-information-value">
+                    {{ exam }}
+                </div>
+
+            </div>
+
+
+            <div class="side-information">
+
+                <div class="side-information-label">
+                    Available Subjects
+                </div>
+
+                <div class="side-information-value">
+                    {{ subjects|length }}
+                </div>
+
+            </div>
+
+
+            <div class="side-information">
+
+                <div class="side-information-label">
+                    Available Examination Years
+                </div>
+
+                <div class="side-information-value">
+                    {{ years|length }}
+                </div>
+
+            </div>
+
+
+            <div class="generation-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+
+                <div>
+                    Newly generated resources are saved as unpublished drafts.
+                    Review the generated content before making it available to students.
+                </div>
+            </div>
+
+
+            <div class="generation-info">
+                <i class="bi bi-shield-check"></i>
+
+                <div>
+                    Always review generated questions, answers, calculations,
+                    definitions and explanations for academic accuracy.
+                </div>
+            </div>
+
+
+            <div class="generation-info">
+                <i class="bi bi-database-check"></i>
+
+                <div>
+                    Structured resources and question-based resources will
+                    be saved according to their respective resource workflows.
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const resourceType = document.getElementById("resource_type");
+    const guideTitle = document.getElementById("guideTitle");
+    const defaultGuide = document.getElementById("defaultGuide");
+    const guideItems = document.querySelectorAll(".guide-item");
+
+    const generateButton = document.getElementById("generateButton");
+    const generatorForm = document.getElementById("examResourceGeneratorForm");
+
+    const topicInput = document.getElementById("topic");
+    const topicHint = document.getElementById("topicHint");
+    const topicRequired = document.getElementById("topicRequired");
+    const topicOptional = document.getElementById("topicOptional");
+
+    const resourceLabels = {
+        past_questions: "Past Questions",
+        solutions: "Solutions / Answers",
+        lesson: "Exam Lesson",
+        practical: "Practical",
+        mock_exam: "Mock Exam",
+        revision: "Revision Materials"
+    };
+
+    const topicHints = {
+        past_questions:
+            "Optional: Leave blank to generate questions covering different areas of the subject.",
+
+        solutions:
+            "Optional: Leave blank to generate a general collection of examination-style questions with answers and solutions.",
+
+        lesson:
+            "Required: Enter the topic to be explained in a structured examination lesson.",
+
+        practical:
+            "Required: Enter the practical topic or experiment students should learn.",
+
+        mock_exam:
+            "Optional: Leave blank to generate a broad examination covering different areas of the subject.",
+
+        revision:
+            "Required: Enter the topic students should revise."
+    };
+
+    const topicOptionalTypes = [
+        "past_questions",
+        "solutions",
+        "mock_exam"
+    ];
+
+    function updateResourceGuide() {
+
+        const selectedType = resourceType.value;
+
+        let hasGuide = false;
+
+        guideItems.forEach(function (item) {
+
+            const matches = item.dataset.resource === selectedType;
+
+            item.classList.toggle("active", matches);
+
+            if (matches) {
+                hasGuide = true;
+            }
+
+        });
+
+        defaultGuide.style.display = hasGuide ? "none" : "block";
+
+        guideTitle.textContent = selectedType && resourceLabels[selectedType]
+            ? resourceLabels[selectedType] + " Generation"
+            : "Resource Generation Guide";
+
+        // -----------------------------------------
+        // Dynamic topic validation
+        // -----------------------------------------
+
+        const topicIsOptional = topicOptionalTypes.includes(selectedType);
+
+        topicInput.required = !topicIsOptional;
+
+        topicRequired.style.display = topicIsOptional
+            ? "none"
+            : "inline";
+
+        topicOptional.style.display = topicIsOptional
+            ? "inline"
+            : "none";
+
+        topicHint.textContent = topicHints[selectedType] ||
+            "Select a resource type to see its topic requirements.";
+
+        topicInput.placeholder = topicIsOptional
+            ? "Optional — leave blank for full subject coverage"
+            : "Enter a specific topic";
+
+    }
+
+    resourceType.addEventListener("change", updateResourceGuide);
+
+    // Apply correct requirements on initial page load.
+    updateResourceGuide();
+
+    // ---------------------------------------------
+    // Prevent accidental multiple submissions
+    // ---------------------------------------------
+
+    generatorForm.addEventListener("submit", function (event) {
+
+        if (!generatorForm.checkValidity()) {
+            return;
+        }
+
+        generateButton.disabled = true;
+
+        generateButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating Resource...';
+
+    });
+
+});
+</script>
+{% endblock %}

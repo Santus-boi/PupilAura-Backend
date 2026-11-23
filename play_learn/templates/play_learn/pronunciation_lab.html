@@ -1,0 +1,725 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pronunciation Lab | PupilAura{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --pl-primary: #087f8c;
+        --pl-dark: #172b3a;
+        --pl-muted: #718096;
+        --pl-bg: #effafa;
+        --pl-green: #159b69;
+        --pl-red: #dc5555;
+    }
+
+    .pl-page {
+        min-height: 100vh;
+        padding: 35px 15px 60px;
+        background:
+            radial-gradient(circle at 10% 10%, #d8f5f2 0, transparent 30%),
+            radial-gradient(circle at 90% 85%, #e2edff 0, transparent 30%),
+            var(--pl-bg);
+        color: var(--pl-dark);
+    }
+
+    .pl-container {
+        max-width: 850px;
+        margin: auto;
+    }
+
+    .pl-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
+    .pl-back {
+        color: var(--pl-primary);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .pl-heading {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .pl-heading h1 {
+        font-weight: 900;
+        font-size: clamp(2rem, 5vw, 3rem);
+    }
+
+    .pl-heading p {
+        color: var(--pl-muted);
+    }
+
+    .pl-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .pl-stat {
+        background: white;
+        padding: 15px;
+        border-radius: 17px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(20, 50, 70, .05);
+    }
+
+    .pl-stat span {
+        display: block;
+        font-size: .8rem;
+        color: var(--pl-muted);
+    }
+
+    .pl-stat strong {
+        font-size: 1.4rem;
+        font-weight: 900;
+    }
+
+    .pl-card {
+        background: white;
+        border-radius: 28px;
+        padding: clamp(20px, 5vw, 38px);
+        box-shadow: 0 15px 45px rgba(20, 50, 70, .08);
+    }
+
+    .pl-progress {
+        height: 9px;
+        background: #eaf1f3;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .pl-progress-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #087f8c, #43c7ba);
+        transition: width .3s;
+    }
+
+    .pl-category {
+        display: inline-block;
+        padding: 7px 15px;
+        background: #e5f8f6;
+        color: var(--pl-primary);
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: .8rem;
+    }
+
+    .pl-picture {
+        text-align: center;
+        font-size: clamp(4rem, 12vw, 6rem);
+        margin: 18px 0 5px;
+    }
+
+    .pl-word {
+        text-align: center;
+        font-size: clamp(2rem, 7vw, 3.5rem);
+        font-weight: 900;
+        letter-spacing: 3px;
+        margin: 8px 0;
+        overflow-wrap: anywhere;
+    }
+
+    .pl-instruction {
+        text-align: center;
+        color: var(--pl-muted);
+        margin-bottom: 25px;
+    }
+
+    .pl-controls {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
+    .pl-btn {
+        border: 0;
+        padding: 13px 20px;
+        border-radius: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .pl-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+
+    .pl-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .pl-primary {
+        background: var(--pl-primary);
+        color: white;
+    }
+
+    .pl-light {
+        background: #e5f8f6;
+        color: var(--pl-primary);
+    }
+
+    .pl-record {
+        background: #fff0f0;
+        color: #c43d3d;
+    }
+
+    .pl-record.recording {
+        background: #d82d2d;
+        color: white;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        50% { box-shadow: 0 0 0 9px rgba(216, 45, 45, .12); }
+    }
+
+    .pl-status {
+        text-align: center;
+        min-height: 30px;
+        font-weight: 700;
+        color: var(--pl-muted);
+        margin-bottom: 15px;
+    }
+
+    .pl-result {
+        background: #f4f8fa;
+        border-radius: 18px;
+        padding: 20px;
+        text-align: center;
+        margin-top: 15px;
+        display: none;
+    }
+
+    .pl-result h3 {
+        font-weight: 900;
+    }
+
+    .pl-result p {
+        margin-bottom: 0;
+        color: var(--pl-muted);
+    }
+
+    .pl-hint {
+        text-align: center;
+        color: var(--pl-muted);
+        margin-top: 15px;
+        font-size: .9rem;
+    }
+
+    .pl-next {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .pl-finish {
+        display: none;
+        text-align: center;
+        padding: 25px 5px;
+    }
+
+    .pl-finish-icon {
+        font-size: 5rem;
+    }
+
+    .pl-finish h2 {
+        font-weight: 900;
+    }
+
+    .pl-finish p {
+        color: var(--pl-muted);
+    }
+
+    .pl-note {
+        margin-top: 20px;
+        padding: 13px;
+        background: #f0f7ff;
+        border-radius: 13px;
+        font-size: .85rem;
+        color: #52677b;
+    }
+
+    @media(max-width: 480px) {
+        .pl-page {
+            padding: 22px 12px 40px;
+        }
+
+        .pl-stats {
+            gap: 7px;
+        }
+
+        .pl-stat {
+            padding: 11px 5px;
+        }
+
+        .pl-stat strong {
+            font-size: 1.15rem;
+        }
+
+        .pl-btn {
+            padding: 11px 13px;
+            font-size: .88rem;
+        }
+    }
+</style>
+
+<div class="pl-page">
+    <div class="pl-container">
+
+        <div class="pl-top">
+            <a href="{% url 'play_learn:home' %}" class="pl-back">
+                <i class="bi bi-arrow-left"></i> Back to Play & Learn
+            </a>
+            <span class="badge text-bg-info">Speaking Lab</span>
+        </div>
+
+        <div class="pl-heading">
+            <h1>🎤 Pronunciation Lab</h1>
+            <p>Listen carefully, speak clearly and practise new words.</p>
+        </div>
+
+        <div class="pl-stats">
+            <div class="pl-stat">
+                <span>⭐ Points</span>
+                <strong id="plScore">0</strong>
+            </div>
+            <div class="pl-stat">
+                <span>📚 Word</span>
+                <strong id="plQuestion">1/10</strong>
+            </div>
+            <div class="pl-stat">
+                <span>🏆 Recognised</span>
+                <strong id="plCorrect">0</strong>
+            </div>
+        </div>
+
+        <div class="pl-card">
+
+            <div id="plGame">
+                <div class="pl-progress">
+                    <div class="pl-progress-fill" id="plProgress"></div>
+                </div>
+
+                <div class="text-center">
+                    <span class="pl-category" id="plCategory"></span>
+                </div>
+
+                <div class="pl-picture" id="plPicture"></div>
+
+                <div class="pl-word" id="plWord"></div>
+
+                <p class="pl-instruction">
+                    Listen to the word, then pronounce it using your microphone.
+                </p>
+
+                <div class="pl-controls">
+                    <button class="pl-btn pl-light" id="plListen">
+                        <i class="bi bi-volume-up-fill"></i> Listen
+                    </button>
+
+                    <button class="pl-btn pl-record" id="plSpeak">
+                        <i class="bi bi-mic-fill"></i> Start Speaking
+                    </button>
+                </div>
+
+                <div class="pl-status" id="plStatus" aria-live="polite">
+                    Press Listen to hear the word.
+                </div>
+
+                <div class="pl-result" id="plResult" aria-live="polite">
+                    <h3 id="plResultTitle"></h3>
+                    <p id="plRecognised"></p>
+                </div>
+
+                <p class="pl-hint" id="plHint"></p>
+
+                <div class="pl-next" id="plNextContainer">
+                    <button class="pl-btn pl-primary" id="plNext">
+                        Next Word <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pl-finish" id="plFinish">
+                <div class="pl-finish-icon" id="plFinishIcon">🏆</div>
+                <h2 id="plFinishTitle">Speaking Champion!</h2>
+                <p id="plFinishMessage"></p>
+
+                <h3 class="fw-bold my-4">
+                    Total Points: <span id="plFinalScore">0</span>
+                </h3>
+
+                <button class="pl-btn pl-primary" id="plRestart">
+                    <i class="bi bi-arrow-repeat"></i> Practise Again
+                </button>
+            </div>
+
+        </div>
+
+        <div class="pl-note">
+            <i class="bi bi-info-circle-fill"></i>
+            Microphone access is required for speaking practice. Recognition
+            depends on your browser, microphone and environment. This activity
+            checks whether your spoken word is recognised; it does not measure
+            accent or professional pronunciation quality.
+        </div>
+
+    </div>
+</div>
+
+{{ pronunciation_words|json_script:"pronunciation-data" }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const wordsElement = document.getElementById("pronunciation-data");
+
+    if (!wordsElement) {
+        console.error("Pronunciation Lab: Word data was not found.");
+        return;
+    }
+
+    const words = JSON.parse(wordsElement.textContent);
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const scoreDisplay = document.getElementById("plScore");
+    const questionDisplay = document.getElementById("plQuestion");
+    const correctDisplay = document.getElementById("plCorrect");
+    const progress = document.getElementById("plProgress");
+
+    const picture = document.getElementById("plPicture");
+    const wordDisplay = document.getElementById("plWord");
+    const category = document.getElementById("plCategory");
+
+    const listenButton = document.getElementById("plListen");
+    const speakButton = document.getElementById("plSpeak");
+    const nextButton = document.getElementById("plNext");
+
+    const status = document.getElementById("plStatus");
+    const result = document.getElementById("plResult");
+    const resultTitle = document.getElementById("plResultTitle");
+    const recognisedText = document.getElementById("plRecognised");
+    const hint = document.getElementById("plHint");
+
+    const gameArea = document.getElementById("plGame");
+    const finishArea = document.getElementById("plFinish");
+
+    let questions = [];
+    let questionIndex = 0;
+    let score = 0;
+    let correctCount = 0;
+    let recognition = null;
+    let isRecording = false;
+    let answered = false;
+
+    const totalQuestions = Math.min(10, words.length);
+
+    function shuffle(array) {
+        const result = [...array];
+
+        for (let i = result.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [result[i], result[j]] = [result[j], result[i]];
+        }
+
+        return result;
+    }
+
+    function startGame() {
+        stopRecognition();
+
+        questions = shuffle(words).slice(0, totalQuestions);
+
+        questionIndex = 0;
+        score = 0;
+        correctCount = 0;
+
+        scoreDisplay.textContent = score;
+        correctDisplay.textContent = correctCount;
+
+        gameArea.style.display = "block";
+        finishArea.style.display = "none";
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (questionIndex >= questions.length) {
+            finishGame();
+            return;
+        }
+
+        const current = questions[questionIndex];
+
+        answered = false;
+
+        picture.textContent = current.emoji;
+        wordDisplay.textContent = current.word;
+        category.textContent = current.category;
+
+        questionDisplay.textContent =
+            `${questionIndex + 1}/${questions.length}`;
+
+        progress.style.width =
+            `${(questionIndex / questions.length) * 100}%`;
+
+        status.textContent = "Press Listen to hear the word.";
+
+        result.style.display = "none";
+        nextButton.parentElement.style.display = "none";
+
+        hint.textContent = current.hint
+            ? "💡 " + current.hint
+            : "";
+
+        speakButton.disabled = !SpeechRecognition;
+        speakButton.textContent = "🎤 Start Speaking";
+        speakButton.classList.remove("recording");
+
+        if (!SpeechRecognition) {
+            status.textContent =
+                "Speech recognition is not supported in this browser. Try a supported browser such as Chrome.";
+        }
+    }
+
+    function listenToWord() {
+        const current = questions[questionIndex];
+
+        if (!("speechSynthesis" in window)) {
+            status.textContent =
+                "Speech playback is not supported in this browser.";
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const speech = new SpeechSynthesisUtterance(current.word);
+
+        speech.lang = "en-US";
+        speech.rate = 0.8;
+        speech.pitch = 1;
+
+        window.speechSynthesis.speak(speech);
+
+        status.textContent = "🔊 Listen carefully to the word.";
+    }
+
+    function startRecognition() {
+        if (!SpeechRecognition) {
+            status.textContent =
+                "Your browser does not support speech recognition.";
+            return;
+        }
+
+        if (isRecording) {
+            stopRecognition();
+            return;
+        }
+
+        if (answered) return;
+
+        recognition = new SpeechRecognition();
+
+        recognition.lang = "en-US";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 3;
+
+        recognition.onstart = function () {
+            isRecording = true;
+
+            speakButton.textContent = "⏹ Stop Speaking";
+            speakButton.classList.add("recording");
+
+            status.textContent = "🎤 Listening... Speak now!";
+        };
+
+        recognition.onresult = function (event) {
+            const alternatives = [];
+
+            for (
+                let i = 0;
+                i < event.results[0].length;
+                i++
+            ) {
+                alternatives.push(
+                    event.results[0][i].transcript.trim()
+                );
+            }
+
+            checkRecognition(alternatives);
+        };
+
+        recognition.onerror = function (event) {
+            if (event.error === "not-allowed") {
+                status.textContent =
+                    "Microphone permission was denied. Allow microphone access in your browser settings.";
+            } else if (event.error === "no-speech") {
+                status.textContent =
+                    "No speech detected. Try speaking a little louder.";
+            } else if (event.error === "audio-capture") {
+                status.textContent =
+                    "No microphone was detected.";
+            } else {
+                status.textContent =
+                    "Speech recognition error: " + event.error;
+            }
+        };
+
+        recognition.onend = function () {
+            isRecording = false;
+
+            speakButton.textContent = "🎤 Try Speaking Again";
+            speakButton.classList.remove("recording");
+        };
+
+        try {
+            recognition.start();
+        } catch (error) {
+            status.textContent =
+                "Unable to start the microphone. Please try again.";
+        }
+    }
+
+    function stopRecognition() {
+        if (recognition && isRecording) {
+            recognition.stop();
+        }
+
+        isRecording = false;
+
+        if (speakButton) {
+            speakButton.classList.remove("recording");
+        }
+    }
+
+    function normalize(text) {
+        return text
+            .toLowerCase()
+            .replace(/[^\p{L}\p{N}\s]/gu, "")
+            .trim()
+            .replace(/\s+/g, " ");
+    }
+
+    function checkRecognition(alternatives) {
+        if (answered) return;
+
+        const current = questions[questionIndex];
+        const target = normalize(current.word);
+
+        const matched = alternatives.some(
+            spoken => normalize(spoken) === target
+        );
+
+        result.style.display = "block";
+
+        recognisedText.textContent =
+            "You said: " + alternatives.join(" / ");
+
+        if (matched) {
+            answered = true;
+
+            correctCount++;
+            score += 10;
+
+            resultTitle.textContent = "🎉 Excellent! Word recognised!";
+            resultTitle.style.color = "#159b69";
+
+            status.textContent =
+                "Great work! You can move to the next word.";
+
+            scoreDisplay.textContent = score;
+            correctDisplay.textContent = correctCount;
+
+            nextButton.parentElement.style.display = "block";
+
+        } else {
+            resultTitle.textContent = "💪 Good try! Let's practise again.";
+            resultTitle.style.color = "#dc5555";
+
+            status.textContent =
+                "The recognised word did not match. Listen again and try once more.";
+        }
+    }
+
+    function finishGame() {
+        stopRecognition();
+
+        gameArea.style.display = "none";
+        finishArea.style.display = "block";
+
+        progress.style.width = "100%";
+
+        document.getElementById("plFinalScore").textContent = score;
+
+        const percentage = Math.round(
+            (correctCount / questions.length) * 100
+        );
+
+        if (percentage >= 80) {
+            document.getElementById("plFinishIcon").textContent = "🏆";
+
+            document.getElementById("plFinishTitle").textContent =
+                "Speaking Champion!";
+
+            document.getElementById("plFinishMessage").textContent =
+                "Fantastic work! You recognised most of the words.";
+
+        } else if (percentage >= 50) {
+            document.getElementById("plFinishIcon").textContent = "🌟";
+
+            document.getElementById("plFinishTitle").textContent =
+                "Great Progress!";
+
+            document.getElementById("plFinishMessage").textContent =
+                "Keep practising. Your speaking skills are growing.";
+
+        } else {
+            document.getElementById("plFinishIcon").textContent = "💪";
+
+            document.getElementById("plFinishTitle").textContent =
+                "Keep Practising!";
+
+            document.getElementById("plFinishMessage").textContent =
+                "Listen carefully and keep trying. Practice makes progress.";
+        }
+    }
+
+    listenButton.addEventListener("click", listenToWord);
+
+    speakButton.addEventListener("click", startRecognition);
+
+    nextButton.addEventListener("click", function () {
+        if (!answered) return;
+
+        stopRecognition();
+
+        questionIndex++;
+        showQuestion();
+    });
+
+    document.getElementById("plRestart").addEventListener(
+        "click",
+        startGame
+    );
+
+    startGame();
+});
+</script>
+{% endblock %}
+</script>

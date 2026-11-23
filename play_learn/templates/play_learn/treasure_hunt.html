@@ -1,0 +1,583 @@
+
+{% extends "base.html" %}
+
+{% block title %}Treasure Hunt | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    .treasure-game {
+        max-width: 850px;
+        margin: 30px auto;
+        padding: 24px;
+        color: #fff;
+        background: #14251f;
+        border-radius: 24px;
+        font-family: Arial, sans-serif;
+    }
+
+    .th-header { text-align: center; margin-bottom: 22px; }
+    .th-header h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; }
+    .th-header p { color: #cbd5e1; }
+
+    .th-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .th-stat {
+        padding: 13px 6px;
+        text-align: center;
+        background: #203a30;
+        border-radius: 13px;
+    }
+
+    .th-stat span { display: block; color: #cbd5e1; font-size: .82rem; }
+    .th-stat strong { display: block; margin-top: 5px; font-size: 1.5rem; }
+
+    .th-panel {
+        padding: 20px;
+        background: #203a30;
+        border-radius: 20px;
+        text-align: center;
+    }
+
+    .th-instructions {
+        color: #d1fae5;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .th-controls-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .th-difficulty {
+        padding: 10px 13px;
+        color: white;
+        background: #14251f;
+        border: 1px solid #64748b;
+        border-radius: 10px;
+    }
+
+    .th-board {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        width: min(100%, 490px);
+        margin: 0 auto;
+        padding: 10px;
+        background: #102019;
+        border-radius: 15px;
+    }
+
+    .th-cell {
+        aspect-ratio: 1;
+        min-width: 0;
+        border: 2px solid rgba(255,255,255,.08);
+        border-radius: 9px;
+        background: #315b43;
+        color: white;
+        font-size: clamp(1rem, 4vw, 1.7rem);
+        cursor: pointer;
+        transition: transform .12s, background .12s;
+    }
+
+    .th-cell:hover:not(:disabled) { transform: scale(.94); }
+    .th-cell:disabled { cursor: default; }
+    .th-cell:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+
+    .th-cell.player { background: #2563eb; border-color: #93c5fd; }
+    .th-cell.visited { background: #466b50; }
+    .th-cell.treasure { background: #ca8a04; }
+    .th-cell.trap { background: #991b1b; }
+    .th-cell.exit { background: #0e7490; }
+
+    .th-clue {
+        max-width: 500px;
+        min-height: 58px;
+        display: grid;
+        place-items: center;
+        margin: 17px auto;
+        padding: 12px;
+        color: #fef3c7;
+        background: #14251f;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+
+    .th-movement {
+        display: grid;
+        grid-template-columns: repeat(3, 58px);
+        justify-content: center;
+        gap: 7px;
+        margin-top: 15px;
+    }
+
+    .th-move {
+        min-height: 52px;
+        border: 0;
+        border-radius: 12px;
+        color: #fff;
+        background: #475569;
+        font-size: 1.4rem;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .th-move:active { transform: scale(.94); }
+    .th-empty { visibility: hidden; }
+
+    .th-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .th-btn {
+        padding: 12px 20px;
+        border: 0;
+        border-radius: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .th-start { background: #facc15; color: #1f2937; }
+    .th-secondary { background: #475569; color: white; }
+
+    .th-result {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #14251f;
+        border-radius: 15px;
+    }
+
+    .th-result h2 { color: #facc15; }
+
+    @media (max-width: 520px) {
+        .treasure-game { margin: 10px; padding: 13px; }
+        .th-panel { padding: 12px; }
+        .th-stats { gap: 6px; }
+        .th-stat { padding: 10px 3px; }
+        .th-stat strong { font-size: 1.2rem; }
+        .th-board { gap: 4px; padding: 6px; }
+        .th-cell { border-radius: 6px; border-width: 1px; }
+    }
+</style>
+
+<div class="treasure-game">
+    <header class="th-header">
+        <h1>🗺️ Treasure Hunt</h1>
+        <p>Explore the map, follow the clues and find the hidden treasure!</p>
+    </header>
+
+    <div class="th-stats">
+        <div class="th-stat">
+            <span>Score</span>
+            <strong id="thScore">0</strong>
+        </div>
+        <div class="th-stat">
+            <span>Lives</span>
+            <strong id="thLives">❤️❤️❤️</strong>
+        </div>
+        <div class="th-stat">
+            <span>Moves</span>
+            <strong id="thMoves">0</strong>
+        </div>
+        <div class="th-stat">
+            <span>Time</span>
+            <strong><span id="thTime">90</span>s</strong>
+        </div>
+    </div>
+
+    <section class="th-panel">
+        <p class="th-instructions">
+            Find the treasure hidden somewhere on the map.
+            Use the clues to guide your movement. Avoid traps!
+            Keyboard arrows and the buttons below both work.
+        </p>
+
+        <div class="th-controls-top">
+            <label for="thDifficulty">Difficulty:</label>
+            <select id="thDifficulty" class="th-difficulty">
+                <option value="easy">Easy — 3 lives, 90 seconds</option>
+                <option value="medium" selected>Medium — 3 lives, 70 seconds</option>
+                <option value="hard">Hard — 2 lives, 55 seconds</option>
+            </select>
+        </div>
+
+        <div class="th-clue" id="thClue" aria-live="polite">
+            Press Start Adventure to begin your hunt.
+        </div>
+
+        <div class="th-board" id="thBoard" aria-label="Treasure hunt map"></div>
+
+        <div class="th-movement" aria-label="Movement controls">
+            <span class="th-empty"></span>
+            <button type="button" class="th-move" data-direction="up" aria-label="Move up">↑</button>
+            <span class="th-empty"></span>
+
+            <button type="button" class="th-move" data-direction="left" aria-label="Move left">←</button>
+            <button type="button" class="th-move" data-direction="down" aria-label="Move down">↓</button>
+            <button type="button" class="th-move" data-direction="right" aria-label="Move right">→</button>
+        </div>
+
+        <div class="th-actions">
+            <button type="button" class="th-btn th-start" id="thStart">Start Adventure</button>
+            <button type="button" class="th-btn th-secondary" id="thRestart" hidden>Play Again</button>
+        </div>
+
+        <div class="th-result" id="thResult" aria-live="polite">
+            <h2 id="thResultTitle">Adventure Complete!</h2>
+            <p id="thFinalScore"></p>
+            <p id="thFinalMoves"></p>
+            <p id="thFinalTime"></p>
+            <p id="thBest"></p>
+        </div>
+    </section>
+</div>
+
+<script>
+(() => {
+    const SIZE = 7;
+    const TOTAL = SIZE * SIZE;
+
+    const $ = id => document.getElementById(id);
+
+    const difficultySettings = {
+        easy: { time: 90, lives: 3, traps: 3 },
+        medium: { time: 70, lives: 3, traps: 5 },
+        hard: { time: 55, lives: 2, traps: 8 }
+    };
+
+    let player = 0;
+    let treasure = 0;
+    let exit = TOTAL - 1;
+    let traps = new Set();
+    let visited = new Set();
+    let score = 0;
+    let lives = 3;
+    let moves = 0;
+    let timeLeft = 90;
+    let playing = false;
+    let timer = null;
+    let bestScore = 0;
+
+    try {
+        bestScore = Number(localStorage.getItem("pupilauraTreasureBest")) || 0;
+    } catch (error) {
+        bestScore = 0;
+    }
+
+    function distance(a, b) {
+        const rowA = Math.floor(a / SIZE);
+        const colA = a % SIZE;
+        const rowB = Math.floor(b / SIZE);
+        const colB = b % SIZE;
+
+        return Math.abs(rowA - rowB) + Math.abs(colA - colB);
+    }
+
+    function getRow(index) {
+        return Math.floor(index / SIZE);
+    }
+
+    function getColumn(index) {
+        return index % SIZE;
+    }
+
+    function updateStats() {
+        $("thScore").textContent = score;
+        $("thLives").textContent = "❤️".repeat(lives) || "0";
+        $("thMoves").textContent = moves;
+        $("thTime").textContent = timeLeft;
+    }
+
+    function getClue() {
+        const distanceToTreasure = distance(player, treasure);
+
+        if (player === treasure) {
+            return "💎 You found the treasure!";
+        }
+
+        if (distanceToTreasure <= 1) {
+            return "🔥 Very hot! The treasure is right next to you.";
+        }
+
+        if (distanceToTreasure <= 3) {
+            return "🌡️ Warm! You are getting close.";
+        }
+
+        if (distanceToTreasure <= 5) {
+            return "🧭 The treasure is somewhere nearby.";
+        }
+
+        return "❄️ Cold! Explore another direction.";
+    }
+
+    function renderBoard() {
+        const board = $("thBoard");
+        board.innerHTML = "";
+
+        for (let i = 0; i < TOTAL; i++) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "th-cell";
+            cell.setAttribute("aria-label", `Map position ${i + 1}`);
+
+            if (i === player) {
+                cell.textContent = "🧭";
+                cell.classList.add("player");
+                cell.setAttribute("aria-label", "Your position");
+            } else if (i === treasure && !playing) {
+                cell.textContent = "💎";
+                cell.classList.add("treasure");
+            } else if (i === exit && !playing) {
+                cell.textContent = "🏁";
+                cell.classList.add("exit");
+            } else if (visited.has(i)) {
+                cell.textContent = "·";
+                cell.classList.add("visited");
+            } else {
+                cell.textContent = "🌿";
+            }
+
+            cell.disabled = !playing;
+            cell.addEventListener("click", () => moveToCell(i));
+            board.appendChild(cell);
+        }
+    }
+
+    function placeObjects() {
+        const settings = difficultySettings[$("thDifficulty").value];
+
+        const available = [];
+
+        for (let i = 0; i < TOTAL; i++) {
+            if (i !== player && i !== exit) {
+                available.push(i);
+            }
+        }
+
+        available.sort(() => Math.random() - 0.5);
+
+        treasure = available.pop();
+
+        traps = new Set(available.slice(0, settings.traps));
+
+        // Keep the treasure and exit reachable through a clear map.
+        traps.delete(treasure);
+        traps.delete(exit);
+    }
+
+    function moveToCell(index) {
+        if (!playing) return;
+
+        const rowDifference = Math.abs(getRow(index) - getRow(player));
+        const columnDifference = Math.abs(getColumn(index) - getColumn(player));
+
+        if (rowDifference + columnDifference !== 1) {
+            $("thClue").textContent =
+                "⚠️ Move one square at a time. Use the arrows to explore.";
+            return;
+        }
+
+        movePlayer(index);
+    }
+
+    function movePlayer(index) {
+        if (!playing) return;
+
+        player = index;
+        moves++;
+        visited.add(player);
+
+        if (traps.has(player)) {
+            traps.delete(player);
+            lives--;
+            score = Math.max(0, score - 15);
+
+            $("thClue").textContent =
+                `💥 You stepped on a trap! You lost a life. ${lives} left.`;
+
+            if (lives <= 0) {
+                updateStats();
+                renderBoard();
+                finishGame(false, "💥 You ran out of lives!");
+                return;
+            }
+        } else if (player === treasure) {
+            score += 100;
+            updateStats();
+            renderBoard();
+            finishGame(true, "💎 Treasure discovered!");
+            return;
+        } else {
+            score += 2;
+            $("thClue").textContent = getClue();
+        }
+
+        updateStats();
+        renderBoard();
+    }
+
+    function move(direction) {
+        if (!playing) return;
+
+        const row = getRow(player);
+        const column = getColumn(player);
+        let next = player;
+
+        if (direction === "up" && row > 0) next -= SIZE;
+        if (direction === "down" && row < SIZE - 1) next += SIZE;
+        if (direction === "left" && column > 0) next--;
+        if (direction === "right" && column < SIZE - 1) next++;
+
+        if (next !== player) {
+            movePlayer(next);
+        } else {
+            $("thClue").textContent = "🧱 You cannot move beyond the edge of the map.";
+        }
+    }
+
+    function finishGame(won, message) {
+        playing = false;
+        window.clearInterval(timer);
+        timer = null;
+
+        if (won && score > bestScore) {
+            bestScore = score;
+
+            try {
+                localStorage.setItem("pupilauraTreasureBest", String(bestScore));
+            } catch (error) {
+                // Browser storage is optional.
+            }
+        }
+
+        // Reveal the hidden objects after the adventure ends.
+        $("thResultTitle").textContent = won ? "🏆 Treasure Found!" : "🗺️ Adventure Over";
+        $("thFinalScore").textContent = `Final score: ${score} points`;
+        $("thFinalMoves").textContent = `Moves made: ${moves}`;
+        $("thFinalTime").textContent = `Time remaining: ${timeLeft} seconds`;
+        $("thBest").textContent = `Best score on this browser: ${bestScore}`;
+
+        $("thClue").textContent = message;
+        $("thResult").style.display = "block";
+        $("thStart").hidden = true;
+        $("thRestart").hidden = false;
+        $("thDifficulty").disabled = false;
+
+        // Show the final map, including treasure and remaining traps.
+        renderFinalBoard();
+    }
+
+    function renderFinalBoard() {
+        const board = $("thBoard");
+        board.innerHTML = "";
+
+        for (let i = 0; i < TOTAL; i++) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "th-cell";
+            cell.disabled = true;
+
+            if (i === player) {
+                cell.textContent = "🧭";
+                cell.classList.add("player");
+            } else if (i === treasure) {
+                cell.textContent = "💎";
+                cell.classList.add("treasure");
+            } else if (traps.has(i)) {
+                cell.textContent = "💣";
+                cell.classList.add("trap");
+            } else if (i === exit) {
+                cell.textContent = "🏁";
+                cell.classList.add("exit");
+            } else if (visited.has(i)) {
+                cell.textContent = "·";
+                cell.classList.add("visited");
+            } else {
+                cell.textContent = "🌿";
+            }
+
+            board.appendChild(cell);
+        }
+    }
+
+    function startGame() {
+        window.clearInterval(timer);
+
+        const settings = difficultySettings[$("thDifficulty").value];
+
+        player = 0;
+        exit = TOTAL - 1;
+        score = 0;
+        lives = settings.lives;
+        moves = 0;
+        timeLeft = settings.time;
+        playing = true;
+        visited = new Set([player]);
+
+        placeObjects();
+
+        $("thResult").style.display = "none";
+        $("thStart").hidden = true;
+        $("thRestart").hidden = true;
+        $("thDifficulty").disabled = true;
+
+        $("thClue").textContent = "🧭 Adventure started! Find the hidden treasure.";
+        updateStats();
+        renderBoard();
+
+        timer = window.setInterval(() => {
+            timeLeft--;
+            updateStats();
+
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                updateStats();
+                finishGame(false, "⏰ Time is up! The treasure remains hidden.");
+            }
+        }, 1000);
+    }
+
+    document.querySelectorAll(".th-move").forEach(button => {
+        button.addEventListener("click", () => {
+            move(button.dataset.direction);
+        });
+    });
+
+    document.addEventListener("keydown", event => {
+        const directions = {
+            ArrowUp: "up",
+            ArrowDown: "down",
+            ArrowLeft: "left",
+            ArrowRight: "right"
+        };
+
+        const direction = directions[event.key];
+
+        if (direction && playing) {
+            event.preventDefault();
+            move(direction);
+        }
+    });
+
+    $("thStart").addEventListener("click", startGame);
+    $("thRestart").addEventListener("click", startGame);
+
+    updateStats();
+    renderBoard();
+})();
+</script>
+{% endblock %}

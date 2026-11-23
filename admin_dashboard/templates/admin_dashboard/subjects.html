@@ -1,0 +1,470 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Subjects | PupilAura Admin{% endblock %}
+
+{% block page_title %}Subjects{% endblock %}
+{% block page_subtitle %}Manage subjects within the school curriculum{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SUBJECTS LIST (curriculum-scoped) — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Curriculum hierarchy panel (chip row) */
+    .hierarchy-panel {
+        padding: 18px 22px;
+        background: var(--surface-soft);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .hierarchy-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .hierarchy-label {
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .hierarchy-value {
+        color: var(--text);
+        font-weight: 800;
+    }
+
+    /* Table min width */
+    .subjects-table {
+        min-width: 1000px;
+    }
+
+    /* Subject name cell */
+    .subject-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+    }
+
+    .subject-icon {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 18px;
+    }
+
+    .subject-name-cell strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .subject-name-cell span {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    /* Description cell */
+    .description {
+        max-width: 300px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* Table hierarchy cell */
+    .table-hierarchy {
+        display: grid;
+        gap: 3px;
+    }
+
+    .table-hierarchy strong {
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .table-hierarchy span {
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    .not-assigned {
+        color: var(--muted);
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    /* Order badge (row number) */
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    /* Small inline table action buttons */
+    .table-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 9px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .table-action:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    .table-action.danger {
+        color: var(--danger);
+    }
+
+    .table-action.danger:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .hierarchy-panel {
+            flex-direction: column;
+        }
+        .hierarchy-item {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .subject-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .order-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .table-action {
+            background: var(--surface);
+        }
+        .table-action:hover {
+            background: rgba(37, 99, 235, 0.12);
+        }
+        .table-action.danger:hover {
+            background: rgba(220, 38, 38, 0.12);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+
+    {% if school_class %}
+        <a href="{% url 'admin_dashboard:school_class_detail' school_class.id %}">
+            {{ school_class.name }}
+        </a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    {% endif %}
+
+    <span class="breadcrumb-current">Subjects</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div>
+                    <h1>Subjects</h1>
+                    <p>
+                        Manage subjects within the school curriculum.
+                        Each subject belongs to a specific school class
+                        and is organized into terms, weeks, and lessons.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:curriculum' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Curriculum
+                </a>
+                <a href="{% url 'admin_dashboard:subject_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Subject
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Total Subjects: {{ total_subjects|default:0 }}</span>
+            <span class="meta-badge">Subjects Shown: {{ subject_count|default:0 }}</span>
+            {% if education_level %}
+                <span class="meta-badge">Level: {{ education_level.name }}</span>
+            {% endif %}
+            {% if school_class %}
+                <span class="meta-badge">Class: {{ school_class.name }}</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subject_count|default:0 }}</div>
+            <div class="stat-label">Subjects Shown</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-collection"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_subjects|default:0 }}</div>
+            <div class="stat-label">Total Subjects</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_classes|default:0 }}</div>
+            <div class="stat-label">Total School Classes</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">
+                {% if school_class %}{{ school_class.name }}{% else %}—{% endif %}
+            </div>
+            <div class="stat-label">Current Class</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- CURRICULUM LOCATION -->
+<section class="section-card" style="margin-bottom:28px;">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Curriculum Location</div>
+            <div class="section-description">
+                The curriculum hierarchy associated with these subjects.
+            </div>
+        </div>
+    </div>
+
+    <div class="hierarchy-panel">
+        {% if education_level %}
+            <div class="hierarchy-item">
+                <span class="hierarchy-label">Education Level</span>
+                <span class="hierarchy-value">{{ education_level.name }}</span>
+            </div>
+        {% endif %}
+
+        {% if school_class %}
+            <div class="hierarchy-item">
+                <span class="hierarchy-label">School Class</span>
+                <span class="hierarchy-value">{{ school_class.name }}</span>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- SUBJECT LIST -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Subject List</div>
+            <div class="section-description">
+                Subjects organized according to the curriculum hierarchy.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a href="{% url 'admin_dashboard:subject_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Add Subject
+            </a>
+        </div>
+    </div>
+
+    {% if subjects %}
+        <div class="table-wrapper">
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Subject</th>
+                        <th>Code</th>
+                        <th>School Class</th>
+                        <th>Education Level</th>
+                        <th>Terms</th>
+                        <th>Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                        <tr>
+                            <td>
+                                <span class="order-badge">
+                                    {{ subject.order|default:forloop.counter }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="subject-name-cell">
+                                    <div class="subject-icon" aria-hidden="true">
+                                        <i class="bi bi-journal-bookmark-fill"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ subject.name }}</strong>
+                                        <span>Subject ID: {{ subject.id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if subject.code %}
+                                    <span class="badge badge-blue">{{ subject.code }}</span>
+                                {% else %}
+                                    <span class="not-assigned">Not set</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if subject.school_class %}
+                                    <div class="table-hierarchy">
+                                        <strong>{{ subject.school_class.name }}</strong>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if subject.school_class and subject.school_class.education_level %}
+                                    <div class="table-hierarchy">
+                                        <strong>{{ subject.school_class.education_level.name }}</strong>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="badge badge-purple">
+                                    {{ subject.terms.count }} term{{ subject.terms.count|pluralize }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong>{{ subject.order|default:0 }}</strong>
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:subject_detail' subject.id %}"
+                                        class="table-action"
+                                        title="View subject"
+                                    >
+                                        View
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:subject_edit' subject.id %}"
+                                        class="table-action"
+                                        title="Edit subject"
+                                    >
+                                        Edit
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:subject_delete' subject.id %}"
+                                        class="table-action danger"
+                                        title="Delete subject"
+                                    >
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h3>No Subjects Yet</h3>
+            <p>
+                No subjects have been created for this curriculum
+                location yet. Create your first subject to begin
+                adding educational content.
+            </p>
+            <a href="{% url 'admin_dashboard:subject_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Add First Subject
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

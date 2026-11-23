@@ -1,0 +1,379 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ form_title }} | PupilAura{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}Manage the written content of a Story Library chapter{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chapter-form-container {
+        max-width: 950px;
+        margin: 0 auto;
+    }
+
+    .chapter-context {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+        margin-bottom: 20px;
+    }
+
+    .context-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(37, 99, 235, .10);
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .context-info {
+        min-width: 0;
+    }
+
+    .context-info strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .context-info span {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    .form-card-header {
+        padding-bottom: 17px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 22px;
+    }
+
+    .form-card-header h3 {
+        font-size: 17px;
+        font-weight: 800;
+        margin: 0 0 5px;
+        color: var(--text);
+    }
+
+    .form-card-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .form-group {
+        min-width: 0;
+        margin-bottom: 18px;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 750;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .required-mark {
+        color: #dc2626;
+    }
+
+    .form-control {
+        width: 100%;
+        min-height: 44px;
+        padding: 11px 13px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+        color: var(--text);
+        font-size: 13px;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 360px;
+        resize: vertical;
+        line-height: 1.85;
+    }
+
+    .form-control:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    .field-help {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.6;
+        margin-top: 6px;
+    }
+
+    .field-errors {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .error-summary {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+    }
+
+    .action-right {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 10px 16px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 750;
+        border: 1px solid transparent;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background: var(--surface);
+        border-color: var(--border);
+        color: var(--text);
+    }
+
+    .btn-secondary:hover {
+        background: var(--surface-soft);
+        color: var(--text);
+    }
+
+    @media (max-width: 650px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-card {
+            padding: 17px;
+        }
+
+        textarea.form-control {
+            min-height: 280px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-right {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:stories' %}">Story Library</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:story_detail' story.id %}">
+        {{ story.title|truncatechars:30 }}
+    </a>
+    <span>/</span>
+    <span>{{ form_title }}</span>
+</div>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">📖 {{ form_title }}</div>
+                <p>
+                    Add or update the chapter number, heading and complete written content.
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:story_detail' story.id %}"
+                   class="btn btn-light">
+                    ← Back to Story
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="chapter-form-container">
+
+    <div class="chapter-context">
+        <div class="context-icon">📚</div>
+        <div class="context-info">
+            <strong>{{ story.title }}</strong>
+            <span>Story Library · Written Story</span>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="error-summary">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <section class="form-card">
+
+            <div class="form-card-header">
+                <h3>Chapter Content</h3>
+                <p>
+                    Provide the chapter number, heading and complete written content.
+                </p>
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.chapter_number.id_for_label }}">
+                        Chapter Number <span class="required-mark">*</span>
+                    </label>
+
+                    {{ form.chapter_number }}
+
+                    <span class="field-help">
+                        Each chapter must have a unique number within this story.
+                    </span>
+
+                    {% if form.chapter_number.errors %}
+                        <div class="field-errors">
+                            {{ form.chapter_number.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Chapter Title <span class="required-mark">*</span>
+                    </label>
+
+                    {{ form.title }}
+
+                    {% if form.title.errors %}
+                        <div class="field-errors">
+                            {{ form.title.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.content.id_for_label }}">
+                        Chapter Content <span class="required-mark">*</span>
+                    </label>
+
+                    {{ form.content }}
+
+                    <span class="field-help">
+                        Enter the complete chapter. Use paragraphs and clear formatting
+                        to make the story easy to read.
+                    </span>
+
+                    {% if form.content.errors %}
+                        <div class="field-errors">
+                            {{ form.content.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            {% for hidden_field in form.hidden_fields %}
+                {{ hidden_field }}
+            {% endfor %}
+
+            <div class="form-actions">
+                <a href="{% url 'admin_dashboard:story_detail' story.id %}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <div class="action-right">
+                    <button type="submit" class="btn btn-primary">
+                        {{ submit_label|default:"Save Chapter" }}
+                    </button>
+                </div>
+            </div>
+
+        </section>
+    </form>
+</div>
+{% endblock %}

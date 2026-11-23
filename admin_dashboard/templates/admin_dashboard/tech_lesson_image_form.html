@@ -1,0 +1,295 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Lesson Image" }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ page_title|default:"Lesson Image" }}{% endblock %}
+{% block page_subtitle %}Add or update an image for {{ lesson.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH LESSON IMAGE FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .image-form-card {
+        max-width: 1050px;
+        margin: 0 auto;
+    }
+
+    /* Current image preview box */
+    .current-image {
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+    }
+
+    .current-image-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 12px;
+    }
+
+    .current-image img {
+        display: block;
+        max-width: 320px;
+        max-height: 220px;
+        width: auto;
+        height: auto;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+    }
+
+    /* Checkbox row */
+    .image-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0;
+    }
+
+    .image-checkbox-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .image-checkbox-row label {
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* Lesson info box */
+    .lesson-info {
+        margin-top: 20px;
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-soft);
+    }
+
+    .lesson-info-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text);
+    }
+
+    .lesson-info-text {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .lesson-info-text strong {
+        color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .current-image img {
+            max-width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .current-image {
+            background: #172554;
+            border-color: #1e3a8a;
+        }
+        .current-image img {
+            background: #111827;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lessons' %}">Tech Lessons</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}">
+        {{ lesson.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ page_title|default:"Lesson Image" }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-image"></i>
+                </div>
+                <div>
+                    <h1>{{ page_title|default:"Lesson Image" }}</h1>
+                    <p>
+                        Add or update an image for
+                        <strong>{{ lesson.title }}</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="image-form-card">
+
+    <section class="card">
+        <div class="card-header">
+            <h2>{{ form_title|default:"Lesson Image" }}</h2>
+            <p>Add an educational image to this lesson.</p>
+        </div>
+
+        <div class="card-body">
+
+            {% if image and image.image %}
+                <div class="current-image">
+                    <div class="current-image-title">Current Image</div>
+                    <a href="{{ image.image.url }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ image.image.url }}" alt="{{ image.title }}">
+                    </a>
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="non-field-errors">
+                        <ul class="error-list">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <!-- Title -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Image Title <span class="required">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <ul class="error-list">
+                            {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Image file -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.image.id_for_label }}">
+                        Image {% if not image %}<span class="required">*</span>{% endif %}
+                    </label>
+                    {{ form.image }}
+                    <div class="help-text">
+                        {% if image %}
+                            Select a new image only if you want to replace the current image.
+                        {% else %}
+                            Upload an image related to this lesson.
+                        {% endif %}
+                    </div>
+                    {% if form.image.errors %}
+                        <ul class="error-list">
+                            {% for error in form.image.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Caption -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.caption.id_for_label }}">
+                        Caption
+                    </label>
+                    {{ form.caption }}
+                    <div class="help-text">
+                        Explain what the image shows or provide useful information for students.
+                    </div>
+                    {% if form.caption.errors %}
+                        <ul class="error-list">
+                            {% for error in form.caption.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Order -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Display Order
+                    </label>
+                    {{ form.order }}
+                    <div class="help-text">Lower numbers appear first.</div>
+                    {% if form.order.errors %}
+                        <ul class="error-list">
+                            {% for error in form.order.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Published -->
+                <div class="form-group">
+                    <div class="image-checkbox-row">
+                        {{ form.published }}
+                        <label for="{{ form.published.id_for_label }}">
+                            Publish this image
+                        </label>
+                    </div>
+                    {% if form.published.errors %}
+                        <ul class="error-list">
+                            {% for error in form.published.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i>
+                        {{ submit_text|default:"Save Image" }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </section>
+
+    <!-- Lesson info -->
+    <div class="lesson-info">
+        <div class="lesson-info-title">Lesson</div>
+        <div class="lesson-info-text">
+            <strong>{{ lesson.title }}</strong>
+            {% if lesson.module %}
+                <br>Module: {{ lesson.module.title }}
+            {% endif %}
+            {% if lesson.module.course %}
+                <br>Course: {{ lesson.module.course.title }}
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

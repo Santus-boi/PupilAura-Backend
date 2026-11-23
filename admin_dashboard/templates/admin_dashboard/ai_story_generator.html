@@ -1,0 +1,822 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Stories Generator | PupilAura Admin{% endblock %}
+{% block page_title %}AI Stories Generator{% endblock %}
+{% block page_subtitle %}Generate Story Library books and interactive cartoon stories with AI.{% endblock %}
+
+{% block breadcrumb %}
+    <span>AI Tools</span>
+    <span class="mx-2">/</span>
+    <span>AI Stories Generator</span>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .story-generator {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .story-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 30px;
+        border-radius: 18px;
+        color: #fff;
+        background: linear-gradient(120deg, #312e81, #6d28d9, #9333ea);
+    }
+
+    .story-hero::after {
+        content: "📚";
+        position: absolute;
+        right: 35px;
+        top: 15px;
+        font-size: 90px;
+        opacity: .15;
+    }
+
+    .story-hero h2 {
+        font-size: 25px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .story-hero p {
+        max-width: 650px;
+        margin: 0;
+        color: rgba(255,255,255,.85);
+        line-height: 1.7;
+    }
+
+    .story-mode-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .story-mode-option {
+        position: relative;
+        display: block;
+        cursor: pointer;
+    }
+
+    .story-mode-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .story-mode-card {
+        height: 100%;
+        padding: 22px;
+        border: 2px solid var(--border-color, #e5e7eb);
+        border-radius: 15px;
+        background: var(--card-bg, #fff);
+        transition: .2s ease;
+    }
+
+    .story-mode-option input:checked + .story-mode-card {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, .06);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, .08);
+    }
+
+    .story-mode-card .mode-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #ede9fe;
+        font-size: 25px;
+        margin-bottom: 14px;
+    }
+
+    .story-mode-card h3 {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 7px;
+        color: var(--text-primary, #111827);
+    }
+
+    .story-mode-card p {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-secondary, #6b7280);
+        margin: 0;
+    }
+
+    .story-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(260px, .8fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .story-form-card,
+    .story-info-card {
+        background: var(--card-bg, #fff);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .story-card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    .story-card-header h3 {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text-primary, #111827);
+        margin: 0 0 5px;
+    }
+
+    .story-card-header p {
+        color: var(--text-secondary, #6b7280);
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .story-card-body {
+        padding: 22px;
+    }
+
+    .story-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .story-field {
+        margin-bottom: 19px;
+    }
+
+    .story-field.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .story-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-primary, #374151);
+        margin-bottom: 8px;
+    }
+
+    .story-field .required {
+        color: #dc2626;
+    }
+
+    .story-field input,
+    .story-field select,
+    .story-field textarea {
+        width: 100%;
+        border: 1px solid var(--border-color, #d1d5db);
+        border-radius: 9px;
+        padding: 11px 13px;
+        font-size: 14px;
+        color: var(--text-primary, #111827);
+        background: var(--input-bg, #fff);
+        outline: none;
+        transition: .2s;
+    }
+
+    .story-field input:focus,
+    .story-field select:focus,
+    .story-field textarea:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124,58,237,.1);
+    }
+
+    .story-field textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .story-field small {
+        display: block;
+        color: var(--text-secondary, #6b7280);
+        font-size: 11px;
+        margin-top: 6px;
+        line-height: 1.5;
+    }
+
+    .story-section {
+        display: none;
+    }
+
+    .story-section.active {
+        display: block;
+    }
+
+    .story-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color, #e5e7eb);
+        margin-top: 8px;
+    }
+
+    .story-submit-btn {
+        border: none;
+        border-radius: 9px;
+        background: #7c3aed;
+        color: #fff;
+        padding: 12px 22px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .story-submit-btn:hover {
+        background: #6d28d9;
+        transform: translateY(-1px);
+    }
+
+    .story-submit-btn:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .story-info-content {
+        padding: 20px;
+    }
+
+    .story-info-item {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .story-info-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .story-info-icon {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ede9fe;
+        border-radius: 10px;
+        font-size: 17px;
+    }
+
+    .story-info-item h4 {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text-primary, #111827);
+        margin: 0 0 5px;
+    }
+
+    .story-info-item p {
+        font-size: 12px;
+        color: var(--text-secondary, #6b7280);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .story-draft-notice {
+        padding: 15px;
+        border-radius: 11px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-top: 20px;
+    }
+
+    .story-success-card {
+        padding: 22px;
+        border-radius: 14px;
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .story-success-card h3 {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .story-success-card p {
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 8px;
+    }
+
+    .story-success-card .story-status {
+        display: inline-block;
+        background: #dcfce7;
+        color: #166534;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: 1000px) {
+        .story-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .story-mode-grid,
+        .story-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .story-hero {
+            padding: 23px;
+        }
+
+        .story-hero h2 {
+            font-size: 21px;
+        }
+
+        .story-hero::after {
+            font-size: 60px;
+            right: 15px;
+            top: 10px;
+        }
+
+        .story-card-body {
+            padding: 16px;
+        }
+
+        .story-form-actions {
+            flex-direction: column;
+        }
+
+        .story-submit-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="story-generator">
+
+    <section class="story-hero">
+        <h2>AI Stories Studio ✨</h2>
+        <p>
+            Create engaging educational stories, chapter-based books,
+            and interactive cartoon adventures for the PupilAura platform.
+        </p>
+    </section>
+
+    {% if generated_story %}
+        <section class="story-success-card">
+            <h3>✓ Story successfully generated!</h3>
+            <p><strong>{{ generated_story.title }}</strong></p>
+            <p>{{ generated_story.description }}</p>
+
+            {% if generated_story.type == "library" %}
+                <p>{{ generated_story.chapter_count }} chapters created.</p>
+            {% elif generated_story.type == "cartoon" %}
+                <p>
+                    {{ generated_story.scene_count }} scenes and
+                    {{ generated_story.question_count }} questions created.
+                </p>
+            {% endif %}
+
+            <span class="story-status">Saved as draft</span>
+            <p style="margin-top:12px;margin-bottom:0;">
+                Review the generated content before publishing it.
+            </p>
+        </section>
+    {% endif %}
+
+    <section>
+        <div class="story-card-header" style="padding-left:0;border:0;">
+            <h3>Choose generation mode</h3>
+            <p>Select the type of story you want the AI to create.</p>
+        </div>
+
+        <div class="story-mode-grid">
+
+            <label class="story-mode-option">
+                <input
+                    type="radio"
+                    name="story_mode_selector"
+                    value="library"
+                    checked
+                >
+                <div class="story-mode-card">
+                    <div class="mode-icon">📖</div>
+                    <h3>Story Library</h3>
+                    <p>
+                        Generate traditional written stories divided into
+                        chapters. Suitable for the regular Story Library.
+                    </p>
+                </div>
+            </label>
+
+            <label class="story-mode-option">
+                <input
+                    type="radio"
+                    name="story_mode_selector"
+                    value="cartoon"
+                >
+                <div class="story-mode-card">
+                    <div class="mode-icon">🎬</div>
+                    <h3>Interactive Cartoon Stories</h3>
+                    <p>
+                        Generate scenes, characters, narration, moral lessons
+                        and multiple-choice questions for children.
+                    </p>
+                </div>
+            </label>
+
+        </div>
+    </section>
+
+    <div class="story-layout">
+
+        <section class="story-form-card">
+
+            <div class="story-card-header">
+                <h3 id="formHeading">Story Library Generator</h3>
+                <p id="formDescription">
+                    Configure the story and the AI will generate its chapters.
+                </p>
+            </div>
+
+            <div class="story-card-body">
+
+                <form
+                    method="POST"
+                    id="storyGeneratorForm"
+                    action="{% url 'admin_dashboard:ai_story_generator' %}"
+                >
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="story_type"
+                        id="storyTypeInput"
+                        value="{{ form_data.story_type|default:'library' }}"
+                    >
+
+                    <div class="story-field">
+                        <label for="topic">
+                            Story topic or idea <span class="required">*</span>
+                        </label>
+                        <textarea
+                            name="topic"
+                            id="topic"
+                            required
+                            placeholder="Example: A young African girl who discovers a mysterious talking tree..."
+                        >{{ form_data.topic|default:'' }}</textarea>
+                        <small>
+                            Describe the central idea, characters, setting,
+                            or message you want the story to communicate.
+                        </small>
+                    </div>
+
+                    <!-- STORY LIBRARY FIELDS -->
+                    <div class="story-section active" id="libraryFields">
+
+                        <div class="story-form-grid">
+
+                            <div class="story-field">
+                                <label for="genre">
+                                    Story genre <span class="required">*</span>
+                                </label>
+                                <select name="genre" id="genre">
+                                    {% for value, label in story_genres %}
+                                        <option
+                                            value="{{ value }}"
+                                            {% if form_data.genre == value %}selected{% endif %}
+                                        >
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="story-field">
+                                <label for="audience">
+                                    Target audience <span class="required">*</span>
+                                </label>
+                                <select name="audience" id="audience">
+                                    {% for value, label in story_audiences %}
+                                        <option
+                                            value="{{ value }}"
+                                            {% if form_data.audience == value %}selected{% endif %}
+                                        >
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="story-field">
+                                <label for="content_rating">
+                                    Content rating <span class="required">*</span>
+                                </label>
+                                <select name="content_rating" id="content_rating">
+                                    {% for value, label in content_ratings %}
+                                        <option
+                                            value="{{ value }}"
+                                            {% if form_data.content_rating == value %}selected{% endif %}
+                                        >
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="story-field">
+                                <label for="chapter_count">
+                                    Number of chapters
+                                </label>
+                                <input
+                                    type="number"
+                                    name="chapter_count"
+                                    id="chapter_count"
+                                    min="1"
+                                    max="20"
+                                    value="{{ form_data.chapter_count|default:'5' }}"
+                                >
+                                <small>Minimum 1, maximum 20 chapters.</small>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- CARTOON STORY FIELDS -->
+                    <div class="story-section" id="cartoonFields">
+
+                        <div class="story-form-grid">
+
+                            <div class="story-field">
+                                <label for="category">
+                                    Cartoon category <span class="required">*</span>
+                                </label>
+                                <select name="category" id="category">
+                                    {% for value, label in cartoon_categories %}
+                                        <option
+                                            value="{{ value }}"
+                                            {% if form_data.category == value %}selected{% endif %}
+                                        >
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="story-field">
+                                <label for="lesson">
+                                    Moral or educational lesson
+                                </label>
+                                <input
+                                    type="text"
+                                    name="lesson"
+                                    id="lesson"
+                                    maxlength="255"
+                                    value="{{ form_data.lesson|default:'' }}"
+                                    placeholder="Example: Honesty is always the best choice"
+                                >
+                            </div>
+
+                            <div class="story-field">
+                                <label for="min_age">
+                                    Minimum age
+                                </label>
+                                <input
+                                    type="number"
+                                    name="min_age"
+                                    id="min_age"
+                                    min="1"
+                                    max="18"
+                                    value="{{ form_data.min_age|default:'5' }}"
+                                >
+                            </div>
+
+                            <div class="story-field">
+                                <label for="max_age">
+                                    Maximum age
+                                </label>
+                                <input
+                                    type="number"
+                                    name="max_age"
+                                    id="max_age"
+                                    min="1"
+                                    max="18"
+                                    value="{{ form_data.max_age|default:'10' }}"
+                                >
+                            </div>
+
+                            <div class="story-field">
+                                <label for="scene_count">
+                                    Number of scenes
+                                </label>
+                                <input
+                                    type="number"
+                                    name="scene_count"
+                                    id="scene_count"
+                                    min="3"
+                                    max="20"
+                                    value="{{ form_data.scene_count|default:'5' }}"
+                                >
+                                <small>Minimum 3, maximum 20 scenes.</small>
+                            </div>
+
+                            <div class="story-field">
+                                <label for="question_count">
+                                    Number of quiz questions
+                                </label>
+                                <input
+                                    type="number"
+                                    name="question_count"
+                                    id="question_count"
+                                    min="1"
+                                    max="15"
+                                    value="{{ form_data.question_count|default:'3' }}"
+                                >
+                                <small>Each question will have four answer options.</small>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="story-field" style="margin-top:10px;">
+                        <label for="instructions">
+                            Additional AI instructions
+                        </label>
+                        <textarea
+                            name="instructions"
+                            id="instructions"
+                            placeholder="Optional: Describe the writing style, tone, character details, cultural setting, or other requirements..."
+                        >{{ form_data.instructions|default:'' }}</textarea>
+                        <small>
+                            Use this field to provide extra creative direction.
+                        </small>
+                    </div>
+
+                    <div class="story-form-actions">
+                        <button
+                            type="submit"
+                            class="story-submit-btn"
+                            id="generateButton"
+                        >
+                            ✨ Generate Story with AI
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </section>
+
+        <aside class="story-info-card">
+
+            <div class="story-card-header">
+                <h3>How it works</h3>
+                <p>Understand the generation process.</p>
+            </div>
+
+            <div class="story-info-content">
+
+                <div class="story-info-item">
+                    <div class="story-info-icon">💡</div>
+                    <div>
+                        <h4>1. Describe your idea</h4>
+                        <p>
+                            Give the AI a topic, characters, setting,
+                            or educational objective.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="story-info-item">
+                    <div class="story-info-icon">⚙️</div>
+                    <div>
+                        <h4>2. Configure the story</h4>
+                        <p>
+                            Select the story type and configure its
+                            chapters or interactive scenes.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="story-info-item">
+                    <div class="story-info-icon">🤖</div>
+                    <div>
+                        <h4>3. AI generates content</h4>
+                        <p>
+                            The AI creates the story structure and
+                            its associated content.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="story-info-item">
+                    <div class="story-info-icon">📝</div>
+                    <div>
+                        <h4>4. Review before publishing</h4>
+                        <p>
+                            Generated stories are saved as drafts.
+                            Review and edit them before publishing.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="story-draft-notice">
+                    <strong>Important:</strong> AI-generated stories are
+                    never automatically published. All generated content
+                    remains in draft status until an administrator reviews
+                    and publishes it.
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modeRadios = document.querySelectorAll(
+        'input[name="story_mode_selector"]'
+    );
+
+    const libraryFields = document.getElementById("libraryFields");
+    const cartoonFields = document.getElementById("cartoonFields");
+
+    const storyTypeInput = document.getElementById("storyTypeInput");
+    const formHeading = document.getElementById("formHeading");
+    const formDescription = document.getElementById("formDescription");
+    const generateButton = document.getElementById("generateButton");
+    const form = document.getElementById("storyGeneratorForm");
+
+    function setSectionEnabled(section, enabled) {
+        section.querySelectorAll("input, select, textarea").forEach(function (field) {
+            field.disabled = !enabled;
+        });
+    }
+
+    function updateStoryMode(mode) {
+        const isLibrary = mode === "library";
+
+        libraryFields.classList.toggle("active", isLibrary);
+        cartoonFields.classList.toggle("active", !isLibrary);
+
+        setSectionEnabled(libraryFields, isLibrary);
+        setSectionEnabled(cartoonFields, !isLibrary);
+
+        storyTypeInput.value = mode;
+
+        if (isLibrary) {
+            formHeading.textContent = "Story Library Generator";
+            formDescription.textContent =
+                "Configure the story and the AI will generate its chapters.";
+
+            generateButton.textContent = "📖 Generate Story Library Book";
+        } else {
+            formHeading.textContent = "Interactive Cartoon Story Generator";
+            formDescription.textContent =
+                "Create scenes, characters, narration and interactive questions.";
+
+            generateButton.textContent = "🎬 Generate Cartoon Story";
+        }
+    }
+
+    const initialMode = storyTypeInput.value === "cartoon"
+        ? "cartoon"
+        : "library";
+
+    modeRadios.forEach(function (radio) {
+        radio.checked = radio.value === initialMode;
+
+        radio.addEventListener("change", function () {
+            updateStoryMode(this.value);
+        });
+    });
+
+    updateStoryMode(initialMode);
+
+    form.addEventListener("submit", function () {
+        generateButton.disabled = true;
+        generateButton.textContent = "Generating story... Please wait";
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,737 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}Discover Communities | PupilAura{% endblock %}
+{% block community_breadcrumb %}Discover Groups{% endblock %}
+
+{% block extra_css %}
+<style>
+.community-discover {
+    --primary: #dc2626;
+    --dark: #172033;
+    --muted: #748094;
+    --border: #edf0f4;
+    display: flex;
+    flex-direction: column;
+    gap: 27px;
+    color: var(--dark);
+}
+
+.community-discover * {
+    box-sizing: border-box;
+}
+
+/* HERO */
+.cd-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 32px;
+    border-radius: 21px;
+    background: linear-gradient(120deg, #171f35, #293958);
+    color: #fff;
+}
+
+.cd-hero::before,
+.cd-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: rgba(255,255,255,.045);
+}
+
+.cd-hero::before {
+    width: 250px;
+    height: 250px;
+    top: -150px;
+    right: 8%;
+}
+
+.cd-hero::after {
+    width: 180px;
+    height: 180px;
+    right: -55px;
+    bottom: -110px;
+}
+
+.cd-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cd-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #ffb6b6;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+}
+
+.cd-hero h1 {
+    margin: 0 0 10px;
+    color: #fff;
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    font-weight: 850;
+    letter-spacing: -.8px;
+}
+
+.cd-hero p {
+    max-width: 600px;
+    margin: 0 0 22px;
+    color: #cbd5e1;
+    font-size: .9rem;
+    line-height: 1.8;
+}
+
+.cd-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.cd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 43px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: .82rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.cd-btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.cd-btn-primary:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.cd-btn-light {
+    background: rgba(255,255,255,.09);
+    border-color: rgba(255,255,255,.23);
+    color: #fff;
+}
+
+.cd-btn-light:hover {
+    background: rgba(255,255,255,.17);
+    color: #fff;
+}
+
+/* QUICK NAVIGATION */
+.cd-quick-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.cd-nav-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: inherit;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.cd-nav-card:hover {
+    border-color: #f2b8b8;
+    box-shadow: 0 8px 20px rgba(16,24,40,.055);
+    transform: translateY(-3px);
+}
+
+.cd-nav-icon {
+    display: flex;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #fff0f0;
+    color: var(--primary);
+    font-size: 1.05rem;
+}
+
+.cd-nav-card strong {
+    display: block;
+    color: #263247;
+    font-size: .75rem;
+    font-weight: 800;
+}
+
+.cd-nav-card small {
+    display: block;
+    margin-top: 3px;
+    color: #98a2b3;
+    font-size: .65rem;
+    line-height: 1.4;
+}
+
+/* SECTION HEADING */
+.cd-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 17px;
+}
+
+.cd-section-heading h2 {
+    margin: 0 0 5px;
+    color: #1b2638;
+    font-size: 1.17rem;
+    font-weight: 850;
+}
+
+.cd-section-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .81rem;
+    line-height: 1.6;
+}
+
+.cd-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    background: #fff;
+    color: #526075;
+    font-size: .75rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+/* GROUP GRID */
+.cd-group-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.cd-group-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    box-shadow: 0 3px 13px rgba(16,24,40,.025);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.cd-group-card:hover {
+    transform: translateY(-4px);
+    border-color: #f1b4b4;
+    box-shadow: 0 12px 27px rgba(16,24,40,.065);
+}
+
+.cd-group-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 19px;
+}
+
+.cd-group-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 17px;
+}
+
+.cd-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: .67rem;
+    font-weight: 800;
+}
+
+.cd-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 9px;
+    border-radius: 30px;
+    font-size: .65rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.cd-status.joined {
+    background: #e9f9f0;
+    color: #16834d;
+}
+
+.cd-status.pending {
+    background: #fff5e5;
+    color: #a16207;
+}
+
+.cd-status.restricted {
+    background: #fff0f0;
+    color: #c53030;
+}
+
+.cd-status.rejected {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.cd-status.available {
+    background: #fff0f0;
+    color: #b91c1c;
+}
+
+.cd-group-title {
+    margin: 0 0 9px;
+    color: #1b2638;
+    font-size: 1.02rem;
+    font-weight: 850;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.cd-description {
+    min-height: 65px;
+    margin: 0 0 17px;
+    color: #748094;
+    font-size: .79rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.cd-group-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-bottom: 19px;
+}
+
+.cd-meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    color: #748094;
+    font-size: .75rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.cd-meta-item i {
+    flex: 0 0 15px;
+    margin-top: 2px;
+    color: var(--primary);
+}
+
+.cd-meta-item strong {
+    color: #344054;
+    font-weight: 750;
+}
+
+.cd-group-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #edf0f4;
+}
+
+.cd-member-count {
+    color: #748094;
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.cd-open-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 37px;
+    padding: 8px 12px;
+    border: 1px solid var(--primary);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--primary);
+    font-size: .7rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.cd-open-btn:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* EMPTY STATE */
+.cd-empty {
+    padding: 48px 22px;
+    border: 1px dashed #dbe1e9;
+    border-radius: 17px;
+    background: #fff;
+    text-align: center;
+}
+
+.cd-empty-icon {
+    display: flex;
+    width: 65px;
+    height: 65px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    border-radius: 19px;
+    background: #fff0f0;
+    color: var(--primary);
+    font-size: 1.6rem;
+}
+
+.cd-empty h3 {
+    margin: 0 0 8px;
+    color: #263247;
+    font-size: 1.05rem;
+    font-weight: 850;
+}
+
+.cd-empty p {
+    max-width: 440px;
+    margin: 0 auto 19px;
+    color: var(--muted);
+    font-size: .81rem;
+    line-height: 1.7;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .cd-quick-nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cd-group-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .community-discover {
+        gap: 22px;
+    }
+
+    .cd-hero {
+        padding: 25px 21px;
+        border-radius: 17px;
+    }
+
+    .cd-quick-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .cd-nav-card {
+        padding: 11px;
+    }
+
+    .cd-nav-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .cd-group-grid {
+        gap: 12px;
+    }
+
+    .cd-group-body {
+        padding: 15px;
+    }
+
+    .cd-description {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .cd-group-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-quick-nav {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .cd-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cd-group-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cd-open-btn {
+        width: 100%;
+    }
+
+    .cd-hero-actions {
+        flex-direction: column;
+    }
+
+    .cd-hero-actions .cd-btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="community-content">
+    {% block community_content %}
+    <div class="community-discover">
+
+        <section class="cd-hero">
+            <div class="cd-hero-content">
+                <div class="cd-eyebrow">
+                    <i class="bi bi-compass"></i>
+                    PUPILAURA LEARNING NETWORK
+                </div>
+
+                <h1>Learn Better, Together.</h1>
+
+                <p>
+                    Discover communities built around your interests.
+                    Connect with learners in school, examination preparation,
+                    technology and other areas of learning.
+                </p>
+
+                <div class="cd-hero-actions">
+                    <a href="{% url 'community:dashboard' %}" class="cd-btn cd-btn-light">
+                        <i class="bi bi-grid-1x2"></i>
+                        Community Overview
+                    </a>
+
+                    <a href="{% url 'community:create_group' %}" class="cd-btn cd-btn-primary">
+                        <i class="bi bi-plus-lg"></i>
+                        Create a Group
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <nav class="cd-quick-nav" aria-label="Community navigation">
+            <a href="{% url 'community:dashboard' %}" class="cd-nav-card">
+                <span class="cd-nav-icon"><i class="bi bi-grid-1x2-fill"></i></span>
+                <span>
+                    <strong>Overview</strong>
+                    <small>Your community activity</small>
+                </span>
+            </a>
+
+            <a href="{% url 'community:my_groups' %}" class="cd-nav-card">
+                <span class="cd-nav-icon"><i class="bi bi-people-fill"></i></span>
+                <span>
+                    <strong>My Groups</strong>
+                    <small>Your joined communities</small>
+                </span>
+            </a>
+
+            <a href="{% url 'community:study_buddy_discover' %}" class="cd-nav-card">
+                <span class="cd-nav-icon"><i class="bi bi-person-hearts"></i></span>
+                <span>
+                    <strong>Study Buddies</strong>
+                    <small>Find learning partners</small>
+                </span>
+            </a>
+
+            <a href="{% url 'community:study_buddy_requests' %}" class="cd-nav-card">
+                <span class="cd-nav-icon"><i class="bi bi-person-plus-fill"></i></span>
+                <span>
+                    <strong>Buddy Requests</strong>
+                    <small>Manage connections</small>
+                </span>
+            </a>
+
+            <a href="{% url 'community:private_message_inbox' %}" class="cd-nav-card">
+                <span class="cd-nav-icon"><i class="bi bi-chat-dots-fill"></i></span>
+                <span>
+                    <strong>Messages</strong>
+                    <small>Chat with study partners</small>
+                </span>
+            </a>
+        </nav>
+
+        <section>
+            <div class="cd-section-heading">
+                <div>
+                    <h2>Discover Communities</h2>
+                    <p>Explore approved groups created by students across PupilAura.</p>
+                </div>
+
+                <div class="cd-count">
+                    <i class="bi bi-people-fill"></i>
+                    {{ groups|length }} Groups
+                </div>
+            </div>
+
+            {% if groups %}
+                <div class="cd-group-grid">
+                    {% for group in groups %}
+                        <article class="cd-group-card">
+                            <div class="cd-group-body">
+
+                                <div class="cd-group-top">
+                                    <span class="cd-type">
+                                        {% if group.group_type == "school" %}
+                                            <i class="bi bi-mortarboard-fill"></i>
+                                        {% elif group.group_type == "exam" %}
+                                            <i class="bi bi-journal-bookmark-fill"></i>
+                                        {% elif group.group_type == "tech" %}
+                                            <i class="bi bi-code-slash"></i>
+                                        {% else %}
+                                            <i class="bi bi-people-fill"></i>
+                                        {% endif %}
+                                        {{ group.get_group_type_display }}
+                                    </span>
+
+                                    {% if group.current_membership_status == "active" %}
+                                        <span class="cd-status joined">
+                                            <i class="bi bi-check-circle-fill"></i> Joined
+                                        </span>
+                                    {% elif group.current_membership_status == "pending" %}
+                                        <span class="cd-status pending">
+                                            <i class="bi bi-clock-fill"></i> Pending
+                                        </span>
+                                    {% elif group.current_membership_status == "banned" %}
+                                        <span class="cd-status restricted">
+                                            <i class="bi bi-lock-fill"></i> Restricted
+                                        </span>
+                                    {% elif group.current_membership_status == "rejected" %}
+                                        <span class="cd-status rejected">
+                                            <i class="bi bi-info-circle"></i> Previously requested
+                                        </span>
+                                    {% else %}
+                                        <span class="cd-status available">
+                                            <i class="bi bi-compass"></i> Available
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <h3 class="cd-group-title">{{ group.name }}</h3>
+
+                                <p class="cd-description">
+                                    {{ group.description|default:"Connect with other learners and grow together in this community."|truncatewords:25 }}
+                                </p>
+
+                                <div class="cd-group-meta">
+                                    <div class="cd-meta-item">
+                                        <i class="bi bi-bookmark-fill"></i>
+                                        <span>
+                                            {% if group.school_class %}
+                                                <strong>School class:</strong> {{ group.school_class.name }}
+                                            {% elif group.exam %}
+                                                <strong>Examination:</strong> {{ group.exam.name }}
+                                                {% if group.exam_subject %}
+                                                    · {{ group.exam_subject.name }}
+                                                {% endif %}
+                                            {% elif group.tech_course %}
+                                                <strong>Tech course:</strong> {{ group.tech_course.title }}
+                                            {% else %}
+                                                <strong>Category:</strong> General Interest
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                    <div class="cd-meta-item">
+                                        <i class="bi bi-person-circle"></i>
+                                        <span>
+                                            <strong>Created by:</strong>
+                                            {{ group.created_by.first_name|default:group.created_by.email }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="cd-group-footer">
+                                    <span class="cd-member-count">
+                                        <i class="bi bi-people me-1"></i>
+                                        {{ group.member_count|default:0 }}
+                                        member{{ group.member_count|default:0|pluralize }}
+                                    </span>
+
+                                    <a href="{% url 'community:group_detail' slug=group.slug %}"
+                                       class="cd-open-btn">
+                                        {% if group.current_membership_status == "active" %}
+                                            Open Group
+                                        {% elif group.current_membership_status == "pending" %}
+                                            View Request
+                                        {% elif group.current_membership_status == "banned" %}
+                                            View Group
+                                        {% else %}
+                                            Explore Group
+                                        {% endif %}
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="cd-empty">
+                    <div class="cd-empty-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <h3>No approved groups yet</h3>
+
+                    <p>
+                        There are currently no available communities.
+                        Start one by creating a group and submitting it
+                        for administrative review.
+                    </p>
+
+                    <a href="{% url 'community:create_group' %}" class="cd-btn cd-btn-primary">
+                        <i class="bi bi-plus-lg"></i>
+                        Create Your First Group
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+    </div>
+    {% endblock %}
+</div>
+{% endblock %}

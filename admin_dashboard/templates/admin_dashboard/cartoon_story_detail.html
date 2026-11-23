@@ -1,0 +1,930 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}Cartoon Story Details | PupilAura{% endblock %}
+{% block page_title %}Cartoon Story Details{% endblock %}
+{% block page_subtitle %}Manage scenes, characters, questions and answers{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================================
+   CARTOON STORY DETAIL — PAGE STYLES
+   PupilAura Admin Theme
+   ========================================================= */
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(250px, .75fr);
+    gap: 20px;
+    align-items: start;
+    color: var(--text);
+}
+
+.detail-card {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 20px;
+    min-width: 0;
+}
+
+/* =========================================================
+   STORY HEADER
+   ========================================================= */
+
+.story-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.story-cover,
+.cover-placeholder {
+    width: 125px;
+    height: 145px;
+    border-radius: 13px;
+    object-fit: cover;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.cover-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    color: var(--muted);
+}
+
+.story-title {
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 850;
+    margin: 0 0 9px;
+    overflow-wrap: anywhere;
+}
+
+.story-description {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--muted);
+    margin-top: 12px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   STATUS AND CATEGORY
+   ========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.status-published {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.status-draft {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    color: #1e40af;
+    background: #dbeafe;
+    font-size: 10px;
+    font-weight: 750;
+    margin-top: 8px;
+}
+
+/* =========================================================
+   STORY METADATA
+   ========================================================= */
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.meta-item {
+    padding: 13px;
+    border-radius: 10px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    min-width: 0;
+}
+
+.meta-label {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 5px;
+}
+
+.meta-value {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   SECTION HEADINGS
+   ========================================================= */
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 17px;
+}
+
+.section-heading h3 {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 850;
+    margin: 0 0 4px;
+}
+
+.section-heading p {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0;
+}
+
+/* =========================================================
+   SCENE LIST
+   ========================================================= */
+
+.scene-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.scene-item {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 16px;
+    transition: border-color var(--transition);
+}
+
+.scene-item:hover {
+    border-color: #bfdbfe;
+}
+
+.scene-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.scene-number {
+    width: 39px;
+    height: 39px;
+    border-radius: 10px;
+    background: rgba(37, 99, 235, .10);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 850;
+    flex-shrink: 0;
+}
+
+.scene-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.scene-info h4 {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    margin: 0 0 5px;
+    overflow-wrap: anywhere;
+}
+
+.scene-character {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.scene-text {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 13px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.scene-assets {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.asset-badge {
+    padding: 5px 8px;
+    background: var(--surface-soft);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.scene-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.scene-actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   ACTION LINKS
+   ========================================================= */
+
+.action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 750;
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition);
+}
+
+.action-link:hover {
+    background: var(--surface-soft);
+    border-color: #bfdbfe;
+    color: var(--primary);
+}
+
+.action-danger {
+    color: var(--danger);
+}
+
+.action-danger:hover {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* =========================================================
+   QUESTIONS AND ANSWERS
+   ========================================================= */
+
+.question-item {
+    padding: 15px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.question-item:last-child {
+    margin-bottom: 0;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.question-header h4 {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.6;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.question-number {
+    color: var(--primary);
+    font-size: 10px;
+    font-weight: 850;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.answer-count {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 9px;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    padding: 35px 15px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+}
+
+.empty-state-icon {
+    color: var(--muted);
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+.empty-state h4 {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+
+.empty-state p {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0 0 14px;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 750;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition);
+}
+
+.btn-primary {
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    color: var(--text);
+    background: var(--bg);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    color: var(--primary);
+    background: var(--surface-soft);
+    border-color: #bfdbfe;
+}
+
+.btn-danger {
+    color: #fff;
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-danger:hover {
+    color: #fff;
+    background: #b91c1c;
+}
+
+.btn-warning {
+    color: #78350f;
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+
+.btn-warning:hover {
+    background: #fde68a;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quick-actions .btn {
+    width: 100%;
+}
+
+.publish-form {
+    margin: 0;
+}
+
+/* =========================================================
+   NOTICE
+   ========================================================= */
+
+.notice {
+    padding: 14px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 850px) {
+    .detail-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .detail-card {
+        padding: 16px;
+    }
+
+    .story-heading {
+        flex-direction: column;
+    }
+
+    .story-cover,
+    .cover-placeholder {
+        width: 110px;
+        height: 125px;
+    }
+
+    .story-title {
+        font-size: 20px;
+    }
+
+    .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .scene-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scene-actions {
+        width: 100%;
+    }
+}
+
+@media (max-width: 380px) {
+    .meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-card {
+        padding: 13px;
+    }
+
+    .scene-item {
+        padding: 13px;
+    }
+
+    .question-header {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_stories' %}">Interactive Cartoon Stories</a>
+    <span>/</span>
+    <span>Story Details</span>
+</div>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">🎬 {{ cartoon_story.title }}</div>
+                <p>Manage this interactive cartoon story, scenes and questions.</p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:cartoon_stories' %}" class="btn btn-light">
+                    ← All Cartoon Stories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+
+    <div>
+        <!-- STORY INFORMATION -->
+        <section class="detail-card">
+            <div class="story-heading">
+                {% if cartoon_story.cover %}
+                    <img
+                        src="{{ cartoon_story.cover.url }}"
+                        alt="{{ cartoon_story.title }}"
+                        class="story-cover"
+                    >
+                {% else %}
+                    <div class="cover-placeholder">
+                        {{ cartoon_story.emoji|default:cartoon_story.cover_emoji|default:"🎬" }}
+                    </div>
+                {% endif %}
+
+                <div style="min-width:0;">
+                    <h2 class="story-title">{{ cartoon_story.title }}</h2>
+
+                    {% if cartoon_story.status == "published" %}
+                        <span class="status-badge status-published">Published</span>
+                    {% else %}
+                        <span class="status-badge status-draft">Draft</span>
+                    {% endif %}
+
+                    <div>
+                        <span class="category-badge">
+                            {{ cartoon_story.get_category_display }}
+                        </span>
+                    </div>
+
+                    <p class="story-description">{{ cartoon_story.description }}</p>
+                </div>
+            </div>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Minimum Age</span>
+                    <span class="meta-value">{{ cartoon_story.min_age }} years</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Maximum Age</span>
+                    <span class="meta-value">{{ cartoon_story.max_age }} years</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Duration</span>
+                    <span class="meta-value">{{ cartoon_story.estimated_duration_minutes }} min</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Scenes</span>
+                    <span class="meta-value">{{ scene_count }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Questions</span>
+                    <span class="meta-value">{{ question_count }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Display Order</span>
+                    <span class="meta-value">{{ cartoon_story.order }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Learning Lesson</span>
+                    <span class="meta-value">{{ cartoon_story.lesson|default:"Not specified" }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Created</span>
+                    <span class="meta-value">{{ cartoon_story.created_at|date:"M d, Y" }}</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Last Updated</span>
+                    <span class="meta-value">{{ cartoon_story.updated_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- STORY SCENES -->
+        <section class="detail-card">
+            <div class="section-heading">
+                <div>
+                    <h3>🎭 Story Scenes</h3>
+                    <p>{{ scene_count }} scene{{ scene_count|pluralize }} in this story</p>
+                </div>
+
+                <a
+                    href="{% url 'admin_dashboard:cartoon_scene_create' story_id=cartoon_story.id %}"
+                    class="btn btn-primary"
+                >
+                    + Add Scene
+                </a>
+            </div>
+
+            {% if scenes %}
+                <div class="scene-list">
+                    {% for scene in scenes %}
+                        <article class="scene-item">
+                            <div class="scene-top">
+                                <div class="scene-number">{{ scene.scene_number }}</div>
+
+                                <div class="scene-info">
+                                    <h4>
+                                        {% if scene.title %}
+                                            {{ scene.title }}
+                                        {% else %}
+                                            Scene {{ scene.scene_number }}
+                                        {% endif %}
+                                    </h4>
+
+                                    <div class="scene-character">
+                                        {{ scene.character_emoji|default:"🎭" }}
+                                        {{ scene.character_name }}
+                                    </div>
+                                </div>
+
+                                {% if scene.is_published %}
+                                    <span class="status-badge status-published">Published</span>
+                                {% else %}
+                                    <span class="status-badge status-draft">Unpublished</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="scene-text">
+                                {{ scene.text|truncatechars:350 }}
+                            </p>
+
+                            <div class="scene-assets">
+                                {% if scene.illustration %}
+                                    <span class="asset-badge">🖼️ Illustration added</span>
+                                {% endif %}
+
+                                {% if scene.audio_file %}
+                                    <span class="asset-badge">🔊 Audio added</span>
+                                {% endif %}
+
+                                {% if scene.narration_text %}
+                                    <span class="asset-badge">🎙️ Narration text added</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="scene-footer">
+                                <span style="font-size:10px;color:var(--text-muted,#6b7280);">
+                                    Updated {{ scene.updated_at|date:"M d, Y" }}
+                                </span>
+
+                                <div class="scene-actions">
+                                    <a
+                                        href="{% url 'admin_dashboard:cartoon_scene_edit' scene_id=scene.id %}"
+                                        class="action-link"
+                                    >
+                                        Edit Scene
+                                    </a>
+
+                                    <a
+                                        href="{% url 'admin_dashboard:cartoon_scene_delete' scene_id=scene.id %}"
+                                        class="action-link action-danger"
+                                    >
+                                        Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎭</div>
+                    <h4>No Scenes Yet</h4>
+                    <p>Add the first scene to start building this cartoon story.</p>
+
+                    <a
+                        href="{% url 'admin_dashboard:cartoon_scene_create' story_id=cartoon_story.id %}"
+                        class="btn btn-primary"
+                    >
+                        + Create First Scene
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- INTERACTIVE QUESTIONS -->
+        <section class="detail-card">
+            <div class="section-heading">
+                <div>
+                    <h3>❓ Interactive Questions</h3>
+                    <p>{{ question_count }} question{{ question_count|pluralize }} configured</p>
+                </div>
+
+                <a
+                    href="{% url 'admin_dashboard:cartoon_question_create' story_id=cartoon_story.id %}"
+                    class="btn btn-primary"
+                >
+                    + Add Question
+                </a>
+            </div>
+
+            {% if questions %}
+                {% for question in questions %}
+                    <article class="question-item">
+                        <div class="question-header">
+                            <div>
+                                <span class="question-number">
+                                    QUESTION {{ question.question_number }}
+                                </span>
+
+                                <h4>{{ question.question_text }}</h4>
+                            </div>
+
+                            {% if question.is_published %}
+                                <span class="status-badge status-published">Published</span>
+                            {% else %}
+                                <span class="status-badge status-draft">Unpublished</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="answer-count">
+                            {{ question.answers.count }} answer option{{ question.answers.count|pluralize }}
+
+                            {% if question.correct_answer %}
+                                · Correct answer configured
+                            {% else %}
+                                · <span style="color:#dc2626;">No correct answer configured</span>
+                            {% endif %}
+                        </div>
+
+                        {% if question.explanation %}
+                            <p style="font-size:11px;color:var(--text-muted,#6b7280);line-height:1.7;margin:10px 0 0;">
+                                <strong>Explanation:</strong>
+                                {{ question.explanation|truncatechars:180 }}
+                            </p>
+                        {% endif %}
+
+                        <div class="scene-actions" style="margin-top:13px;">
+                            <a
+                                href="{% url 'admin_dashboard:cartoon_question_edit' question_id=question.id %}"
+                                class="action-link"
+                            >
+                                Edit Question &amp; Answers
+                            </a>
+
+                            <a
+                                href="{% url 'admin_dashboard:cartoon_question_delete' question_id=question.id %}"
+                                class="action-link action-danger"
+                            >
+                                Delete
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">❓</div>
+                    <h4>No Questions Yet</h4>
+                    <p>Add interactive questions to test children's understanding of the story.</p>
+
+                    <a
+                        href="{% url 'admin_dashboard:cartoon_question_create' story_id=cartoon_story.id %}"
+                        class="btn btn-primary"
+                    >
+                        + Create First Question
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- SIDEBAR ACTIONS -->
+    <aside>
+        <section class="detail-card">
+            <div class="section-heading">
+                <h3>Story Actions</h3>
+            </div>
+
+            <div class="quick-actions">
+                <a
+                    href="{% url 'admin_dashboard:cartoon_story_edit' story_id=cartoon_story.id %}"
+                    class="btn btn-primary"
+                >
+                    ✏️ Edit Story Details
+                </a>
+
+                <a
+                    href="{% url 'admin_dashboard:cartoon_scene_create' story_id=cartoon_story.id %}"
+                    class="btn btn-secondary"
+                >
+                    + Add Scene
+                </a>
+
+                <a
+                    href="{% url 'admin_dashboard:cartoon_question_create' story_id=cartoon_story.id %}"
+                    class="btn btn-secondary"
+                >
+                    + Add Question
+                </a>
+
+                <form
+                    method="POST"
+                    action="{% url 'admin_dashboard:cartoon_story_publish_toggle' story_id=cartoon_story.id %}"
+                    class="publish-form"
+                >
+                    {% csrf_token %}
+
+                    {% if cartoon_story.status == "published" %}
+                        <button type="submit" class="btn btn-warning">
+                            Unpublish Story
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary">
+                            Publish Story
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a
+                    href="{% url 'admin_dashboard:cartoon_story_delete' story_id=cartoon_story.id %}"
+                    class="btn btn-danger"
+                >
+                    Delete Story
+                </a>
+            </div>
+        </section>
+
+        <section class="detail-card">
+            <h3 style="font-size:14px;font-weight:850;margin:0 0 12px;">
+                Publishing Requirements
+            </h3>
+
+            <div class="notice">
+                Before publishing, ensure that:
+
+                <ul style="padding-left:17px;margin:9px 0 0;">
+                    <li>At least one scene exists.</li>
+                    <li>At least one question exists.</li>
+                    <li>Every question has at least two answer options.</li>
+                    <li>Every question has exactly one correct answer.</li>
+                    <li>Story content is complete and appropriate for its age range.</li>
+                </ul>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

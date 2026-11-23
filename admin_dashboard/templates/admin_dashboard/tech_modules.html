@@ -1,0 +1,284 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Tech Modules | PupilAura Admin{% endblock %}
+
+{% block page_title %}Tech Modules{% endblock %}
+{% block page_subtitle %}Organize technology courses into structured learning modules{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH MODULES LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Module title / description in table */
+    .module-title {
+        font-weight: 700;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .module-description {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+        max-width: 350px;
+    }
+
+    /* Course cell */
+    .course-name {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .category-name {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    /* Order badge (circular) */
+    .order-badge {
+        display: inline-flex;
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    /* Table min width */
+    .tech-modules-table {
+        min-width: 900px;
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .order-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_courses' %}">Tech Courses</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Tech Modules</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-collection-play-fill"></i>
+                </div>
+                <div>
+                    <h1>Tech Modules</h1>
+                    <p>
+                        Organize technology courses into structured learning modules.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:tech_module_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Module
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_tech_modules|default:0 }} module{{ total_tech_modules|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ published_tech_modules|default:0 }} published
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-collection-play"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_modules|default:0 }}</div>
+            <div class="stat-label">Total Modules</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_courses_with_modules|default:0 }}</div>
+            <div class="stat-label">Courses With Modules</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_tech_modules|default:0 }}</div>
+            <div class="stat-label">Published Modules</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ draft_tech_modules|default:0 }}</div>
+            <div class="stat-label">Draft Modules</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- MODULE LIST -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All Technology Modules</div>
+            <div class="section-description">
+                Manage course modules and their learning order.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a href="{% url 'admin_dashboard:tech_module_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Add
+            </a>
+        </div>
+    </div>
+
+    {% if modules %}
+        <div class="table-wrapper">
+            <table class="tech-modules-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Course</th>
+                        <th>Order</th>
+                        <th>Lessons</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for module in modules %}
+                        <tr>
+                            <td>
+                                <div class="module-title">{{ module.title }}</div>
+                                {% if module.description %}
+                                    <div class="module-description">
+                                        {{ module.description|truncatechars:90 }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="course-name">{{ module.course.title }}</div>
+                                {% if module.course.category %}
+                                    <div class="category-name">
+                                        {{ module.course.category.name }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="order-badge">{{ module.order }}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-blue">
+                                    {{ module.lesson_count }} lesson{{ module.lesson_count|pluralize }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if module.published %}
+                                    <span class="badge badge-green">
+                                        <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                                        Published
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-orange">
+                                        <i class="bi bi-pencil-fill" style="margin-right:4px;"></i>
+                                        Draft
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="action-group" style="justify-content: flex-end;">
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_module_detail' module_id=module.id %}"
+                                        class="action-btn"
+                                        title="View Module"
+                                        aria-label="View {{ module.title }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_module_edit' module_id=module.id %}"
+                                        class="action-btn"
+                                        title="Edit Module"
+                                        aria-label="Edit {{ module.title }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_module_delete' module_id=module.id %}"
+                                        class="action-btn danger"
+                                        title="Delete Module"
+                                        aria-label="Delete {{ module.title }}"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-collection-play"></i>
+            </div>
+            <h3>No Tech Modules Yet</h3>
+            <p>
+                Create your first module to start structuring a technology course.
+            </p>
+            <a href="{% url 'admin_dashboard:tech_module_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Create First Module
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

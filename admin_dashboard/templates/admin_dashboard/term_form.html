@@ -1,0 +1,381 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if edit_mode %}Edit Term{% else %}Add Term{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if edit_mode %}Edit Term{% else %}Add Term{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if edit_mode %}
+        Update the term information and curriculum placement
+    {% else %}
+        Create a new term and assign it to a subject
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TERM FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .term-form-card {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    /* Curriculum structure block */
+    .curriculum-structure {
+        margin-top: 18px;
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface-soft);
+    }
+
+    .curriculum-structure-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .curriculum-structure-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 0;
+        color: var(--text);
+    }
+
+    .curriculum-structure-arrow {
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Info list (sidebar) */
+    .term-info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .term-info-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .term-info-item:first-child {
+        padding-top: 0;
+    }
+
+    .term-info-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .term-info-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .term-info-value {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    /* Info note */
+    .term-info-note {
+        background: #eff6ff;
+        color: #1e40af;
+        padding: 13px;
+        border-radius: 10px;
+        font-size: 11px;
+        line-height: 1.6;
+        margin-top: 18px;
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .curriculum-structure {
+            background: var(--surface-soft);
+        }
+        .term-info-note {
+            background: #172554;
+            color: #bfdbfe;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:terms' %}">Terms</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if edit_mode %}Edit{% else %}Add{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if edit_mode %}Edit Term{% else %}Add Term{% endif %}
+                    </h1>
+                    <p>
+                        {% if edit_mode %}
+                            Update the term information and curriculum placement.
+                        {% else %}
+                            Create a new term and assign it to a subject.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:terms' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="term-form-card">
+    <section class="content-grid">
+
+        <!-- FORM CARD -->
+        <article class="card">
+            <div class="card-header">
+                <h2>
+                    {% if edit_mode %}Term Information{% else %}New Term{% endif %}
+                </h2>
+                <p>Enter the academic term details and curriculum placement.</p>
+            </div>
+
+            <div class="card-body">
+
+                {% if form.non_field_errors %}
+                    <div class="non-field-errors">
+                        <ul class="error-list">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Term Name -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.name.id_for_label }}">
+                            Term Name
+                            {% if form.name.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <ul class="error-list">
+                                {% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Enter the name of the academic term.
+                        </div>
+                    </div>
+
+                    <!-- Term Type -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.term_type.id_for_label }}">
+                            Term Type
+                            {% if form.term_type.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.term_type }}
+                        {% if form.term_type.errors %}
+                            <ul class="error-list">
+                                {% for error in form.term_type.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Select the appropriate term type.
+                        </div>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.subject.id_for_label }}">
+                            Subject
+                            {% if form.subject.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <ul class="error-list">
+                                {% for error in form.subject.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Select the subject this term belongs to.
+                        </div>
+                    </div>
+
+                    <!-- Order -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.order.id_for_label }}">
+                            Display Order
+                            {% if form.order.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                            <ul class="error-list">
+                                {% for error in form.order.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Lower numbers appear first in the curriculum.
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <a href="{% url 'admin_dashboard:terms' %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2"></i>
+                            {% if edit_mode %}Save Changes{% else %}Create Term{% endif %}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </article>
+
+        <!-- CURRICULUM STRUCTURE -->
+        <aside class="card">
+            <div class="card-header">
+                <h2>Curriculum Structure</h2>
+                <p>How this term fits into the school curriculum.</p>
+            </div>
+
+            <div class="card-body">
+
+                <div class="term-info-list">
+                    <div class="term-info-item">
+                        <div class="term-info-label">Current Level</div>
+                        <div class="term-info-value">
+                            {% if term and term.subject and term.subject.school_class and term.subject.school_class.education_level %}
+                                {{ term.subject.school_class.education_level.name }}
+                            {% else %}
+                                Select a subject
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="term-info-item">
+                        <div class="term-info-label">School Class</div>
+                        <div class="term-info-value">
+                            {% if term and term.subject and term.subject.school_class %}
+                                {{ term.subject.school_class.name }}
+                            {% else %}
+                                Not assigned
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="term-info-item">
+                        <div class="term-info-label">Subject</div>
+                        <div class="term-info-value">
+                            {% if term and term.subject %}
+                                {{ term.subject.name }}
+                            {% else %}
+                                Select a subject
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="term-info-item">
+                        <div class="term-info-label">Next Level</div>
+                        <div class="term-info-value">Weeks</div>
+                    </div>
+                </div>
+
+                <!-- Hierarchy diagram -->
+                <div class="curriculum-structure">
+                    <div class="curriculum-structure-title">Curriculum Hierarchy</div>
+
+                    <div class="curriculum-structure-item">
+                        <span>Education Level</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span class="curriculum-structure-arrow">↓</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span>School Class</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span class="curriculum-structure-arrow">↓</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span>Subject</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span class="curriculum-structure-arrow">↓</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span>Term</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span class="curriculum-structure-arrow">↓</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span>Week</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span class="curriculum-structure-arrow">↓</span>
+                    </div>
+                    <div class="curriculum-structure-item">
+                        <span>Lesson</span>
+                    </div>
+                </div>
+
+                <div class="term-info-note">
+                    A term belongs to one subject.
+                    Each term can contain multiple weeks,
+                    and each week can contain multiple lessons.
+                </div>
+
+            </div>
+        </aside>
+
+    </section>
+</div>
+
+{% endblock %}

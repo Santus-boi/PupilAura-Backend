@@ -1,0 +1,525 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}My Study Profile | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+    <span class="text-muted">Study Buddies</span>
+    <i class="bi bi-chevron-right small mx-2"></i>
+    <span class="fw-semibold">My Study Profile</span>
+{% endblock %}
+
+{% block community_content %}
+
+<style>
+    .sp-profile {
+        color: #1e293b;
+    }
+
+    .sp-hero {
+        padding: 27px;
+        border: 1px solid #dbeafe;
+        border-radius: 22px;
+        background: linear-gradient(120deg, #eff6ff, #f8fafc);
+    }
+
+    .sp-hero-icon {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 18px;
+        background: #dbeafe;
+        color: #2563eb;
+        font-size: 25px;
+    }
+
+    .sp-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0;
+    }
+
+    .sp-nav a {
+        padding: 9px 15px;
+        border-radius: 30px;
+        background: #f1f5f9;
+        color: #475569;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sp-nav a:hover,
+    .sp-nav a.active {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .sp-form-card,
+    .sp-side-card {
+        border: 1px solid #e8edf4;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(15, 23, 42, .035);
+    }
+
+    .sp-section-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 19px;
+    }
+
+    .sp-field {
+        margin-bottom: 23px;
+    }
+
+    .sp-field .form-label {
+        color: #334155;
+        font-size: 13px;
+        font-weight: 750;
+        margin-bottom: 9px;
+    }
+
+    .sp-field input:not([type="checkbox"]),
+    .sp-field textarea,
+    .sp-field select {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 13px;
+        border: 1px solid #dbe3ed;
+        border-radius: 11px;
+        background-color: #fff;
+        color: #334155;
+        font-size: 14px;
+        transition: .2s ease;
+    }
+
+    .sp-field textarea {
+        min-height: 115px;
+        resize: vertical;
+    }
+
+    .sp-field input:focus,
+    .sp-field textarea:focus,
+    .sp-field select:focus {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+    }
+
+    .sp-help {
+        margin-top: 7px;
+        color: #94a3b8;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .sp-error {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .sp-visibility {
+        padding: 17px;
+        border: 1px solid #dbeafe;
+        border-radius: 14px;
+        background: #f8fbff;
+    }
+
+    .sp-visibility .form-check-input {
+        width: 42px;
+        height: 22px;
+        cursor: pointer;
+    }
+
+    .sp-visibility .form-check-input:checked {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+    .sp-visibility .form-check-label {
+        font-size: 13px;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+    .sp-side-card {
+        padding: 23px;
+        margin-bottom: 16px;
+    }
+
+    .sp-side-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 21px;
+        margin-bottom: 15px;
+    }
+
+    .sp-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 13px;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .sp-tip i {
+        color: #2563eb;
+        margin-top: 2px;
+    }
+
+    .sp-action {
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    @media(max-width: 576px) {
+        .sp-hero {
+            padding: 20px;
+        }
+
+        .sp-hero .btn {
+            width: 100%;
+        }
+
+        .sp-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="sp-profile container-fluid py-3">
+
+    <!-- Hero -->
+    <section class="sp-hero">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="sp-hero-icon">
+                    <i class="bi bi-person-vcard-fill"></i>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-1">My Study Profile</h3>
+                    <p class="text-muted small mb-0">
+                        Share your learning goals and find compatible study partners.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'community:study_buddy_discover' %}"
+               class="btn btn-primary rounded-pill px-4 py-2">
+                <i class="bi bi-people me-2"></i>
+                Find Study Buddies
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <nav class="sp-nav">
+        <a href="{% url 'community:dashboard' %}">
+            <i class="bi bi-grid me-1"></i> Community
+        </a>
+
+        <a href="{% url 'community:study_buddy_discover' %}">
+            <i class="bi bi-search me-1"></i> Discover
+        </a>
+
+        <a href="{% url 'community:study_buddy_profile' %}" class="active">
+            <i class="bi bi-person me-1"></i> My Profile
+        </a>
+
+        <a href="{% url 'community:study_buddy_requests' %}">
+            <i class="bi bi-person-plus me-1"></i> Requests
+        </a>
+
+        <a href="{% url 'community:study_buddy_partners' %}">
+            <i class="bi bi-people me-1"></i> Partners
+        </a>
+
+        <a href="{% url 'community:private_message_inbox' %}">
+            <i class="bi bi-chat-dots me-1"></i> Messages
+        </a>
+    </nav>
+
+    <div class="row g-4">
+
+        <!-- Profile form -->
+        <div class="col-12 col-lg-8">
+
+            <div class="sp-form-card">
+                <div class="p-3 p-md-4 p-xl-5">
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="sp-section-icon">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="fw-bold mb-1">Profile information</h5>
+                            <p class="text-muted small mb-0">
+                                Help other students understand who you are.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger rounded-3 small">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Bio -->
+                        <div class="sp-field">
+                            <label class="form-label" for="{{ form.bio.id_for_label }}">
+                                <i class="bi bi-person text-primary me-1"></i>
+                                About me
+                            </label>
+
+                            {{ form.bio }}
+
+                            {% if form.bio.errors %}
+                                <div class="sp-error">{{ form.bio.errors }}</div>
+                            {% endif %}
+
+                            <div class="sp-help">
+                                Introduce yourself, describe your learning goals and explain what you hope to achieve.
+                            </div>
+                        </div>
+
+                        <!-- Subjects -->
+                        <div class="sp-field">
+                            <label class="form-label" for="{{ form.subjects.id_for_label }}">
+                                <i class="bi bi-book text-primary me-1"></i>
+                                Subjects I study
+                            </label>
+
+                            {{ form.subjects }}
+
+                            {% if form.subjects.errors %}
+                                <div class="sp-error">{{ form.subjects.errors }}</div>
+                            {% endif %}
+
+                            <div class="sp-help">
+                                Example: Mathematics, English, Biology, Physics.
+                            </div>
+                        </div>
+
+                        <!-- Interests -->
+                        <div class="sp-field">
+                            <label class="form-label" for="{{ form.interests.id_for_label }}">
+                                <i class="bi bi-lightbulb text-primary me-1"></i>
+                                My interests
+                            </label>
+
+                            {{ form.interests }}
+
+                            {% if form.interests.errors %}
+                                <div class="sp-error">{{ form.interests.errors }}</div>
+                            {% endif %}
+
+                            <div class="sp-help">
+                                Example: Programming, reading, science and examination preparation.
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="sp-field">
+                            <label class="form-label" for="{{ form.availability.id_for_label }}">
+                                <i class="bi bi-clock text-primary me-1"></i>
+                                Study availability
+                            </label>
+
+                            {{ form.availability }}
+
+                            {% if form.availability.errors %}
+                                <div class="sp-error">{{ form.availability.errors }}</div>
+                            {% endif %}
+
+                            <div class="sp-help">
+                                Example: Weekdays after 4 PM or weekends.
+                            </div>
+                        </div>
+
+                        <!-- Study mode -->
+                        <div class="sp-field">
+                            <label class="form-label" for="{{ form.study_mode.id_for_label }}">
+                                <i class="bi bi-laptop text-primary me-1"></i>
+                                Preferred study arrangement
+                            </label>
+
+                            {{ form.study_mode }}
+
+                            {% if form.study_mode.errors %}
+                                <div class="sp-error">{{ form.study_mode.errors }}</div>
+                            {% endif %}
+
+                            <div class="sp-help">
+                                Select how you prefer to study with other students.
+                            </div>
+                        </div>
+
+                        <!-- Discoverability -->
+                        <div class="sp-visibility mb-4">
+
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="sp-section-icon">
+                                    <i class="bi bi-eye"></i>
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <div class="form-check form-switch mb-2">
+                                        {{ form.is_discoverable }}
+
+                                        <label class="form-check-label"
+                                               for="{{ form.is_discoverable.id_for_label }}">
+                                            Make my profile discoverable
+                                        </label>
+                                    </div>
+
+                                    <p class="text-muted small mb-0">
+                                        When enabled, other students can find your profile and send study partnership requests.
+                                    </p>
+
+                                    {% if form.is_discoverable.errors %}
+                                        <div class="sp-error">
+                                            {{ form.is_discoverable.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="sp-actions d-flex flex-wrap gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary sp-action">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                Save Study Profile
+                            </button>
+
+                            <a href="{% url 'community:study_buddy_discover' %}"
+                               class="btn btn-light border sp-action">
+                                Cancel
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-4">
+
+            <!-- Profile tips -->
+            <div class="sp-side-card">
+
+                <div class="sp-side-icon">
+                    <i class="bi bi-lightbulb-fill"></i>
+                </div>
+
+                <h6 class="fw-bold mb-2">Build a useful profile</h6>
+
+                <p class="text-muted small mb-4">
+                    A detailed profile helps students with similar academic goals find and connect with you.
+                </p>
+
+                <div class="sp-tip">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>List the subjects you are currently studying.</span>
+                </div>
+
+                <div class="sp-tip">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Mention your academic and personal learning interests.</span>
+                </div>
+
+                <div class="sp-tip">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Provide realistic study availability.</span>
+                </div>
+
+                <div class="sp-tip mb-0">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Choose the study arrangement that works best for you.</span>
+                </div>
+
+            </div>
+
+            <!-- Privacy -->
+            <div class="sp-side-card">
+
+                <div class="sp-side-icon"
+                     style="background:#dcfce7;color:#15803d;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+
+                <h6 class="fw-bold mb-2">Your privacy matters</h6>
+
+                <p class="text-muted small mb-0">
+                    You control whether your profile appears in Study Buddy discovery. Avoid including private contact information, passwords or sensitive personal details in your public profile.
+                </p>
+
+            </div>
+
+            <!-- Community shortcut -->
+            <div class="sp-side-card">
+
+                <div class="sp-side-icon"
+                     style="background:#fef3c7;color:#b45309;">
+                    <i class="bi bi-chat-heart-fill"></i>
+                </div>
+
+                <h6 class="fw-bold mb-2">Ready to connect?</h6>
+
+                <p class="text-muted small mb-3">
+                    Discover students, send partnership requests and start learning together.
+                </p>
+
+                <a href="{% url 'community:study_buddy_discover' %}"
+                   class="btn btn-outline-primary w-100 rounded-3">
+                    Explore Study Buddies
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,845 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Stories & Novels | PupilAura{% endblock %}
+
+{% block content %}
+
+<style>
+.reading-hub {
+    --purple: #713bea;
+    --purple-dark: #4b20b9;
+    --ink: #211b35;
+    --muted: #77738a;
+    background: #f8f7fc;
+    color: var(--ink);
+    padding-bottom: 75px;
+}
+
+.reading-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 75px 45px;
+    border-radius: 25px;
+    color: white;
+    background:
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,.16), transparent 25%),
+        linear-gradient(120deg, #211047, #5124a7 55%, #9560e9);
+    margin-bottom: 35px;
+}
+
+.reading-hero::after {
+    content: "📚";
+    position: absolute;
+    right: 7%;
+    bottom: -35px;
+    font-size: 175px;
+    opacity: .13;
+    pointer-events: none;
+}
+
+.reading-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 650px;
+}
+
+.reading-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border-radius: 30px;
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #f0e8ff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.reading-hero h1 {
+    font-size: clamp(35px, 5vw, 57px);
+    line-height: 1.1;
+    font-weight: 900;
+    letter-spacing: -1.8px;
+    margin-bottom: 18px;
+}
+
+.reading-hero p {
+    color: #e9ddff;
+    font-size: 15px;
+    line-height: 1.9;
+    max-width: 570px;
+    margin-bottom: 25px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.hero-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 19px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+    transition: .2s ease;
+}
+
+.hero-action-primary {
+    color: #4b20b9;
+    background: white;
+}
+
+.hero-action-primary:hover {
+    background: #eee7ff;
+    color: #4b20b9;
+    transform: translateY(-2px);
+}
+
+.hero-action-secondary {
+    color: white;
+    border: 1px solid rgba(255,255,255,.4);
+    background: rgba(255,255,255,.08);
+}
+
+.hero-action-secondary:hover {
+    background: rgba(255,255,255,.18);
+    color: white;
+}
+
+.reading-filter {
+    background: white;
+    border: 1px solid #ece9f4;
+    border-radius: 19px;
+    padding: 24px;
+    margin-bottom: 42px;
+    box-shadow: 0 8px 28px rgba(36, 20, 74, .035);
+}
+
+.filter-heading {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.reading-filter .form-control,
+.reading-filter .form-select {
+    min-height: 48px;
+    border-radius: 10px;
+    border-color: #e5e1ed;
+    font-size: 13px;
+}
+
+.reading-filter .form-control:focus,
+.reading-filter .form-select:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(113,59,234,.1);
+}
+
+.filter-label {
+    color: #514a65;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.filter-submit {
+    min-height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--purple);
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.filter-submit:hover {
+    background: var(--purple-dark);
+    color: white;
+}
+
+.filter-reset {
+    display: inline-block;
+    margin-top: 15px;
+    color: var(--purple);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.filter-reset:hover {
+    color: var(--purple-dark);
+}
+
+.reading-section {
+    margin-top: 48px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 23px;
+}
+
+.section-heading h2 {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--ink);
+    margin: 0 0 7px;
+    letter-spacing: -.5px;
+}
+
+.section-heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+.section-count {
+    color: #706985;
+    background: white;
+    border: 1px solid #ebe7f3;
+    padding: 8px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.reading-card {
+    height: 100%;
+    background: white;
+    border: 1px solid #ece9f4;
+    border-radius: 17px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+
+.reading-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(48,19,111,.10);
+}
+
+.reading-cover {
+    height: 190px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #eee5ff, #fce8f3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reading-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+}
+
+.reading-card:hover .reading-cover img {
+    transform: scale(1.04);
+}
+
+.reading-emoji {
+    font-size: 65px;
+}
+
+.cover-placeholder {
+    font-size: 60px;
+    color: #713bea;
+}
+
+.featured-label {
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    padding: 7px 11px;
+    background: #fff;
+    color: #713bea;
+    border-radius: 30px;
+    font-size: 10px;
+    font-weight: 900;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.reading-card-body {
+    padding: 19px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.reading-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 13px;
+}
+
+.reading-tag {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #f1eaff;
+    color: #713bea;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.reading-tag.rating {
+    background: #fff3e6;
+    color: #b45309;
+}
+
+.reading-tag.audience {
+    background: #eaf5ff;
+    color: #1764a0;
+}
+
+.reading-card-title {
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.4;
+    margin-bottom: 9px;
+}
+
+.reading-card-description {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.75;
+    margin-bottom: 17px;
+    flex: 1;
+}
+
+.reading-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    color: #898398;
+    font-size: 11px;
+    margin-bottom: 16px;
+}
+
+.reading-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--purple);
+    color: white;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 12px;
+    transition: background .2s ease;
+}
+
+.reading-btn:hover {
+    background: var(--purple-dark);
+    color: white;
+}
+
+.featured-section {
+    padding: 25px;
+    border-radius: 21px;
+    background: linear-gradient(120deg, #f0eaff, #fff5fb);
+    border: 1px solid #e9defc;
+}
+
+.reading-empty {
+    background: white;
+    border: 1px dashed #d9c9f7;
+    border-radius: 17px;
+    padding: 45px 20px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.reading-empty-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 16px;
+    border-radius: 20px;
+    background: #f1eaff;
+    color: var(--purple);
+    display: grid;
+    place-items: center;
+    font-size: 30px;
+}
+
+.reading-empty h3 {
+    color: var(--ink);
+    font-size: 19px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.reading-empty p {
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+@media (max-width: 576px) {
+    .reading-hero {
+        padding: 48px 22px;
+        border-radius: 18px;
+    }
+
+    .reading-hero::after {
+        font-size: 100px;
+        right: 0;
+    }
+
+    .reading-hero h1 {
+        font-size: 36px;
+    }
+
+    .reading-filter {
+        padding: 18px;
+    }
+
+    .section-heading h2 {
+        font-size: 21px;
+    }
+
+    .reading-cover {
+        height: 200px;
+    }
+
+    .featured-section {
+        padding: 16px;
+    }
+}
+</style>
+
+<div class="container py-4 reading-hub">
+
+    <!-- HERO -->
+    <section class="reading-hero">
+        <div class="reading-hero-content">
+
+            <div class="reading-eyebrow">
+                <i class="bi bi-stars"></i>
+                PupilAura Reading Hub
+            </div>
+
+            <h1>Every story opens a new world.</h1>
+
+            <p>
+                Discover African fiction, thrilling mysteries, romance,
+                fantasy, adventures and interactive cartoon stories.
+                Find your next favourite read.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#browse-stories" class="hero-action hero-action-primary">
+                    <i class="bi bi-book-half"></i>
+                    Explore Stories
+                </a>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'play_learn:my_story_library' %}"
+                       class="hero-action hero-action-secondary">
+                        <i class="bi bi-bookmarks"></i>
+                        My Library
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SEARCH AND FILTERS -->
+    <section class="reading-filter" id="browse-stories">
+
+        <div class="filter-heading">
+            <i class="bi bi-search me-2" style="color:#713bea;"></i>
+            Find your next story
+        </div>
+
+        <form method="GET" action="{% url 'play_learn:story_library' %}">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-5">
+                    <label class="filter-label">Search stories</label>
+
+                    <input
+                        type="search"
+                        name="q"
+                        class="form-control"
+                        placeholder="Search by title, author or description..."
+                        value="{{ search_query }}"
+                    >
+                </div>
+
+                <div class="col-lg-3 col-sm-6">
+                    <label class="filter-label">Genre</label>
+
+                    <select name="genre" class="form-select">
+                        <option value="">All genres</option>
+
+                        {% for value, label in genres %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_genre == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-sm-6">
+                    <label class="filter-label">Audience</label>
+
+                    <select name="audience" class="form-select">
+                        <option value="">All audiences</option>
+
+                        {% for value, label in audiences %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_audience == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <button type="submit" class="filter-submit w-100">
+                        <i class="bi bi-search me-1"></i>
+                        Search
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        {% if search_query or selected_genre or selected_audience %}
+            <a href="{% url 'play_learn:story_library' %}" class="filter-reset">
+                <i class="bi bi-x-circle me-1"></i>
+                Clear all filters
+            </a>
+        {% endif %}
+
+    </section>
+
+    <!-- FEATURED STORIES -->
+    {% if stories %}
+        {% for story in stories %}
+            {% if story.is_featured and forloop.first %}
+                <section class="reading-section featured-section">
+
+                    <div class="section-heading">
+                        <div>
+                            <h2>⭐ Featured Stories</h2>
+                            <p>Handpicked reads from the PupilAura collection.</p>
+                        </div>
+
+                        <span class="section-count">Editor's Picks</span>
+                    </div>
+
+                    <div class="row g-4">
+
+                        {% for featured in stories %}
+                            {% if featured.is_featured %}
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <article class="reading-card">
+
+                                        <div class="reading-cover">
+                                            {% if featured.cover %}
+                                                <img src="{{ featured.cover.url }}"
+                                                     alt="{{ featured.title }}"
+                                                     loading="lazy">
+                                            {% else %}
+                                                <span class="cover-placeholder">📚</span>
+                                            {% endif %}
+
+                                            <span class="featured-label">
+                                                <i class="bi bi-star-fill"></i>
+                                                Featured
+                                            </span>
+                                        </div>
+
+                                        <div class="reading-card-body">
+
+                                            <div class="reading-tags">
+                                                <span class="reading-tag">
+                                                    {{ featured.get_genre_display }}
+                                                </span>
+
+                                                <span class="reading-tag rating">
+                                                    {{ featured.get_content_rating_display }}
+                                                </span>
+                                            </div>
+
+                                            <h3 class="reading-card-title">
+                                                {{ featured.title }}
+                                            </h3>
+
+                                            <p class="reading-card-description">
+                                                {{ featured.description|truncatewords:20 }}
+                                            </p>
+
+                                            <div class="reading-meta">
+                                                <span>
+                                                    <i class="bi bi-person"></i>
+                                                    {{ featured.author_name|default:"PupilAura Author" }}
+                                                </span>
+
+                                                <span>
+                                                    <i class="bi bi-journal"></i>
+                                                    {{ featured.chapter_count }} chapters
+                                                </span>
+                                            </div>
+
+                                            <a href="{% url 'play_learn:story_detail' featured.slug %}"
+                                               class="reading-btn">
+                                                Explore Story
+                                                <i class="bi bi-arrow-right"></i>
+                                            </a>
+
+                                        </div>
+                                    </article>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </section>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- CARTOON STORIES -->
+    {% if cartoon_stories %}
+        <section class="reading-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>🎨 Cartoon Stories</h2>
+                    <p>Interactive adventures, characters and quizzes for young readers.</p>
+                </div>
+
+                <span class="section-count">
+                    {{ cartoon_stories|length }} stories
+                </span>
+            </div>
+
+            <div class="row g-4">
+
+                {% for cartoon in cartoon_stories %}
+                    <div class="col-12 col-sm-6 col-lg-4">
+
+                        <article class="reading-card">
+
+                            <div class="reading-cover">
+                                <span class="reading-emoji">
+                                    {{ cartoon.cover }}
+                                </span>
+                            </div>
+
+                            <div class="reading-card-body">
+
+                                <div class="reading-tags">
+                                    <span class="reading-tag">
+                                        {{ cartoon.category }}
+                                    </span>
+
+                                    <span class="reading-tag audience">
+                                        {{ cartoon.age }} years
+                                    </span>
+                                </div>
+
+                                <h3 class="reading-card-title">
+                                    {{ cartoon.title }}
+                                </h3>
+
+                                <p class="reading-card-description">
+                                    {{ cartoon.description }}
+                                </p>
+
+                                <div class="reading-meta">
+                                    <span>
+                                        <i class="bi bi-clock"></i>
+                                        {{ cartoon.duration }}
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-lightbulb"></i>
+                                        {{ cartoon.lesson }}
+                                    </span>
+                                </div>
+
+                                <a href="{% url 'play_learn:cartoon_stories' %}?story={{ cartoon.id }}"
+                                   class="reading-btn">
+                                    Read Interactive Story
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+
+                            </div>
+                        </article>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- ALL DATABASE STORIES -->
+    <section class="reading-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>📖 Browse the Collection</h2>
+                <p>Explore novels and stories across different genres and audiences.</p>
+            </div>
+
+            <span class="section-count">
+                {{ stories|length }} novels
+            </span>
+        </div>
+
+        {% if stories %}
+
+            <div class="row g-4">
+
+                {% for story in stories %}
+                    <div class="col-12 col-sm-6 col-lg-4">
+
+                        <article class="reading-card">
+
+                            <div class="reading-cover">
+
+                                {% if story.cover %}
+                                    <img
+                                        src="{{ story.cover.url }}"
+                                        alt="{{ story.title }}"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <span class="cover-placeholder">📚</span>
+                                {% endif %}
+
+                                {% if story.is_featured %}
+                                    <span class="featured-label">
+                                        <i class="bi bi-star-fill"></i>
+                                        Featured
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                            <div class="reading-card-body">
+
+                                <div class="reading-tags">
+                                    <span class="reading-tag">
+                                        {{ story.get_genre_display }}
+                                    </span>
+
+                                    <span class="reading-tag audience">
+                                        {{ story.get_audience_display }}
+                                    </span>
+
+                                    <span class="reading-tag rating">
+                                        {{ story.get_content_rating_display }}
+                                    </span>
+                                </div>
+
+                                <h3 class="reading-card-title">
+                                    {{ story.title }}
+                                </h3>
+
+                                <p class="reading-card-description">
+                                    {{ story.description|truncatewords:22 }}
+                                </p>
+
+                                <div class="reading-meta">
+                                    <span>
+                                        <i class="bi bi-person"></i>
+                                        {{ story.author_name|default:"PupilAura Author" }}
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-journal"></i>
+                                        {{ story.chapter_count }} chapters
+                                    </span>
+                                </div>
+
+                                <a href="{% url 'play_learn:story_detail' story.slug %}"
+                                   class="reading-btn">
+                                    Explore Novel
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+
+                            </div>
+                        </article>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="reading-empty">
+
+                <div class="reading-empty-icon">
+                    <i class="bi bi-book"></i>
+                </div>
+
+                <h3>
+                    {% if search_query or selected_genre or selected_audience %}
+                        No matching stories found
+                    {% else %}
+                        New stories are on their way
+                    {% endif %}
+                </h3>
+
+                <p>
+                    {% if search_query or selected_genre or selected_audience %}
+                        Try another search term or change your filters to discover more stories.
+                    {% else %}
+                        New novels will appear here as soon as they are published.
+                    {% endif %}
+                </p>
+
+                {% if search_query or selected_genre or selected_audience %}
+                    <a href="{% url 'play_learn:story_library' %}"
+                       class="reading-btn mt-3"
+                       style="max-width:190px;margin-left:auto;margin-right:auto;">
+                        Clear Filters
+                    </a>
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

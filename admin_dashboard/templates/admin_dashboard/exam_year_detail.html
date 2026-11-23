@@ -1,0 +1,331 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ exam_year.year }} Details | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Year Details{% endblock %}
+{% block page_subtitle %}Review this exam year and its associated learning resources{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM YEAR DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Two-column info grid (borderless cells split by hairlines) */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail-item {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .detail-item:nth-child(odd) {
+        border-right: 1px solid var(--border);
+    }
+
+    .detail-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .detail-value a {
+        color: var(--primary);
+    }
+
+    /* Resource cell in table */
+    .resource-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .resource-description {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .resource-type {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .subject-name {
+        font-weight: 650;
+    }
+
+    /* Bottom action bar */
+    .bottom-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 550px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+        .detail-item:nth-child(odd) {
+            border-right: 0;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .resource-type {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">{{ exam.name }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_years' exam.id %}">Exam Years</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ exam_year.year }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <h1>{{ exam_year.year }}</h1>
+                    <p>
+                        {{ exam.name }} · Examination Year ·
+                        Exam year ID #{{ exam_year.id }} ·
+                        Display order: {{ exam_year.order }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_years' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> All Exam Years
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_year_edit' exam_year.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-pencil"></i> Edit Year
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {% if exam_year.published %}● Published{% else %}● Unpublished{% endif %}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-collection"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ resource_count|default:0 }}</div>
+            <div class="stat-label">Total Resources</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_resource_count|default:0 }}</div>
+            <div class="stat-label">Published Resources</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ exam_year.year }}</div>
+            <div class="stat-label">Exam Year</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- YEAR INFORMATION -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Year Information</div>
+            <div class="section-description">
+                Basic information and publication settings for this exam year.
+            </div>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div class="detail-item">
+            <div class="detail-label">Examination</div>
+            <div class="detail-value">
+                <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">
+                    {{ exam.name }}
+                </a>
+            </div>
+        </div>
+
+        <div class="detail-item">
+            <div class="detail-label">Year</div>
+            <div class="detail-value">{{ exam_year.year }}</div>
+        </div>
+
+        <div class="detail-item">
+            <div class="detail-label">Display Order</div>
+            <div class="detail-value">{{ exam_year.order }}</div>
+        </div>
+
+        <div class="detail-item">
+            <div class="detail-label">Publication Status</div>
+            <div class="detail-value">
+                {% if exam_year.published %}
+                    <span class="badge badge-green">Published</span>
+                {% else %}
+                    <span class="badge badge-orange">Unpublished</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ASSOCIATED RESOURCES -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Associated Exam Resources</div>
+            <div class="section-description">
+                Past questions, solutions, lessons, practicals,
+                mock exams, and revision materials connected to this year.
+            </div>
+        </div>
+    </div>
+
+    {% if resources %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Subject</th>
+                        <th>Resource Type</th>
+                        <th>Status</th>
+                        <th>Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource in resources %}
+                        <tr>
+                            <td>
+                                <div class="resource-title">{{ resource.title }}</div>
+                                {% if resource.description %}
+                                    <div class="resource-description">
+                                        {{ resource.description|truncatechars:100 }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="subject-name">
+                                    {{ resource.subject.name }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="resource-type">
+                                    {{ resource.get_resource_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if resource.published %}
+                                    <span class="badge badge-green">Published</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ resource.order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-collection"></i>
+            </div>
+            <h3>No resources added yet</h3>
+            <p>
+                There are no exam resources linked to {{ exam_year.year }}.
+                Resources associated with this year will appear here.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- BOTTOM ACTIONS -->
+<div class="bottom-actions">
+    <a
+        href="{% url 'admin_dashboard:exam_years' exam.id %}"
+        class="btn btn-secondary"
+    >
+        <i class="bi bi-arrow-left"></i> Back to Exam Years
+    </a>
+    <a
+        href="{% url 'admin_dashboard:exam_year_edit' exam_year.id %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-pencil"></i> Edit Exam Year
+    </a>
+</div>
+
+{% endblock %}

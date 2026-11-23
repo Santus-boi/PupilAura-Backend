@@ -1,0 +1,448 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Weeks | PupilAura Admin{% endblock %}
+
+{% block page_title %}Weeks{% endblock %}
+{% block page_subtitle %}
+    {% if term %}
+        Weeks assigned to {{ term.name }}
+    {% else %}
+        Manage weekly curriculum structure
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       WEEKS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Table min width */
+    .weeks-table {
+        min-width: 950px;
+    }
+
+    /* Week name cell */
+    .week-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 220px;
+    }
+
+    .week-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .week-name strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 3px;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .week-name span {
+        display: block;
+        max-width: 280px;
+        font-size: 11px;
+        color: var(--muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Hierarchy cell (education level / class / subject / term) */
+    .hierarchy {
+        display: grid;
+        gap: 3px;
+    }
+
+    .hierarchy strong {
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .hierarchy span {
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    .not-assigned {
+        color: var(--muted);
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    /* Lesson count badge */
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    /* Small inline table action buttons */
+    .table-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 9px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .table-action:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .week-name {
+            min-width: 0;
+        }
+        .week-name span {
+            max-width: 200px;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .week-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .count-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .table-action {
+            background: var(--surface);
+        }
+        .table-action:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #3b82f6;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+
+    {% if term %}
+        <a href="{% url 'admin_dashboard:term_detail' term.id %}">{{ term.name }}</a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    {% endif %}
+
+    <span class="breadcrumb-current">Weeks</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if term %}{{ term.name }} Weeks{% else %}Weeks{% endif %}
+                    </h1>
+                    <p>
+                        Manage weekly curriculum content and connect each
+                        week to the appropriate subject, term and lessons.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                {% if term %}
+                    <a href="{% url 'admin_dashboard:term_detail' term.id %}" class="btn btn-light">
+                        <i class="bi bi-arrow-left"></i> Back to Term
+                    </a>
+                    <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-light">
+                        <i class="bi bi-plus-lg"></i> Add Week
+                    </a>
+                {% else %}
+                    <a href="{% url 'admin_dashboard:curriculum' %}" class="btn btn-light">
+                        <i class="bi bi-arrow-left"></i> Back to Curriculum
+                    </a>
+                    <a href="{% url 'admin_dashboard:week_create' %}" class="btn btn-light">
+                        <i class="bi bi-plus-lg"></i> Add Week
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Total Weeks: {{ total_weeks|default:0 }}</span>
+            <span class="meta-badge">Total Lessons: {{ total_lessons|default:0 }}</span>
+
+            {% if subject %}
+                <span class="meta-badge">Subject: {{ subject.name }}</span>
+            {% elif term and term.subject %}
+                <span class="meta-badge">Subject: {{ term.subject.name }}</span>
+            {% endif %}
+
+            {% if term %}
+                <span class="meta-badge">Term: {{ term.name }}</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-calendar-week"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_weeks|default:0 }}</div>
+            <div class="stat-label">Total Weeks</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-journal-text"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_lessons|default:0 }}</div>
+            <div class="stat-label">Total Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">
+                {% if subject %}{{ subject.name }}
+                {% elif term and term.subject %}{{ term.subject.name }}
+                {% else %}—{% endif %}
+            </div>
+            <div class="stat-label">Subject</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">
+                {% if term %}{{ term.name }}{% else %}—{% endif %}
+            </div>
+            <div class="stat-label">Term</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- WEEKS TABLE -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Weekly Curriculum</div>
+            <div class="section-description">
+                {% if term %}
+                    Weeks assigned to {{ term.name }}.
+                {% else %}
+                    Manage weekly curriculum structure.
+                {% endif %}
+            </div>
+        </div>
+
+        {% if term %}
+            <div class="toolbar">
+                <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-blue">
+                    <i class="bi bi-plus-lg"></i> Add Week
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if weeks %}
+        <div class="table-wrapper">
+            <table class="weeks-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Week</th>
+                        <th scope="col">Education Level</th>
+                        <th scope="col">School Class</th>
+                        <th scope="col">Subject</th>
+                        <th scope="col">Term</th>
+                        <th scope="col">Lessons</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in weeks %}
+                        <tr>
+                            <td>
+                                <div class="week-name">
+                                    <div class="week-icon" aria-hidden="true">
+                                        {{ week.number }}
+                                    </div>
+                                    <div>
+                                        <strong>
+                                            {% if week.title %}{{ week.title }}{% else %}Week {{ week.number }}{% endif %}
+                                        </strong>
+                                        <span>
+                                            Week {{ week.number }}
+                                            {% if week.overview %}
+                                                · {{ week.overview|truncatechars:80 }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if week.term.subject.school_class %}
+                                    <div class="hierarchy">
+                                        <strong>{{ week.term.subject.school_class.education_level.name }}</strong>
+                                        <span>{{ week.term.subject.school_class.education_level.get_level_type_display }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if week.term.subject.school_class %}
+                                    <div class="hierarchy">
+                                        <strong>{{ week.term.subject.school_class.name }}</strong>
+                                        <span>Class ID: {{ week.term.subject.school_class.id }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if week.term.subject %}
+                                    <div class="hierarchy">
+                                        <strong>{{ week.term.subject.name }}</strong>
+                                        <span>Subject ID: {{ week.term.subject.id }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if week.term %}
+                                    <div class="hierarchy">
+                                        <strong>{{ week.term.name }}</strong>
+                                        <span>Term ID: {{ week.term.id }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="not-assigned">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="count-badge">{{ week.lesson_count|default:0 }}</span>
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:week_detail' week.id %}"
+                                        class="table-action"
+                                        title="View week"
+                                    >
+                                        View
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:week_edit' week.id %}"
+                                        class="table-action"
+                                        title="Edit week"
+                                    >
+                                        Edit
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:lessons' %}"
+                                        class="table-action"
+                                        title="View all lessons"
+                                    >
+                                        Lessons
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <h3>No Weeks Yet</h3>
+            <p>
+                {% if term %}
+                    This term does not have any weeks yet.
+                    Create the first week to begin building
+                    the lesson structure.
+                {% else %}
+                    No weeks have been created yet.
+                    Create your first week to begin building
+                    the curriculum.
+                {% endif %}
+            </p>
+            {% if term %}
+                <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-blue">
+                    <i class="bi bi-plus-lg"></i> Add First Week
+                </a>
+            {% else %}
+                <a href="{% url 'admin_dashboard:week_create' %}" class="btn btn-blue">
+                    <i class="bi bi-plus-lg"></i> Add First Week
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

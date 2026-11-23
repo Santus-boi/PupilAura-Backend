@@ -1,0 +1,1289 @@
+
+{% extends "tech/base.html" %}
+{% load static %}
+
+{% block title %}PupilAura | Technology Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-soft: #eff6ff;
+        --primary-light: #dbeafe;
+        --dark: #111827;
+        --dark-soft: #1f2937;
+        --text: #374151;
+        --muted: #6b7280;
+        --background: #f5f7fb;
+        --white: #ffffff;
+        --border: #e5e7eb;
+        --border-blue: #bfdbfe;
+        --success: #16a34a;
+        --shadow-sm: 0 4px 14px rgba(17, 24, 39, 0.05);
+        --shadow-md: 0 12px 30px rgba(17, 24, 39, 0.08);
+        --shadow-lg: 0 24px 55px rgba(37, 99, 235, 0.12);
+        --radius: 18px;
+    }
+
+    .tech-home {
+        overflow: hidden;
+    }
+
+    .tech-container {
+        width: min(1200px, calc(100% - 40px));
+        margin-inline: auto;
+    }
+
+    .tech-section {
+        padding: 76px 0;
+    }
+
+    .section-heading {
+        max-width: 700px;
+        margin: 0 auto 42px;
+        text-align: center;
+    }
+
+    .section-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 13px;
+        padding: 7px 12px;
+        border: 1px solid var(--border-blue);
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .section-title {
+        margin: 0 0 14px;
+        color: var(--dark);
+        font-size: clamp(28px, 4vw, 42px);
+        font-weight: 850;
+        letter-spacing: -1.5px;
+        line-height: 1.15;
+    }
+
+    .section-description {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    /* Hero */
+
+    .hero-section {
+        position: relative;
+        padding: 82px 0 60px;
+        background:
+            radial-gradient(circle at 85% 15%, rgba(191, 219, 254, 0.55), transparent 28%),
+            radial-gradient(circle at 8% 80%, rgba(219, 234, 254, 0.65), transparent 30%),
+            linear-gradient(135deg, #ffffff 0%, #f4f8ff 100%);
+    }
+
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        align-items: center;
+        gap: 55px;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 23px;
+        padding: 9px 14px;
+        border: 1px solid var(--border-blue);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--primary-dark);
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .hero-badge i {
+        font-size: 16px;
+    }
+
+    .hero-title {
+        max-width: 650px;
+        margin: 0 0 22px;
+        color: var(--dark);
+        font-size: clamp(39px, 5.2vw, 64px);
+        font-weight: 900;
+        letter-spacing: -2.8px;
+        line-height: 1.06;
+    }
+
+    .hero-title span {
+        color: var(--primary);
+    }
+
+    .hero-description {
+        max-width: 570px;
+        margin: 0 0 29px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.85;
+    }
+
+    .hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        flex-wrap: wrap;
+    }
+
+    .hero-primary-btn,
+    .hero-secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 51px;
+        padding: 13px 20px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 800;
+        transition: all 0.2s ease;
+    }
+
+    .hero-primary-btn {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+    }
+
+    .hero-primary-btn:hover {
+        transform: translateY(-2px);
+        background: var(--primary-dark);
+        color: #fff;
+        box-shadow: 0 12px 25px rgba(37, 99, 235, 0.25);
+    }
+
+    .hero-secondary-btn {
+        border-color: var(--border);
+        background: #fff;
+        color: var(--dark);
+    }
+
+    .hero-secondary-btn:hover {
+        border-color: var(--border-blue);
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+    .hero-note {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 25px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .hero-note i {
+        color: var(--success);
+        font-size: 17px;
+    }
+
+    /* Code preview */
+
+    .hero-visual {
+        position: relative;
+        min-width: 0;
+    }
+
+    .code-window {
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        background: #111827;
+        box-shadow: 0 30px 70px rgba(17, 24, 39, 0.22);
+        transform: rotate(1deg);
+    }
+
+    .code-window-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 17px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        background: #1f2937;
+    }
+
+    .code-window-dots {
+        display: flex;
+        gap: 7px;
+    }
+
+    .code-window-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .code-window-dots span:nth-child(1) {
+        background: #f87171;
+    }
+
+    .code-window-dots span:nth-child(2) {
+        background: #fbbf24;
+    }
+
+    .code-window-dots span:nth-child(3) {
+        background: #4ade80;
+    }
+
+    .code-window-label {
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .code-window-body {
+        padding: 29px 24px 32px;
+    }
+
+    .code-line {
+        display: flex;
+        gap: 19px;
+        margin: 0 0 12px;
+        color: #e5e7eb;
+        font-family: Consolas, Monaco, monospace;
+        font-size: clamp(12px, 1.3vw, 15px);
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .code-line:last-child {
+        margin-bottom: 0;
+    }
+
+    .line-number {
+        width: 15px;
+        flex-shrink: 0;
+        color: #6b7280;
+        text-align: right;
+        user-select: none;
+    }
+
+    .code-blue {
+        color: #93c5fd;
+    }
+
+    .code-green {
+        color: #86efac;
+    }
+
+    .code-yellow {
+        color: #fde68a;
+    }
+
+    .code-purple {
+        color: #c4b5fd;
+    }
+
+    .code-muted {
+        color: #9ca3af;
+    }
+
+    .code-output {
+        margin-top: 25px;
+        padding: 15px 17px;
+        border: 1px solid rgba(74, 222, 128, 0.18);
+        border-radius: 11px;
+        background: rgba(22, 163, 74, 0.08);
+        color: #86efac;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 13px;
+    }
+
+    .floating-label {
+        position: absolute;
+        right: -17px;
+        bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 14px 17px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: var(--shadow-md);
+    }
+
+    .floating-label-icon {
+        display: flex;
+        width: 41px;
+        height: 41px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 19px;
+    }
+
+    .floating-label strong {
+        display: block;
+        color: var(--dark);
+        font-size: 13px;
+    }
+
+    .floating-label small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Statistics */
+
+    .stats-section {
+        position: relative;
+        z-index: 1;
+        padding: 0 0 25px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 24px 22px;
+        border-right: 1px solid var(--border);
+    }
+
+    .stat-card:last-child {
+        border-right: 0;
+    }
+
+    .stat-icon {
+        display: flex;
+        width: 47px;
+        height: 47px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 21px;
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .stat-card:nth-child(4) .stat-icon {
+        background: #f3e8ff;
+        color: #7e22ce;
+    }
+
+    .stat-title {
+        margin-bottom: 3px;
+        color: var(--dark);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .stat-description {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    /* Categories */
+
+    .categories-section {
+        background: #fff;
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .category-card {
+        position: relative;
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        padding: 26px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.22s ease, box-shadow 0.22s ease,
+            border-color 0.22s ease;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--border-blue);
+        box-shadow: var(--shadow-md);
+    }
+
+    .category-icon {
+        display: flex;
+        width: 55px;
+        height: 55px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 22px;
+        border-radius: 16px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 25px;
+    }
+
+    .category-card:nth-child(3n + 2) .category-icon {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .category-card:nth-child(3n) .category-icon {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .category-title {
+        margin: 0 0 10px;
+        color: var(--dark);
+        font-size: 20px;
+        font-weight: 850;
+        line-height: 1.35;
+    }
+
+    .category-description {
+        flex-grow: 1;
+        margin: 0 0 23px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .category-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 17px;
+        border-top: 1px solid var(--border);
+    }
+
+    .category-course-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .category-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .category-link:hover {
+        color: var(--primary-dark);
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        padding: 55px 25px;
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--radius);
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    .empty-state-icon {
+        display: flex;
+        width: 65px;
+        height: 65px;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        border-radius: 20px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 28px;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 9px;
+        color: var(--dark);
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .empty-state p {
+        max-width: 460px;
+        margin: 0 auto;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    /* Learning flow */
+
+    .flow-section {
+        background: var(--background);
+    }
+
+    .flow-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .flow-card {
+        position: relative;
+        padding: 29px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .flow-number {
+        display: flex;
+        width: 43px;
+        height: 43px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        border-radius: 13px;
+        background: var(--primary);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 850;
+    }
+
+    .flow-card:nth-child(2) .flow-number {
+        background: #16a34a;
+    }
+
+    .flow-card:nth-child(3) .flow-number {
+        background: #9333ea;
+    }
+
+    .flow-card h3 {
+        margin: 0 0 11px;
+        color: var(--dark);
+        font-size: 19px;
+        font-weight: 850;
+    }
+
+    .flow-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    /* Features */
+
+    .features-section {
+        background: #fff;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .feature-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 17px;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        background: #fff;
+    }
+
+    .feature-icon {
+        display: flex;
+        width: 47px;
+        height: 47px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 21px;
+    }
+
+    .feature-card h3 {
+        margin: 0 0 7px;
+        color: var(--dark);
+        font-size: 16px;
+        font-weight: 850;
+    }
+
+    .feature-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    /* Call to action */
+
+    .cta-section {
+        padding: 15px 0 80px;
+        background: #fff;
+    }
+
+    .cta-card {
+        position: relative;
+        overflow: hidden;
+        padding: 54px 35px;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.15), transparent 28%),
+            linear-gradient(120deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
+        color: #fff;
+        text-align: center;
+    }
+
+    .cta-card h2 {
+        max-width: 700px;
+        margin: 0 auto 16px;
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 900;
+        letter-spacing: -1.1px;
+        line-height: 1.2;
+    }
+
+    .cta-card p {
+        max-width: 620px;
+        margin: 0 auto 27px;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 48px;
+        padding: 12px 21px;
+        border: 1px solid #fff;
+        border-radius: 11px;
+        background: #fff;
+        color: var(--primary-dark);
+        font-size: 14px;
+        font-weight: 850;
+        transition: all 0.2s ease;
+    }
+
+    .cta-btn:hover {
+        transform: translateY(-2px);
+        background: #eff6ff;
+        color: var(--primary-dark);
+    }
+
+    /* Responsive layout */
+
+    @media (max-width: 1000px) {
+        .hero-grid {
+            grid-template-columns: 1fr 0.9fr;
+            gap: 30px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .stat-card:nth-child(2) {
+            border-right: 0;
+        }
+
+        .stat-card:nth-child(-n + 2) {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .categories-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 760px) {
+        .tech-section {
+            padding: 58px 0;
+        }
+
+        .hero-section {
+            padding: 58px 0 45px;
+        }
+
+        .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 43px;
+        }
+
+        .hero-title {
+            max-width: 600px;
+            font-size: clamp(38px, 9vw, 56px);
+            letter-spacing: -1.8px;
+        }
+
+        .hero-description {
+            font-size: 15px;
+        }
+
+        .hero-visual {
+            width: min(100%, 560px);
+            margin-inline: auto;
+        }
+
+        .floating-label {
+            right: -5px;
+        }
+
+        .flow-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-heading {
+            margin-bottom: 30px;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .tech-container {
+            width: calc(100% - 28px);
+        }
+
+        .hero-section {
+            padding-top: 42px;
+        }
+
+        .hero-title {
+            font-size: 39px;
+        }
+
+        .hero-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .hero-primary-btn,
+        .hero-secondary-btn {
+            width: 100%;
+        }
+
+        .code-window-body {
+            padding: 22px 14px;
+        }
+
+        .code-line {
+            gap: 11px;
+            font-size: 11px;
+        }
+
+        .floating-label {
+            right: 0;
+            bottom: -22px;
+            padding: 10px 12px;
+        }
+
+        .floating-label-icon {
+            width: 34px;
+            height: 34px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card,
+        .stat-card:nth-child(2) {
+            border-right: 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-card:last-child {
+            border-bottom: 0;
+        }
+
+        .categories-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .category-card {
+            padding: 22px;
+        }
+
+        .cta-card {
+            padding: 40px 20px;
+            border-radius: 18px;
+        }
+
+        .cta-section {
+            padding-bottom: 58px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tech-home">
+
+    <!-- Hero -->
+    <section class="hero-section">
+        <div class="tech-container">
+            <div class="hero-grid">
+
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        Learn technology by doing
+                    </div>
+
+                    <h1 class="hero-title">
+                        Build your future with <span>technology.</span>
+                    </h1>
+
+                    <p class="hero-description">
+                        Discover technology, learn practical digital skills,
+                        practise what you learn, and build the confidence to
+                        create your own projects.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="#tech-categories" class="hero-primary-btn">
+                            Explore learning paths
+                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        </a>
+
+                        <a href="#learning-flow" class="hero-secondary-btn">
+                            <i class="bi bi-play-circle" aria-hidden="true"></i>
+                            How learning works
+                        </a>
+                    </div>
+
+                    <div class="hero-note">
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        Learn at your own pace and track your progress.
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="code-window">
+                        <div class="code-window-header">
+                            <div class="code-window-dots" aria-hidden="true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="code-window-label">hello_world.py</span>
+                        </div>
+
+                        <div class="code-window-body">
+                            <div class="code-line">
+                                <span class="line-number">1</span>
+                                <span><span class="code-purple">def</span> <span class="code-blue">start_learning</span>():</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">2</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-blue">skills</span> = [</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">3</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-green">"Python"</span>,</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">4</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-green">"Web Development"</span>,</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">5</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-green">"Creative Projects"</span></span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">6</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;]</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">7</span>
+                                <span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-purple">return</span> <span class="code-yellow">"Keep building!"</span></span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">8</span>
+                                <span>&nbsp;</span>
+                            </div>
+
+                            <div class="code-line">
+                                <span class="line-number">9</span>
+                                <span><span class="code-blue">print</span>(start_learning())</span>
+                            </div>
+
+                            <div class="code-output">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                Output: Keep building!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="floating-label">
+                        <div class="floating-label-icon">
+                            <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <strong>Learn by practising</strong>
+                            <small>Turn knowledge into skills</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning highlights -->
+    <section class="stats-section" aria-label="Learning highlights">
+        <div class="tech-container">
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-book-half" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">Learn</div>
+                        <div class="stat-description">Understand new concepts</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-code-square" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">Practise</div>
+                        <div class="stat-description">Apply what you learn</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">Create</div>
+                        <div class="stat-description">Build practical projects</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="stat-title">Progress</div>
+                        <div class="stat-description">Keep moving forward</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology categories -->
+    <section class="tech-section categories-section" id="tech-categories">
+        <div class="tech-container">
+
+            <div class="section-heading">
+                <span class="section-eyebrow">
+                    <i class="bi bi-grid" aria-hidden="true"></i>
+                    Explore the academy
+                </span>
+
+                <h2 class="section-title">Choose your learning path</h2>
+
+                <p class="section-description">
+                    Explore the available technology categories and find
+                    courses that match your interests and goals.
+                </p>
+            </div>
+
+            <div class="categories-grid">
+                {% for category in categories %}
+                    <article class="category-card">
+                        <div class="category-icon">
+                            <i class="bi bi-code-slash" aria-hidden="true"></i>
+                        </div>
+
+                        <h3 class="category-title">{{ category.name }}</h3>
+
+                        <p class="category-description">
+                            {% if category.description %}
+                                {{ category.description|truncatewords:28 }}
+                            {% else %}
+                                Explore courses in this technology category
+                                and develop your practical skills step by step.
+                            {% endif %}
+                        </p>
+
+                        <div class="category-meta">
+                            <span class="category-course-count">
+                                <i class="bi bi-collection" aria-hidden="true"></i>
+                                {{ category.course_count }}
+                                {% if category.course_count == 1 %}
+                                    course
+                                {% else %}
+                                    courses
+                                {% endif %}
+                            </span>
+
+                            <a
+                                class="category-link"
+                                href="{% url 'tech:tech_category_detail' category.id %}"
+                            >
+                                Explore
+                                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-journal-code" aria-hidden="true"></i>
+                        </div>
+
+                        <h3>Learning categories are coming soon</h3>
+
+                        <p>
+                            There are no published technology categories
+                            available at the moment. Check back when new
+                            learning paths have been published.
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Learning process -->
+    <section class="tech-section flow-section" id="learning-flow">
+        <div class="tech-container">
+
+            <div class="section-heading">
+                <span class="section-eyebrow">
+                    <i class="bi bi-signpost-split" aria-hidden="true"></i>
+                    Your learning journey
+                </span>
+
+                <h2 class="section-title">A clear path from learning to doing</h2>
+
+                <p class="section-description">
+                    Follow a structured learning process that helps you
+                    understand concepts and apply your knowledge.
+                </p>
+            </div>
+
+            <div class="flow-grid">
+
+                <article class="flow-card">
+                    <div class="flow-number">01</div>
+
+                    <h3>Learn the concepts</h3>
+
+                    <p>
+                        Start with lessons that explain important ideas
+                        and introduce the skills you need to develop.
+                    </p>
+                </article>
+
+                <article class="flow-card">
+                    <div class="flow-number">02</div>
+
+                    <h3>Practise your skills</h3>
+
+                    <p>
+                        Work through practical activities, examples,
+                        and quizzes to check your understanding.
+                    </p>
+                </article>
+
+                <article class="flow-card">
+                    <div class="flow-number">03</div>
+
+                    <h3>Build your confidence</h3>
+
+                    <p>
+                        Complete lessons, follow your progress, and
+                        develop the confidence to tackle new challenges.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Academy features -->
+    <section class="tech-section features-section" id="academy-features">
+        <div class="tech-container">
+
+            <div class="section-heading">
+                <span class="section-eyebrow">
+                    <i class="bi bi-stars" aria-hidden="true"></i>
+                    Made for learning
+                </span>
+
+                <h2 class="section-title">Learn with purpose</h2>
+
+                <p class="section-description">
+                    Use the academy's learning resources to build knowledge,
+                    practise new skills, and work towards your goals.
+                </p>
+            </div>
+
+            <div class="features-grid">
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-journal-richtext" aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3>Structured lessons</h3>
+                        <p>
+                            Work through organised courses, modules,
+                            and lessons at a manageable pace.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-play-btn" aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3>Supporting resources</h3>
+                        <p>
+                            Use available lesson videos, images,
+                            and downloadable resources to support learning.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-patch-question" aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3>Knowledge checks</h3>
+                        <p>
+                            Complete available quizzes to test your
+                            understanding of lesson topics.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
+                    </div>
+
+                    <div>
+                        <h3>Learning progress</h3>
+                        <p>
+                            Mark lessons as completed and follow your
+                            progress through enrolled courses.
+                        </p>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to action -->
+    <section class="cta-section">
+        <div class="tech-container">
+            <div class="cta-card">
+
+                <h2>Your next skill starts with one lesson.</h2>
+
+                <p>
+                    Explore the available categories, choose a course,
+                    and take the next step in your technology learning journey.
+                </p>
+
+                <a href="#tech-categories" class="cta-btn">
+                    Explore categories
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}AI Quiz Generator | PupilAura Admin{% endblock %}
+
+{% block page_title %}AI Quiz Generator{% endblock %}
+{% block page_subtitle %}{{ lesson.title }} — generate multiple-choice questions{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:lesson_detail' lesson.id %}">{{ lesson.title }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">AI Quiz Generator</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h1>AI Quiz Generator</h1>
+                    <p>
+                        Generate WAEC/JAMB-style MCQ questions based on
+                        <strong>{{ lesson.title }}</strong>.
+                        The quiz is created as a <strong>draft</strong>
+                        — review before publishing.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:lesson_detail' lesson.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Lesson
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card" style="max-width: 850px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Generate Quiz</h2>
+        <p>Choose how many questions and the difficulty.</p>
+    </div>
+
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="count">Number of Questions</label>
+                <input type="number" name="count" id="count" class="form-control"
+                       min="1" max="30" value="{{ form_data.count|default:'5' }}">
+                <div class="help-text">Between 1 and 30.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="pass_mark">Pass Mark (%)</label>
+                <input type="number" name="pass_mark" id="pass_mark" class="form-control"
+                       min="0" max="100" value="{{ form_data.pass_mark|default:'50' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="difficulty">Difficulty</label>
+                <select name="difficulty" id="difficulty" class="form-select">
+                    <option value="foundational">Foundational</option>
+                    <option value="standard" selected>Standard</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'admin_dashboard:lesson_detail' lesson.id %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-stars"></i> Generate Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

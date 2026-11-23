@@ -1,0 +1,965 @@
+
+{% extends "base.html" %}
+
+{% block title %}Alphabet Adventure | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --alphabet-primary: #6c4df6;
+        --alphabet-secondary: #ffb84d;
+        --alphabet-dark: #202044;
+        --alphabet-muted: #77778f;
+        --alphabet-bg: #f6f5ff;
+        --alphabet-success: #16a36a;
+        --alphabet-danger: #e34b5c;
+    }
+
+    .alphabet-page {
+        min-height: 100vh;
+        padding: 24px 15px 55px;
+        background:
+            radial-gradient(circle at 5% 5%, #eee9ff 0, transparent 27%),
+            radial-gradient(circle at 95% 20%, #fff1d9 0, transparent 25%),
+            var(--alphabet-bg);
+        color: var(--alphabet-dark);
+        font-family: Arial, sans-serif;
+    }
+
+    .alphabet-container {
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .alphabet-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .alphabet-back {
+        text-decoration: none;
+        color: var(--alphabet-primary);
+        font-weight: 700;
+        background: #fff;
+        padding: 11px 17px;
+        border-radius: 30px;
+        box-shadow: 0 5px 18px rgba(35, 25, 90, .07);
+    }
+
+    .alphabet-brand {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--alphabet-dark);
+    }
+
+    .alphabet-brand span {
+        color: var(--alphabet-primary);
+    }
+
+    .alphabet-heading {
+        text-align: center;
+        margin: 25px auto 30px;
+    }
+
+    .alphabet-heading .eyebrow {
+        display: inline-block;
+        background: #e9e3ff;
+        color: var(--alphabet-primary);
+        padding: 7px 15px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .alphabet-heading h1 {
+        font-size: clamp(30px, 5vw, 48px);
+        font-weight: 900;
+        margin: 13px 0 8px;
+    }
+
+    .alphabet-heading p {
+        color: var(--alphabet-muted);
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .alphabet-dashboard {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    .alphabet-main,
+    .alphabet-sidebar {
+        background: #fff;
+        border-radius: 25px;
+        padding: 24px;
+        box-shadow: 0 12px 35px rgba(38, 31, 93, .07);
+    }
+
+    .alphabet-section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .alphabet-section-heading h2 {
+        font-size: 19px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .alphabet-section-heading span {
+        color: var(--alphabet-muted);
+        font-size: 12px;
+    }
+
+    .letter-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .letter-button {
+        border: 2px solid transparent;
+        background: #f4f1ff;
+        color: var(--alphabet-primary);
+        min-height: 55px;
+        border-radius: 15px;
+        font-size: 23px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: transform .2s, background .2s;
+    }
+
+    .letter-button:hover {
+        transform: translateY(-3px);
+        background: #e9e3ff;
+    }
+
+    .letter-button.active {
+        background: var(--alphabet-primary);
+        color: #fff;
+        border-color: #4e32d4;
+        transform: scale(1.05);
+    }
+
+    .letter-display {
+        margin-top: 25px;
+        padding: 28px 20px;
+        border-radius: 23px;
+        background: linear-gradient(135deg, #eee9ff, #fff5e5);
+        text-align: center;
+    }
+
+    .big-letter {
+        font-size: clamp(85px, 17vw, 145px);
+        line-height: 1;
+        font-weight: 900;
+        color: var(--alphabet-primary);
+        animation: letterBounce .5s ease;
+    }
+
+    @keyframes letterBounce {
+        0% { transform: scale(.7); opacity: .3; }
+        70% { transform: scale(1.12); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .letter-picture {
+        font-size: 75px;
+        margin: 12px 0 5px;
+    }
+
+    .letter-word {
+        font-size: 27px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .letter-description {
+        color: var(--alphabet-muted);
+        margin-top: 7px;
+        font-size: 14px;
+    }
+
+    .speak-button {
+        border: none;
+        border-radius: 30px;
+        background: var(--alphabet-primary);
+        color: #fff;
+        padding: 12px 22px;
+        margin-top: 17px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform .2s;
+    }
+
+    .speak-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .alphabet-sidebar h3 {
+        font-size: 19px;
+        font-weight: 900;
+        margin-bottom: 17px;
+    }
+
+    .stat-card {
+        background: #f7f5ff;
+        border-radius: 17px;
+        padding: 15px;
+        margin-bottom: 12px;
+    }
+
+    .stat-label {
+        color: var(--alphabet-muted);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .stat-value {
+        font-size: 27px;
+        font-weight: 900;
+        color: var(--alphabet-primary);
+        margin-top: 4px;
+    }
+
+    .progress-track {
+        height: 11px;
+        background: #e9e7f3;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .progress-fill {
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #6c4df6, #a28bff);
+        border-radius: inherit;
+        transition: width .3s ease;
+    }
+
+    .quiz-intro {
+        margin-top: 23px;
+        padding: 20px;
+        border-radius: 18px;
+        background: #fff5e5;
+    }
+
+    .quiz-intro h4 {
+        font-weight: 900;
+        font-size: 17px;
+        margin-bottom: 8px;
+    }
+
+    .quiz-intro p {
+        color: var(--alphabet-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .start-quiz-button,
+    .next-question-button,
+    .restart-button {
+        width: 100%;
+        border: none;
+        padding: 13px;
+        border-radius: 13px;
+        color: #fff;
+        background: var(--alphabet-primary);
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .start-quiz-button:hover,
+    .next-question-button:hover,
+    .restart-button:hover {
+        background: #5134d4;
+    }
+
+    .quiz-panel,
+    .completion-panel {
+        display: none;
+        margin-top: 25px;
+        background: #fff;
+        border-radius: 23px;
+        padding: 24px;
+        box-shadow: 0 12px 35px rgba(38, 31, 93, .07);
+    }
+
+    .quiz-panel.show,
+    .completion-panel.show {
+        display: block;
+    }
+
+    .quiz-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--alphabet-muted);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .quiz-question {
+        text-align: center;
+        margin: 22px 0;
+    }
+
+    .quiz-question h3 {
+        font-size: 22px;
+        font-weight: 900;
+    }
+
+    .quiz-clue {
+        font-size: 75px;
+        margin: 15px 0;
+    }
+
+    .quiz-word {
+        font-size: 23px;
+        font-weight: 900;
+    }
+
+    .answer-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .answer-button {
+        min-height: 75px;
+        border: 2px solid #e9e5fa;
+        background: #f8f6ff;
+        color: var(--alphabet-primary);
+        border-radius: 16px;
+        font-size: 30px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .answer-button:hover:not(:disabled) {
+        border-color: var(--alphabet-primary);
+        background: #eee9ff;
+    }
+
+    .answer-button:disabled {
+        cursor: not-allowed;
+        opacity: .8;
+    }
+
+    .answer-button.correct {
+        background: #e3f8ed;
+        border-color: var(--alphabet-success);
+        color: var(--alphabet-success);
+    }
+
+    .answer-button.wrong {
+        background: #fff0f0;
+        border-color: var(--alphabet-danger);
+        color: var(--alphabet-danger);
+    }
+
+    .quiz-feedback {
+        min-height: 30px;
+        text-align: center;
+        font-weight: 900;
+        margin: 18px 0 10px;
+    }
+
+    .feedback-correct {
+        color: var(--alphabet-success);
+    }
+
+    .feedback-wrong {
+        color: var(--alphabet-danger);
+    }
+
+    .next-question-button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .completion-panel {
+        text-align: center;
+        padding: 35px 20px;
+    }
+
+    .completion-icon {
+        font-size: 75px;
+    }
+
+    .completion-panel h2 {
+        font-weight: 900;
+        font-size: 29px;
+        margin: 12px 0;
+    }
+
+    .completion-score {
+        font-size: 40px;
+        font-weight: 900;
+        color: var(--alphabet-primary);
+        margin: 15px 0;
+    }
+
+    .completion-panel p {
+        color: var(--alphabet-muted);
+    }
+
+    .game-note {
+        text-align: center;
+        font-size: 12px;
+        color: var(--alphabet-muted);
+        margin-top: 25px;
+    }
+
+    @media (max-width: 850px) {
+        .alphabet-dashboard {
+            grid-template-columns: 1fr;
+        }
+
+        .alphabet-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .alphabet-sidebar h3,
+        .quiz-intro {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 550px) {
+        .alphabet-page {
+            padding: 15px 10px 35px;
+        }
+
+        .alphabet-main,
+        .alphabet-sidebar,
+        .quiz-panel {
+            padding: 17px;
+            border-radius: 19px;
+        }
+
+        .letter-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .letter-button {
+            min-height: 49px;
+            font-size: 21px;
+        }
+
+        .alphabet-sidebar {
+            display: block;
+        }
+
+        .answer-options {
+            gap: 8px;
+        }
+
+        .answer-button {
+            min-height: 65px;
+        }
+
+        .alphabet-brand {
+            font-size: 12px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
+<div class="alphabet-page">
+    <div class="alphabet-container">
+
+        <div class="alphabet-topbar">
+            <a href="{% url 'play_learn:home' %}" class="alphabet-back">
+                ← Back to Play & Learn
+            </a>
+
+            <div class="alphabet-brand">
+                PupilAura <span>Play & Learn</span>
+            </div>
+        </div>
+
+        <header class="alphabet-heading">
+            <span class="eyebrow">Little Explorers · Ages 3–5</span>
+            <h1>🔤 Alphabet Adventure</h1>
+            <p>Explore letters, discover new words and test what you know!</p>
+        </header>
+
+        <div class="alphabet-dashboard">
+
+            <main class="alphabet-main">
+                <div class="alphabet-section-heading">
+                    <h2>Choose a letter</h2>
+                    <span>Explore A–Z</span>
+                </div>
+
+                <div class="letter-grid" id="letterGrid">
+                    {% for item in letters %}
+                        <button
+                            type="button"
+                            class="letter-button {% if forloop.first %}active{% endif %}"
+                            data-letter="{{ item.letter }}"
+                            aria-label="Explore letter {{ item.letter }}"
+                        >
+                            {{ item.letter }}
+                        </button>
+                    {% endfor %}
+                </div>
+
+                <section class="letter-display" aria-live="polite">
+                    <div class="big-letter" id="bigLetter">A</div>
+                    <div class="letter-picture" id="letterPicture">🍎</div>
+                    <h2 class="letter-word" id="letterWord">Apple</h2>
+                    <p class="letter-description" id="letterDescription">
+                        A is for Apple!
+                    </p>
+
+                    <button type="button" class="speak-button" id="speakButton">
+                        🔊 Hear letter and word
+                    </button>
+                </section>
+
+                <div class="quiz-intro">
+                    <h4>🎯 Ready for a little challenge?</h4>
+                    <p>
+                        Look at a picture and choose the letter that starts its
+                        name. Complete 10 questions and see your score!
+                    </p>
+                    <button type="button" class="start-quiz-button" id="startQuizButton">
+                        Start Alphabet Quiz →
+                    </button>
+                </div>
+            </main>
+
+            <aside class="alphabet-sidebar">
+                <h3>🏆 Your Adventure</h3>
+
+                <div class="stat-card">
+                    <div class="stat-label">QUIZ SCORE</div>
+                    <div class="stat-value" id="scoreDisplay">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">QUESTIONS ANSWERED</div>
+                    <div class="stat-value" id="answeredDisplay">0 / 10</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">CORRECT ANSWERS</div>
+                    <div class="stat-value" id="correctDisplay">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">QUIZ PROGRESS</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="stat-label mt-2" id="progressText">0% completed</div>
+                </div>
+            </aside>
+
+        </div>
+
+        <section class="quiz-panel" id="quizPanel">
+            <div class="quiz-top">
+                <span id="questionCounter">QUESTION 1 OF 10</span>
+                <span id="quizScore">Score: 0</span>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-fill" id="quizProgressFill"></div>
+            </div>
+
+            <div class="quiz-question">
+                <h3>Which letter starts this word?</h3>
+                <div class="quiz-clue" id="quizClue">🍎</div>
+                <div class="quiz-word" id="quizWord">APPLE</div>
+            </div>
+
+            <div class="answer-options" id="answerOptions">
+                <button type="button" class="answer-button"></button>
+                <button type="button" class="answer-button"></button>
+                <button type="button" class="answer-button"></button>
+            </div>
+
+            <div class="quiz-feedback" id="quizFeedback" aria-live="polite"></div>
+
+            <button
+                type="button"
+                class="next-question-button"
+                id="nextQuestionButton"
+                disabled
+            >
+                Check your answer first
+            </button>
+        </section>
+
+        <section class="completion-panel" id="completionPanel">
+            <div class="completion-icon" id="completionIcon">🏆</div>
+            <h2 id="completionTitle">Amazing work!</h2>
+            <p id="completionMessage">
+                You have completed your Alphabet Adventure.
+            </p>
+            <div class="completion-score" id="finalScore">0 / 100</div>
+            <p id="finalSummary">You answered 0 questions correctly.</p>
+
+            <button type="button" class="restart-button" id="restartButton">
+                Play Again ↻
+            </button>
+        </section>
+
+        <p class="game-note">
+            Keep exploring. Every letter you learn is a new adventure! 🌟
+        </p>
+
+    </div>
+</div>
+
+{{ letters|json_script:"alphabet-data" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
+
+    const alphabetData = JSON.parse(
+        document.getElementById("alphabet-data").textContent
+    );
+
+    const letterGrid = document.getElementById("letterGrid");
+    const bigLetter = document.getElementById("bigLetter");
+    const letterPicture = document.getElementById("letterPicture");
+    const letterWord = document.getElementById("letterWord");
+    const letterDescription = document.getElementById("letterDescription");
+    const speakButton = document.getElementById("speakButton");
+
+    const startQuizButton = document.getElementById("startQuizButton");
+    const quizPanel = document.getElementById("quizPanel");
+    const completionPanel = document.getElementById("completionPanel");
+
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const answeredDisplay = document.getElementById("answeredDisplay");
+    const correctDisplay = document.getElementById("correctDisplay");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+
+    const questionCounter = document.getElementById("questionCounter");
+    const quizScore = document.getElementById("quizScore");
+    const quizProgressFill = document.getElementById("quizProgressFill");
+    const quizClue = document.getElementById("quizClue");
+    const quizWord = document.getElementById("quizWord");
+    const answerOptions = document.getElementById("answerOptions");
+    const quizFeedback = document.getElementById("quizFeedback");
+    const nextQuestionButton = document.getElementById("nextQuestionButton");
+
+    const restartButton = document.getElementById("restartButton");
+    const finalScore = document.getElementById("finalScore");
+    const finalSummary = document.getElementById("finalSummary");
+    const completionIcon = document.getElementById("completionIcon");
+    const completionTitle = document.getElementById("completionTitle");
+    const completionMessage = document.getElementById("completionMessage");
+
+    const TOTAL_QUESTIONS = 10;
+
+    let score = 0;
+    let correctAnswers = 0;
+    let questionIndex = 0;
+    let questions = [];
+    let answered = false;
+
+    function getLetterData(letter) {
+        return alphabetData.find(function (item) {
+            return item.letter === letter;
+        });
+    }
+
+    function selectLetter(letter) {
+        const item = getLetterData(letter);
+
+        if (!item) return;
+
+        document.querySelectorAll(".letter-button").forEach(function (button) {
+            button.classList.toggle(
+                "active",
+                button.dataset.letter === letter
+            );
+        });
+
+        bigLetter.textContent = item.letter;
+        letterPicture.textContent = item.emoji;
+        letterWord.textContent = item.word;
+        letterDescription.textContent = item.letter + " is for " + item.word + "!";
+
+        bigLetter.style.animation = "none";
+        void bigLetter.offsetWidth;
+        bigLetter.style.animation = "letterBounce .5s ease";
+    }
+
+    function speak(text) {
+        if (!("speechSynthesis" in window)) {
+            alert("Speech playback is not supported by this browser.");
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-GB";
+        utterance.rate = 0.8;
+        utterance.pitch = 1.1;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    letterGrid.addEventListener("click", function (event) {
+        const button = event.target.closest(".letter-button");
+
+        if (!button) return;
+
+        selectLetter(button.dataset.letter);
+    });
+
+    speakButton.addEventListener("click", function () {
+        const currentLetter = bigLetter.textContent;
+        const currentWord = letterWord.textContent;
+
+        speak(currentLetter + ". " + currentWord + ".");
+    });
+
+    function shuffle(array) {
+        const shuffled = [...array];
+
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        return shuffled;
+    }
+
+    function createQuestions() {
+        return shuffle(alphabetData).slice(0, TOTAL_QUESTIONS);
+    }
+
+    function updateStatistics() {
+        const answeredCount = questionIndex;
+
+        scoreDisplay.textContent = score;
+        answeredDisplay.textContent = answeredCount + " / " + TOTAL_QUESTIONS;
+        correctDisplay.textContent = correctAnswers;
+
+        const percentage = (answeredCount / TOTAL_QUESTIONS) * 100;
+
+        progressFill.style.width = percentage + "%";
+        progressText.textContent = Math.round(percentage) + "% completed";
+    }
+
+    function startQuiz() {
+        score = 0;
+        correctAnswers = 0;
+        questionIndex = 0;
+        answered = false;
+
+        questions = createQuestions();
+
+        completionPanel.classList.remove("show");
+        quizPanel.classList.add("show");
+
+        updateStatistics();
+        showQuestion();
+
+        quizPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+    function showQuestion() {
+        if (questionIndex >= TOTAL_QUESTIONS) {
+            finishQuiz();
+            return;
+        }
+
+        answered = false;
+
+        const currentQuestion = questions[questionIndex];
+
+        const wrongAnswers = shuffle(
+            alphabetData.filter(function (item) {
+                return item.letter !== currentQuestion.letter;
+            })
+        ).slice(0, 2);
+
+        const options = shuffle([
+            currentQuestion,
+            ...wrongAnswers
+        ]);
+
+        questionCounter.textContent =
+            "QUESTION " + (questionIndex + 1) + " OF " + TOTAL_QUESTIONS;
+
+        quizScore.textContent = "Score: " + score;
+        quizClue.textContent = currentQuestion.emoji;
+        quizWord.textContent = currentQuestion.word.toUpperCase();
+
+        quizProgressFill.style.width =
+            (questionIndex / TOTAL_QUESTIONS) * 100 + "%";
+
+        quizFeedback.textContent = "";
+        quizFeedback.className = "quiz-feedback";
+
+        nextQuestionButton.disabled = true;
+        nextQuestionButton.textContent = "Choose an answer";
+
+        answerOptions.innerHTML = "";
+
+        options.forEach(function (option) {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "answer-button";
+            button.textContent = option.letter;
+            button.dataset.letter = option.letter;
+            button.setAttribute(
+                "aria-label",
+                "Letter " + option.letter
+            );
+
+            button.addEventListener("click", function () {
+                checkAnswer(button, currentQuestion);
+            });
+
+            answerOptions.appendChild(button);
+        });
+    }
+
+    function checkAnswer(selectedButton, correctItem) {
+        if (answered) return;
+
+        answered = true;
+
+        const selectedLetter = selectedButton.dataset.letter;
+        const isCorrect = selectedLetter === correctItem.letter;
+
+        const allButtons = answerOptions.querySelectorAll(".answer-button");
+
+        allButtons.forEach(function (button) {
+            button.disabled = true;
+
+            if (button.dataset.letter === correctItem.letter) {
+                button.classList.add("correct");
+            }
+        });
+
+        if (isCorrect) {
+            score += 10;
+            correctAnswers++;
+
+            quizFeedback.textContent = "🎉 Correct! " +
+                correctItem.letter + " is for " + correctItem.word + "!";
+
+            quizFeedback.classList.add("feedback-correct");
+
+            if ("speechSynthesis" in window) {
+                speak("Well done! " + correctItem.letter +
+                    " is for " + correctItem.word + ".");
+            }
+        } else {
+            selectedButton.classList.add("wrong");
+
+            quizFeedback.textContent = "Good try! The correct answer is " +
+                correctItem.letter + " for " + correctItem.word + ".";
+
+            quizFeedback.classList.add("feedback-wrong");
+        }
+
+        questionIndex++;
+
+        updateStatistics();
+
+        quizScore.textContent = "Score: " + score;
+
+        nextQuestionButton.disabled = false;
+
+        nextQuestionButton.textContent =
+            questionIndex === TOTAL_QUESTIONS
+                ? "See My Results →"
+                : "Next Question →";
+    }
+
+    function finishQuiz() {
+        quizPanel.classList.remove("show");
+        completionPanel.classList.add("show");
+
+        quizProgressFill.style.width = "100%";
+
+        finalScore.textContent = score + " / 100";
+
+        finalSummary.textContent =
+            "You answered " + correctAnswers +
+            " out of " + TOTAL_QUESTIONS + " questions correctly.";
+
+        if (score >= 80) {
+            completionIcon.textContent = "🏆";
+            completionTitle.textContent = "Fantastic Work!";
+            completionMessage.textContent =
+                "You are becoming an alphabet superstar!";
+        } else if (score >= 50) {
+            completionIcon.textContent = "🌟";
+            completionTitle.textContent = "Great Effort!";
+            completionMessage.textContent =
+                "You are learning. Keep practising!";
+        } else {
+            completionIcon.textContent = "💪";
+            completionTitle.textContent = "Keep Exploring!";
+            completionMessage.textContent =
+                "Every attempt helps you learn. Try again!";
+        }
+
+        completionPanel.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+    startQuizButton.addEventListener("click", startQuiz);
+
+    nextQuestionButton.addEventListener("click", function () {
+        if (!answered) return;
+
+        showQuestion();
+    });
+
+    restartButton.addEventListener("click", function () {
+        startQuiz();
+    });
+
+    if (alphabetData.length > 0) {
+        selectLetter(alphabetData[0].letter);
+    }
+});
+</script>
+{% endblock %}

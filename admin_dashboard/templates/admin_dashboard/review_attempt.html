@@ -1,0 +1,517 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Review Assessment | PupilAura Admin{% endblock %}
+
+{% block page_title %}Review Assessment{% endblock %}
+{% block page_subtitle %}Review and grade the student's theory and practical answers{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       REVIEW ASSESSMENT — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Attempt header card (student summary) */
+    .attempt-header {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .attempt-header-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .attempt-header h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+
+    .attempt-header p {
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 13px;
+    }
+
+    .attempt-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .student-card {
+        margin-top: 24px;
+        padding: 20px;
+        background: var(--surface-soft);
+        border-radius: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        border: 1px solid var(--border);
+    }
+
+    .student-info-label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+    }
+
+    .student-info-value {
+        display: block;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.5;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    /* Review card (one per question) */
+    .review-card {
+        background: var(--surface);
+        border-radius: 18px;
+        padding: 28px;
+        margin-bottom: 22px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .question-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .question-number {
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--text);
+    }
+
+    .question-type {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .question-text {
+        font-size: 17px;
+        line-height: 1.65;
+        font-weight: 600;
+        margin-bottom: 22px;
+        color: var(--text);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    /* Answer box */
+    .answer-box {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 22px;
+    }
+
+    .answer-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .student-answer {
+        line-height: 1.7;
+        white-space: pre-wrap;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .selected-choice {
+        padding: 12px 14px;
+        background: #eff6ff;
+        border-radius: 9px;
+        color: var(--primary);
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .reviewed-box {
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    /* Grading input layout */
+    .grading {
+        display: grid;
+        grid-template-columns: 1fr 180px;
+        gap: 20px;
+        align-items: end;
+    }
+
+    .grading .form-group {
+        margin-bottom: 0;
+    }
+
+    .grading .max-points {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 7px;
+    }
+
+    /* Bottom actions */
+    .bottom-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .student-card {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 700px) {
+        .attempt-header {
+            padding: 20px;
+        }
+        .attempt-header h2 {
+            font-size: 20px;
+        }
+        .student-card {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .review-card {
+            padding: 20px;
+        }
+        .question-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .question-text {
+            font-size: 15px;
+        }
+        .grading {
+            grid-template-columns: 1fr;
+        }
+        .bottom-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+        .bottom-actions .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .attempt-header,
+        .review-card {
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .student-card {
+            padding: 16px;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .attempt-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .question-type {
+            background: rgba(67, 56, 202, 0.25);
+            color: #c7d2fe;
+        }
+        .selected-choice {
+            background: rgba(30, 64, 175, 0.25);
+            color: #93c5fd;
+        }
+        .reviewed-box {
+            background: rgba(6, 95, 70, 0.25);
+            color: #6ee7b7;
+            border-color: #065f46;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">/</span>
+    <a href="{% url 'admin_dashboard:assessment_attempts' %}">Assessments</a>
+    <span class="breadcrumb-separator" aria-hidden="true">/</span>
+    <span class="breadcrumb-current">Review Attempt #{{ attempt.id }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <div>
+                    <h1>Review Assessment</h1>
+                    <p>
+                        Review and grade the student's theory and practical answers.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:pending_reviews' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Pending Reviews
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Attempt #{{ attempt.id }}</span>
+            <span class="meta-badge">{{ attempt.quiz.title }}</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- ATTEMPT HEADER / STUDENT CARD -->
+<section class="attempt-header">
+    <div class="attempt-header-top">
+        <div>
+            <h2>Review Assessment</h2>
+            <p>
+                Review and grade the student's theory and practical answers.
+            </p>
+        </div>
+        <div class="attempt-badge">
+            Attempt #{{ attempt.id }}
+        </div>
+    </div>
+
+    <div class="student-card">
+        <div>
+            <span class="student-info-label">Student</span>
+            <span class="student-info-value">
+                {% if attempt.student.get_full_name %}
+                    {{ attempt.student.get_full_name }}
+                {% else %}
+                    {{ attempt.student.email }}
+                {% endif %}
+            </span>
+        </div>
+        <div>
+            <span class="student-info-label">Email</span>
+            <span class="student-info-value">{{ attempt.student.email }}</span>
+        </div>
+        <div>
+            <span class="student-info-label">Assessment</span>
+            <span class="student-info-value">{{ attempt.quiz.title }}</span>
+        </div>
+    </div>
+</section>
+
+<!-- REVIEW FORM -->
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% for answer in answers %}
+        <article class="review-card">
+
+            <!-- Question header -->
+            <div class="question-header">
+                <div class="question-number">Question {{ forloop.counter }}</div>
+                <span class="question-type">
+                    {% if answer.question.question_type == "objective" %}
+                        Objective
+                    {% elif answer.question.question_type == "theory" %}
+                        Theory
+                    {% elif answer.question.question_type == "practical" %}
+                        Practical
+                    {% else %}
+                        {{ answer.question.question_type|default:"Assessment" }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <!-- Question text -->
+            <div class="question-text">{{ answer.question.text }}</div>
+
+            {% if answer.question.question_type == "objective" %}
+
+                <!-- Objective answer -->
+                <div class="answer-box">
+                    <div class="answer-label">Student's Answer</div>
+                    {% if answer.selected_choice %}
+                        <div class="selected-choice">
+                            {{ answer.selected_choice.text }}
+                        </div>
+                    {% else %}
+                        <div class="student-answer">No answer selected.</div>
+                    {% endif %}
+                </div>
+
+                <div class="reviewed-box">
+                    {% if answer.is_correct %}
+                        <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                        Correct — {{ answer.points_earned }} point(s)
+                    {% else %}
+                        <i class="bi bi-x-circle-fill" style="margin-right:4px;"></i>
+                        Incorrect — {{ answer.points_earned }} point(s)
+                    {% endif %}
+                </div>
+
+            {% else %}
+
+                <!-- Theory / practical answer -->
+                <div class="answer-box">
+                    <div class="answer-label">Student's Answer</div>
+                    <div class="student-answer">
+                        {% if answer.text_answer %}
+                            {{ answer.text_answer }}
+                        {% else %}
+                            No written answer submitted.
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if answer.reviewed %}
+                    <div class="reviewed-box">
+                        <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                        Already reviewed — {{ answer.points_earned }} / {{ answer.question.points }} point(s)
+                    </div>
+                {% else %}
+                    <div class="grading">
+                        <div class="form-group">
+                            <label class="form-label" for="points_{{ answer.id }}">
+                                Awarded Points
+                            </label>
+                            <input
+                                type="number"
+                                id="points_{{ answer.id }}"
+                                name="points_{{ answer.id }}"
+                                class="form-control"
+                                min="0"
+                                max="{{ answer.question.points }}"
+                                step="0.01"
+                                value="{{ answer.points_earned|default:0 }}"
+                                required
+                                aria-describedby="max_{{ answer.id }}"
+                            >
+                            <div class="max-points" id="max_{{ answer.id }}">
+                                Maximum: {{ answer.question.points }} point(s)
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% endif %}
+
+        </article>
+    {% empty %}
+        <div class="review-card">
+            <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true">
+                    <i class="bi bi-clipboard-x"></i>
+                </div>
+                <h3>No answers found</h3>
+                <p>This assessment has no answers available for review.</p>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Actions -->
+    <div class="bottom-actions">
+        <a href="{% url 'admin_dashboard:pending_reviews' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Pending Reviews
+        </a>
+
+        {% if answers %}
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2"></i> Save Review
+            </button>
+        {% endif %}
+    </div>
+
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================================
+       Prevent invalid grading values above question maximum.
+    ========================================================= */
+
+    document
+        .querySelectorAll('input[name^="points_"]')
+        .forEach(function (input) {
+            input.addEventListener("input", function () {
+                const maximum = parseFloat(input.max);
+                const current = parseFloat(input.value);
+
+                if (
+                    !Number.isNaN(maximum) &&
+                    !Number.isNaN(current) &&
+                    current > maximum
+                ) {
+                    input.setCustomValidity(
+                        "Awarded points cannot exceed the maximum points."
+                    );
+                } else if (current < 0) {
+                    input.setCustomValidity(
+                        "Awarded points cannot be negative."
+                    );
+                } else {
+                    input.setCustomValidity("");
+                }
+            });
+        });
+</script>
+{% endblock %}

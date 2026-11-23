@@ -1,0 +1,556 @@
+ {% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ form_title }} | PupilAura{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}Manage questions, answer options and correct answers{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_stories' %}">Cartoon Stories</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}">{{ cartoon_story.title }}</a>
+    <span>/</span>
+    <span>{{ form_title }}</span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.question-form-container {
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+/* MAIN FORM CARD */
+.question-form-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px;
+    margin-bottom: 22px;
+}
+
+/* QUESTION HEADING */
+.question-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+}
+
+.question-heading-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, .10);
+    color: var(--primary);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.question-heading h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.question-heading p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* FORM FIELDS */
+.question-form-group {
+    margin-bottom: 20px;
+}
+
+.question-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.question-form-group input:not([type="checkbox"]),
+.question-form-group textarea,
+.question-form-group select {
+    width: 100%;
+    min-height: 43px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.question-form-group input::placeholder,
+.question-form-group textarea::placeholder {
+    color: var(--muted);
+    opacity: .8;
+}
+
+.question-form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.question-form-group select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.question-form-group input:focus,
+.question-form-group textarea:focus,
+.question-form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+.question-help {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* QUESTION GRID */
+.question-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* ANSWER CARDS */
+.answer-card {
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--bg);
+    min-width: 0;
+    transition: border-color var(--transition);
+}
+
+.answer-card.correct-answer {
+    border-color: var(--success);
+    background: rgba(22, 163, 74, .06);
+}
+
+.answer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.answer-card-header strong {
+    font-size: 13px;
+    color: var(--text);
+}
+
+.correct-indicator {
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.answer-card input[type="text"] {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.answer-card input[type="text"]::placeholder {
+    color: var(--muted);
+}
+
+.answer-card input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+/* CORRECT ANSWER CONTROL */
+.answer-correct-control {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 13px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.answer-correct-control input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--success);
+    cursor: pointer;
+}
+
+/* ERRORS */
+.question-error {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.question-error-summary {
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* FORM ACTIONS */
+.question-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.question-form-actions button,
+.question-form-actions a {
+    min-height: 42px;
+}
+
+/* ANSWER RULES */
+.answer-rules {
+    padding: 13px 15px;
+    margin-bottom: 20px;
+    background: rgba(37, 99, 235, .07);
+    border: 1px solid rgba(37, 99, 235, .25);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* PUBLICATION NOTE */
+.question-publication-note {
+    padding: 14px 16px;
+    border: 1px solid rgba(37, 99, 235, .25);
+    border-radius: 10px;
+    background: rgba(37, 99, 235, .07);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .question-form-card {
+        padding: 18px;
+    }
+
+    .question-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .question-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .question-form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 400px) {
+    .question-form-card {
+        padding: 14px;
+    }
+
+    .question-heading {
+        align-items: flex-start;
+    }
+
+    .question-heading-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .answer-card {
+        padding: 13px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">{{ form_title }}</div>
+                <p class="hero-subtitle">
+                    {% if question %}
+                        Update question {{ question.question_number }} for {{ cartoon_story.title }}.
+                    {% else %}
+                        Add an interactive question to {{ cartoon_story.title }}.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Story
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="question-form-container">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="question-error-summary">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if answer_formset.non_form_errors %}
+            <div class="question-error-summary">
+                {% for error in answer_formset.non_form_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="question-form-card">
+            <div class="question-heading">
+                <div class="question-heading-icon">
+                    <i class="bi bi-question-circle"></i>
+                </div>
+                <div>
+                    <h3>Question Details</h3>
+                    <p>Write the question and its explanation.</p>
+                </div>
+            </div>
+
+            <div class="question-grid">
+                <div class="question-form-group">
+                    <label for="{{ form.question_number.id_for_label }}">Question Number *</label>
+                    {{ form.question_number }}
+                    {% for error in form.question_number.errors %}
+                        <div class="question-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="question-form-group">
+                <label for="{{ form.question_text.id_for_label }}">Question Text *</label>
+                {{ form.question_text }}
+                {% for error in form.question_text.errors %}
+                    <div class="question-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="question-form-group">
+                <label for="{{ form.explanation.id_for_label }}">Answer Explanation</label>
+                {{ form.explanation }}
+                {% for error in form.explanation.errors %}
+                    <div class="question-error">{{ error }}</div>
+                {% endfor %}
+                <small class="question-help">
+                    Explain why the correct answer is right. This can be displayed after the child answers.
+                </small>
+            </div>
+        </div>
+
+        <div class="question-form-card">
+            <div class="question-heading">
+                <div class="question-heading-icon">
+                    <i class="bi bi-ui-checks"></i>
+                </div>
+                <div>
+                    <h3>Answer Options</h3>
+                    <p>Provide answer choices and identify the correct one.</p>
+                </div>
+            </div>
+
+            <div class="answer-rules">
+                <strong>Answer requirements:</strong>
+                <ul style="margin:6px 0 0; padding-left:18px;">
+                    <li>Provide at least two answer options.</li>
+                    <li>Exactly one answer must be marked correct.</li>
+                    <li>Use clear, age-appropriate answer text.</li>
+                </ul>
+            </div>
+
+            {{ answer_formset.management_form }}
+
+            {% if answer_formset.non_form_errors %}
+                {% for error in answer_formset.non_form_errors %}
+                    <div class="question-error-summary">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="question-grid">
+                {% for answer_form in answer_formset %}
+                    <div class="answer-card">
+                        {% for hidden in answer_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        <div class="answer-card-header">
+                            <strong>Answer Option {{ forloop.counter }}</strong>
+                            <span class="correct-indicator" style="display:none;">
+                                <i class="bi bi-check-circle-fill"></i> Correct
+                            </span>
+                        </div>
+
+                        {% if answer_form.non_field_errors %}
+                            <div class="question-error">
+                                {{ answer_form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="question-form-group" style="margin-bottom:0;">
+                            <label for="{{ answer_form.answer_text.id_for_label }}">Answer Text</label>
+                            {{ answer_form.answer_text }}
+                            {% for error in answer_form.answer_text.errors %}
+                                <div class="question-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <label class="answer-correct-control">
+                            {{ answer_form.is_correct }}
+                            Mark as correct answer
+                        </label>
+                        {% for error in answer_form.is_correct.errors %}
+                            <div class="question-error">{{ error }}</div>
+                        {% endfor %}
+
+                        {% if answer_form.order %}
+                            <div class="question-form-group" style="margin-top:13px; margin-bottom:0;">
+                                <label for="{{ answer_form.order.id_for_label }}">Display Order</label>
+                                {{ answer_form.order }}
+                                {% for error in answer_form.order.errors %}
+                                    <div class="question-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if answer_form.DELETE %}
+                            <div style="margin-top:12px;">
+                                <label class="answer-correct-control">
+                                    {{ answer_form.DELETE }}
+                                    Remove this answer
+                                </label>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if answer_formset.errors %}
+                <div class="question-error-summary" style="margin-top:18px;">
+                    Please correct the errors shown in the answer options.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="question-form-card">
+            <div class="question-heading">
+                <div class="question-heading-icon">
+                    <i class="bi bi-globe"></i>
+                </div>
+                <div>
+                    <h3>Publishing</h3>
+                    <p>Understand the question's publication state.</p>
+                </div>
+            </div>
+
+            <div class="question-publication-note">
+                <i class="bi bi-info-circle"></i>
+                {% if question %}
+                    This question's publication status is managed separately from this form. Saving your changes will not automatically publish it.
+                {% else %}
+                    New questions are saved as drafts. They will not appear in the published story until published through the appropriate publishing workflow.
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="question-form-actions">
+            <a href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i>
+                {% if question %}Save Question Changes{% else %}Create Question{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const answerCards = document.querySelectorAll(".answer-card");
+
+    function updateCorrectAnswerIndicators() {
+        answerCards.forEach(function (card) {
+            const checkbox = card.querySelector('input[type="checkbox"][name$="-is_correct"]');
+            const indicator = card.querySelector(".correct-indicator");
+
+            if (!checkbox || !indicator) return;
+
+            const deletedInput = card.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            const isDeleted = deletedInput && deletedInput.checked;
+
+            card.classList.toggle("correct-answer", checkbox.checked && !isDeleted);
+            indicator.style.display = checkbox.checked && !isDeleted ? "inline" : "none";
+            card.style.opacity = isDeleted ? "0.5" : "1";
+        });
+    }
+
+    answerCards.forEach(function (card) {
+        const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener("change", updateCorrectAnswerIndicators);
+        });
+    });
+
+    updateCorrectAnswerIndicators();
+});
+</script>
+{% endblock %}

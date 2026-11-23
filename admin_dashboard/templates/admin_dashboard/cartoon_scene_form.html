@@ -1,0 +1,580 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ form_title }} | PupilAura{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}Manage scene content, narration, illustrations and audio{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_stories' %}">Cartoon Stories</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}">
+        {{ cartoon_story.title }}
+    </a>
+    <span>/</span>
+    <span>{{ form_title }}</span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* =========================================================
+   CARTOON STORY SCENE FORM
+   PupilAura Admin Theme
+   ========================================================= */
+
+.scene-form-container {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+    color: var(--text);
+}
+
+/* =========================================================
+   FORM CARD
+   ========================================================= */
+
+.scene-form-card {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 24px;
+}
+
+/* =========================================================
+   FORM HEADING
+   ========================================================= */
+
+.scene-form-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.scene-form-heading-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.scene-form-heading h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.scene-form-heading p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   FORM GRID
+   ========================================================= */
+
+.scene-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.scene-form-group {
+    margin-bottom: 20px;
+    min-width: 0;
+}
+
+.scene-form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================================================
+   LABELS
+   ========================================================= */
+
+.scene-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* =========================================================
+   INPUTS, SELECTS AND TEXTAREAS
+   ========================================================= */
+
+.scene-form-group input:not([type="checkbox"]):not([type="file"]),
+.scene-form-group input[type="file"],
+.scene-form-group select,
+.scene-form-group textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 43px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+/* Placeholder visibility */
+.scene-form-group input::placeholder,
+.scene-form-group textarea::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+/* Dropdown options */
+.scene-form-group select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+/* File input */
+.scene-form-group input[type="file"] {
+    padding: 9px;
+    cursor: pointer;
+}
+
+/* Checkbox */
+.scene-form-group input[type="checkbox"] {
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* Textarea */
+.scene-form-group textarea {
+    min-height: 130px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+/* Focus states */
+.scene-form-group input:focus,
+.scene-form-group select:focus,
+.scene-form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+/* Disabled fields */
+.scene-form-group input:disabled,
+.scene-form-group select:disabled,
+.scene-form-group textarea:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   HELP TEXT
+   ========================================================= */
+
+.scene-form-help {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   FILE PREVIEW
+   ========================================================= */
+
+.scene-file-preview {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-soft);
+    color: var(--text);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.scene-file-preview img {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.scene-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.scene-form-actions button,
+.scene-form-actions a {
+    min-height: 42px;
+}
+
+/* =========================================================
+   FIELD ERRORS
+   ========================================================= */
+
+.field-error {
+    display: block;
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.form-error-summary {
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 700px) {
+    .scene-form-card {
+        padding: 18px;
+    }
+
+    .scene-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .scene-form-heading {
+        align-items: flex-start;
+    }
+
+    .scene-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .scene-form-actions .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    .scene-form-card {
+        padding: 14px;
+    }
+
+    .scene-form-heading h3 {
+        font-size: 15px;
+    }
+
+    .scene-form-heading p {
+        font-size: 12px;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">
+                    🎬 {{ form_title }}
+                </div>
+                <p class="hero-subtitle">
+                    {% if scene %}
+                        Update scene {{ scene.scene_number }} in {{ cartoon_story.title }}.
+                    {% else %}
+                        Add a new scene to {{ cartoon_story.title }}.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> Back to Story
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="scene-form-container">
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-error-summary">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- SCENE INFORMATION -->
+        <div class="scene-form-card">
+            <div class="scene-form-heading">
+                <div class="scene-form-heading-icon">
+                    <i class="bi bi-film"></i>
+                </div>
+                <div>
+                    <h3>Scene Information</h3>
+                    <p>Set the scene order, character and heading.</p>
+                </div>
+            </div>
+
+            <div class="scene-form-grid">
+                <div class="scene-form-group">
+                    <label for="{{ form.scene_number.id_for_label }}">
+                        Scene Number *
+                    </label>
+                    {{ form.scene_number }}
+
+                    {% for error in form.scene_number.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="scene-form-group">
+                    <label for="{{ form.title.id_for_label }}">Scene Title</label>
+                    {{ form.title }}
+
+                    {% for error in form.title.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="scene-form-group">
+                    <label for="{{ form.character_name.id_for_label }}">
+                        Character Name *
+                    </label>
+                    {{ form.character_name }}
+
+                    {% for error in form.character_name.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="scene-form-group">
+                    <label for="{{ form.character_emoji.id_for_label }}">
+                        Character Emoji
+                    </label>
+                    {{ form.character_emoji }}
+
+                    {% for error in form.character_emoji.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                    <small class="scene-form-help">
+                        Example: 🦁, 🐻, 👧 or 📖.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE CONTENT -->
+        <div class="scene-form-card">
+            <div class="scene-form-heading">
+                <div class="scene-form-heading-icon">
+                    <i class="bi bi-chat-square-text"></i>
+                </div>
+                <div>
+                    <h3>Scene Content</h3>
+                    <p>Write the story text and optional narration.</p>
+                </div>
+            </div>
+
+            <div class="scene-form-group">
+                <label for="{{ form.text.id_for_label }}">Scene Text *</label>
+                {{ form.text }}
+
+                {% for error in form.text.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+                <small class="scene-form-help">
+                    The main text displayed to the child during this scene.
+                </small>
+            </div>
+
+            <div class="scene-form-group">
+                <label for="{{ form.narration_text.id_for_label }}">
+                    Narration Text
+                </label>
+                {{ form.narration_text }}
+
+                {% for error in form.narration_text.errors %}
+                    <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+                <small class="scene-form-help">
+                    Optional alternative narration. If empty, the scene text can serve as narration.
+                </small>
+            </div>
+        </div>
+
+        <!-- MEDIA ASSETS -->
+        <div class="scene-form-card">
+            <div class="scene-form-heading">
+                <div class="scene-form-heading-icon">
+                    <i class="bi bi-camera-reels"></i>
+                </div>
+                <div>
+                    <h3>Media Assets</h3>
+                    <p>Upload an illustration and optional audio narration.</p>
+                </div>
+            </div>
+
+            <div class="scene-form-grid">
+                <div class="scene-form-group">
+                    <label for="{{ form.illustration.id_for_label }}">
+                        Scene Illustration
+                    </label>
+
+                    {{ form.illustration }}
+
+                    {% for error in form.illustration.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                    {% if scene and scene.illustration %}
+                        <div class="scene-file-preview">
+                            <strong>Current illustration</strong>
+
+                            <img
+                                src="{{ scene.illustration.url }}"
+                                alt="Current scene illustration"
+                            >
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="scene-form-group">
+                    <label for="{{ form.audio_file.id_for_label }}">
+                        Audio Narration
+                    </label>
+
+                    {{ form.audio_file }}
+
+                    {% for error in form.audio_file.errors %}
+                        <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                    {% if scene and scene.audio_file %}
+                        <div class="scene-file-preview">
+                            <strong>Current audio file</strong>
+
+                            <audio controls style="width:100%; margin-top:10px;">
+                                <source src="{{ scene.audio_file.url }}">
+                                Your browser does not support audio playback.
+                            </audio>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PUBLISHING INFORMATION -->
+        <div class="scene-form-card">
+            <div class="scene-form-heading">
+                <div class="scene-form-heading-icon">
+                    <i class="bi bi-globe"></i>
+                </div>
+                <div>
+                    <h3>Publishing</h3>
+                    <p>Understand the publication status of this scene.</p>
+                </div>
+            </div>
+
+            <div class="scene-file-preview">
+                {% if scene %}
+                    {% if scene.is_published %}
+                        <strong style="color:#15803d;">
+                            <i class="bi bi-check-circle"></i> Published scene
+                        </strong>
+                        <p class="scene-form-help">
+                            This scene is currently marked as published.
+                        </p>
+                    {% else %}
+                        <strong style="color:#92400e;">
+                            <i class="bi bi-clock"></i> Unpublished scene
+                        </strong>
+                        <p class="scene-form-help">
+                            This scene is currently unpublished.
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <strong style="color:#92400e;">
+                        <i class="bi bi-file-earmark"></i> New scene
+                    </strong>
+                    <p class="scene-form-help">
+                        New scenes are automatically created as unpublished.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- FORM ACTIONS -->
+        <div class="scene-form-actions">
+            <a
+                href="{% url 'admin_dashboard:cartoon_story_detail' story_id=cartoon_story.id %}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i>
+                {% if scene %}Save Scene Changes{% else %}Create Scene{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

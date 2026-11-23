@@ -1,0 +1,1068 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ week.term.subject.name }} -
+    {% if week.title %}{{ week.title }}{% else %}Week {{ week.number }}{% endif %}
+    | PupilAura
+{% endblock %}
+
+{% block body_class %}pa-no-sidebar{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <a href="{% url 'student_classes' %}" style="color: inherit;">Classes</a>
+    <span class="pa-breadcrumb-sep">/</span>
+    <a href="{% url 'student_subjects' week.term.subject.school_class.id %}" style="color: inherit;">{{ week.term.subject.school_class.name }}</a>
+    <span class="pa-breadcrumb-sep">/</span>
+    <a href="{% url 'student_terms' week.term.subject.id %}" style="color: inherit;">{{ week.term.subject.name }}</a>
+    <span class="pa-breadcrumb-sep">/</span>
+    <a href="{% url 'student_weeks' week.term.id %}" style="color: inherit;">{{ week.term.name }}</a>
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>Week {{ week.number }}</strong>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #0d6efd;
+        --primary-dark: #0b5ed7;
+        --primary-soft: rgba(13, 110, 253, 0.10);
+
+        --success: #198754;
+        --success-soft: rgba(25, 135, 84, 0.10);
+
+        --warning: #d97706;
+        --warning-soft: #fffbeb;
+        --warning-border: #fde68a;
+
+        --danger: #dc3545;
+        --danger-soft: #fff5f5;
+
+        --dark: #1f2937;
+        --text: #374151;
+        --muted: #6b7280;
+
+        --page-bg: #f5f7fb;
+        --card-bg: #ffffff;
+
+        --border: #e7ebf0;
+
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 18px;
+        --radius-xl: 22px;
+
+        --shadow-sm:
+            0 6px 18px rgba(15, 23, 42, 0.05);
+
+        --shadow-md:
+            0 10px 28px rgba(15, 23, 42, 0.07);
+
+        --shadow-hover:
+            0 16px 36px rgba(15, 23, 42, 0.10);
+    }
+
+    .pa-lessons-page {
+        min-height: calc(100vh - 80px);
+        background: var(--page-bg);
+        color: var(--text);
+        padding: 30px 20px 60px;
+    }
+
+    .pa-lessons-container {
+        width: min(1240px, 100%);
+        margin: 0 auto;
+    }
+
+    /* =====================================================
+       ACCESS BANNER
+    ====================================================== */
+
+    .access-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 20px;
+
+        flex-wrap: wrap;
+
+        padding: 16px 20px;
+
+        margin-bottom: 22px;
+
+        border-radius: 14px;
+
+        font-size: 0.92rem;
+    }
+
+    .access-banner.is-active {
+        background: var(--success-soft);
+        border: 1px solid #bbf7d0;
+        color: var(--success);
+    }
+
+    .access-banner.is-expiring {
+        background: var(--warning-soft);
+        border: 1px solid var(--warning-border);
+        color: var(--warning);
+    }
+
+    .access-banner-left {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        min-width: 0;
+
+        font-weight: 650;
+    }
+
+    .access-banner-left i {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .access-banner strong {
+        font-weight: 800;
+    }
+
+    .access-banner-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .access-renew {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        padding: 8px 14px;
+
+        border-radius: 9px;
+
+        background: var(--warning);
+        color: #ffffff;
+
+        text-decoration: none;
+
+        font-size: 0.84rem;
+        font-weight: 700;
+
+        transition: background 0.2s ease;
+    }
+
+    .access-renew:hover {
+        background: #92400e;
+        color: #ffffff;
+    }
+
+    /* =====================================================
+       PROGRESS CARD
+    ====================================================== */
+
+    .progress-card {
+        background: var(--card-bg);
+
+        border: 1px solid var(--border);
+
+        border-radius: var(--radius-lg);
+
+        padding: 22px 24px;
+
+        box-shadow: var(--shadow-sm);
+
+        margin-bottom: 26px;
+    }
+
+    .progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        margin-bottom: 13px;
+    }
+
+    .progress-title {
+        margin: 0;
+
+        color: var(--dark);
+
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .progress-text {
+        margin: 3px 0 0;
+
+        color: var(--muted);
+
+        font-size: 0.82rem;
+    }
+
+    .progress-percent {
+        color: var(--primary);
+
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .progress-track {
+        width: 100%;
+
+        height: 9px;
+
+        overflow: hidden;
+
+        background: #e9eef5;
+
+        border-radius: 999px;
+    }
+
+    .progress-bar {
+        height: 100%;
+
+        background: var(--primary);
+
+        border-radius: inherit;
+
+        transition: width 0.3s ease;
+    }
+
+    /* =====================================================
+       SECTION HEADER
+    ====================================================== */
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        margin-bottom: 15px;
+    }
+
+    .section-title {
+        margin: 0;
+
+        color: var(--dark);
+
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .section-subtitle {
+        margin: 3px 0 0;
+
+        color: var(--muted);
+
+        font-size: 0.82rem;
+    }
+
+    /* =====================================================
+       LESSON GRID
+    ====================================================== */
+
+    .lesson-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 18px;
+    }
+
+    /* =====================================================
+       LESSON CARD
+    ====================================================== */
+
+    .lesson-card {
+        display: flex;
+        flex-direction: column;
+
+        min-width: 0;
+
+        background: var(--card-bg);
+
+        border: 1px solid var(--border);
+
+        border-radius: var(--radius-lg);
+
+        overflow: hidden;
+
+        box-shadow: var(--shadow-sm);
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .lesson-card:hover {
+        transform: translateY(-4px);
+
+        box-shadow: var(--shadow-hover);
+
+        border-color: rgba(13, 110, 253, 0.18);
+    }
+
+    .lesson-card.current-lesson {
+        border:
+            2px solid rgba(13, 110, 253, 0.35);
+    }
+
+    .lesson-card-body {
+        display: flex;
+        flex-direction: column;
+
+        flex: 1;
+
+        padding: 20px;
+    }
+
+    /* =====================================================
+       LESSON TOP
+    ====================================================== */
+
+    .lesson-top {
+        display: flex;
+        align-items: flex-start;
+
+        gap: 13px;
+
+        margin-bottom: 15px;
+    }
+
+    .lesson-number {
+        width: 43px;
+        height: 43px;
+
+        flex-shrink: 0;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 12px;
+
+        background: var(--primary-soft);
+
+        color: var(--primary);
+
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .lesson-heading {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .lesson-status {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 6px;
+
+        margin-bottom: 7px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+
+        gap: 4px;
+
+        border-radius: 999px;
+
+        padding:
+            4px
+            8px;
+
+        font-size: 0.68rem;
+        font-weight: 700;
+    }
+
+    .status-completed {
+        background: var(--success-soft);
+        color: var(--success);
+    }
+
+    .status-not-started {
+        background: #f8fafc;
+
+        color: #64748b;
+
+        border: 1px solid var(--border);
+    }
+
+    .status-current {
+        background: var(--primary-soft);
+        color: var(--primary);
+    }
+
+    .lesson-title {
+        margin: 0;
+
+        color: var(--dark);
+
+        font-size: 1.05rem;
+        line-height: 1.4;
+
+        font-weight: 800;
+    }
+
+    /* =====================================================
+       LESSON DESCRIPTION
+    ====================================================== */
+
+    .lesson-description {
+        margin:
+            0
+            0
+            16px;
+
+        color: var(--muted);
+
+        font-size: 0.86rem;
+
+        line-height: 1.65;
+    }
+
+    /* =====================================================
+       CONTENT BADGES
+    ====================================================== */
+
+    .content-badges {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 6px;
+
+        margin-bottom: 18px;
+    }
+
+    .content-badge {
+        display: inline-flex;
+        align-items: center;
+
+        gap: 5px;
+
+        padding:
+            5px
+            8px;
+
+        border-radius: 999px;
+
+        background: #f8fafc;
+
+        border: 1px solid var(--border);
+
+        color: #596273;
+
+        font-size: 0.69rem;
+        font-weight: 700;
+    }
+
+    /* =====================================================
+       LESSON ACTION
+    ====================================================== */
+
+    .lesson-action {
+        margin-top: auto;
+
+        padding-top: 3px;
+    }
+
+    .lesson-button {
+        width: 100%;
+
+        min-height: 40px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        padding:
+            8px
+            13px;
+
+        border-radius: 10px;
+
+        text-decoration: none;
+
+        font-size: 0.82rem;
+        font-weight: 700;
+
+        transition:
+            transform 0.2s ease,
+            background 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .lesson-button-primary {
+        background: var(--primary);
+        color: #ffffff;
+
+        border: 1px solid var(--primary);
+    }
+
+    .lesson-button-primary:hover {
+        background: var(--primary-dark);
+        color: #ffffff;
+
+        transform: translateY(-1px);
+    }
+
+    .lesson-button-success {
+        background: #ffffff;
+
+        color: var(--success);
+
+        border: 1px solid rgba(25, 135, 84, 0.35);
+    }
+
+    .lesson-button-success:hover {
+        background: var(--success-soft);
+
+        color: var(--success);
+
+        transform: translateY(-1px);
+    }
+
+    /* =====================================================
+       EMPTY STATE
+    ====================================================== */
+
+    .empty-state {
+        background: #ffffff;
+
+        border:
+            1px dashed #cfd6df;
+
+        border-radius: var(--radius-lg);
+
+        padding:
+            55px
+            25px;
+
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 70px;
+        height: 70px;
+
+        margin:
+            0
+            auto
+            18px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #f3f5f8;
+
+        color: #8b95a5;
+
+        font-size: 1.8rem;
+    }
+
+    .empty-title {
+        margin: 0 0 7px;
+
+        color: var(--dark);
+
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .empty-description {
+        max-width: 500px;
+
+        margin:
+            0
+            auto
+            20px;
+
+        color: var(--muted);
+
+        font-size: 0.9rem;
+    }
+
+    .empty-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 7px;
+
+        min-height: 41px;
+
+        padding:
+            9px
+            15px;
+
+        border-radius: 10px;
+
+        background: var(--primary);
+        color: #ffffff;
+
+        text-decoration: none;
+
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .empty-button:hover {
+        background: var(--primary-dark);
+        color: #ffffff;
+    }
+
+    /* =====================================================
+       RESPONSIVE — LARGE TABLET
+    ====================================================== */
+
+    @media (max-width: 1199px) {
+        .lesson-grid {
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* =====================================================
+       RESPONSIVE — TABLET
+    ====================================================== */
+
+    @media (max-width: 991px) {
+        .pa-lessons-page {
+            padding-top: 24px;
+        }
+
+        .lesson-grid {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .access-banner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .access-banner-right {
+            width: 100%;
+        }
+
+        .access-renew {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* =====================================================
+       RESPONSIVE — MOBILE
+    ====================================================== */
+
+    @media (max-width: 575px) {
+        .pa-lessons-page {
+            padding-top: 20px;
+            padding-bottom: 38px;
+        }
+
+        .progress-card {
+            padding:
+                19px;
+        }
+
+        .progress-header {
+            align-items: flex-start;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+        }
+
+        .lesson-grid {
+            grid-template-columns: 1fr;
+
+            gap: 14px;
+        }
+
+        .lesson-card-body {
+            padding: 18px;
+        }
+
+        .lesson-number {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 11px;
+        }
+
+        .lesson-title {
+            font-size: 1rem;
+        }
+
+        .lesson-description {
+            font-size: 0.83rem;
+        }
+    }
+
+    /* =====================================================
+       PRINT
+    ====================================================== */
+
+    @media print {
+        .access-banner {
+            display: none !important;
+        }
+
+        body {
+            background: #ffffff;
+        }
+
+        .pa-lessons-page {
+            padding: 0;
+        }
+
+        .lesson-card {
+            break-inside: avoid;
+
+            box-shadow: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pa-lessons-page">
+    <div class="pa-lessons-container">
+
+        <!-- ACCESS BANNER (preserved) -->
+        {% if access and access.has_access %}
+
+            {% if access.days_remaining %}
+
+                {% if access.days_remaining <= 7 %}
+
+                    <div class="access-banner is-expiring">
+                        <div class="access-banner-left">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>
+                                Access expires in
+                                <strong>{{ access.days_remaining }} day{{ access.days_remaining|pluralize }}</strong>.
+                                Renew soon to keep your progress.
+                            </span>
+                        </div>
+                        <div class="access-banner-right">
+                            <a href="{% url 'payments:checkout' 'subject' week.term.subject.id %}"
+                               class="access-renew">
+                                <i class="bi bi-arrow-repeat"></i>
+                                Renew access
+                            </a>
+                        </div>
+                    </div>
+
+                {% else %}
+
+                    <div class="access-banner is-active">
+                        <div class="access-banner-left">
+                            <i class="bi bi-shield-check"></i>
+                            <span>
+                                Access expires in
+                                <strong>{{ access.days_remaining }} day{{ access.days_remaining|pluralize }}</strong>.
+                            </span>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+            {% else %}
+
+                <div class="access-banner is-active">
+                    <div class="access-banner-left">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>
+                            <strong>Free subject</strong> — you have full access.
+                        </span>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+
+        <!-- HERO -->
+        <header class="pa-hero">
+            <div class="pa-hero-content">
+
+                <div class="pa-hero-label">
+                    <i class="bi bi-journal-text"></i>
+                    Lesson pathway
+                </div>
+
+                <h1>
+                    {% if week.title %}{{ week.title }}{% else %}Week {{ week.number }}{% endif %}
+                </h1>
+
+                <p class="pa-hero-description">
+                    Select a lesson to begin learning.
+                </p>
+
+                <div class="pa-hero-actions">
+                    <a href="{% url 'student_weeks' week.term.id %}" class="pa-hero-back">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Weeks
+                    </a>
+                </div>
+
+                <div class="pa-hero-meta">
+                    <span class="pa-hero-meta-item">
+                        <i class="bi bi-mortarboard"></i>
+                        {{ week.term.subject.school_class.name }}
+                    </span>
+                    <span class="pa-hero-meta-item">
+                        <i class="bi bi-book"></i>
+                        {{ week.term.subject.name }}
+                    </span>
+                    <span class="pa-hero-meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        {{ week.term.name }}
+                    </span>
+                    <span class="pa-hero-meta-item">
+                        <i class="bi bi-journal-text"></i>
+                        {{ lessons|length }} lesson{{ lessons|length|pluralize }}
+                    </span>
+                </div>
+
+            </div>
+        </header>
+
+
+        <!-- PROGRESS -->
+        <section class="progress-card">
+
+            <div class="progress-header">
+
+                <div>
+                    <h2 class="progress-title">
+                        Week Progress
+                    </h2>
+                    <p class="progress-text">
+                        {{ completed_lessons }}
+                        of
+                        {{ total_lessons }}
+                        lesson{{ total_lessons|pluralize }}
+                        completed.
+                    </p>
+                </div>
+
+                <div class="progress-percent">
+                    {{ week_progress }}%
+                </div>
+
+            </div>
+
+            <div class="progress-track"
+                 role="progressbar"
+                 aria-label="Week progress"
+                 aria-valuenow="{{ week_progress }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+                <div class="progress-bar"
+                     style="width: {{ week_progress }}%;"></div>
+            </div>
+
+        </section>
+
+
+        <!-- LESSONS -->
+        {% if lessons %}
+
+            <div class="section-header">
+
+                <div>
+                    <h2 class="section-title">
+                        Lessons
+                    </h2>
+                    <p class="section-subtitle">
+                        Choose a lesson to continue learning.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="lesson-grid">
+
+                {% for lesson in lessons %}
+
+                    <article class="lesson-card{% if current_lesson and lesson.id == current_lesson.id %} current-lesson{% endif %}">
+
+                        <div class="lesson-card-body">
+
+                            <!-- LESSON TOP -->
+                            <div class="lesson-top">
+
+                                <div class="lesson-number">
+                                    {{ forloop.counter }}
+                                </div>
+
+                                <div class="lesson-heading">
+
+                                    <div class="lesson-status">
+
+                                        {% if lesson.is_completed %}
+                                            <span class="status-badge status-completed">
+                                                <i class="bi bi-check-circle"></i>
+                                                Completed
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-not-started">
+                                                <i class="bi bi-circle"></i>
+                                                Not Started
+                                            </span>
+                                        {% endif %}
+
+                                        {% if current_lesson and lesson.id == current_lesson.id %}
+                                            <span class="status-badge status-current">
+                                                <i class="bi bi-play-circle"></i>
+                                                Continue Learning
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                    <h3 class="lesson-title">
+                                        {{ lesson.title }}
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+                            <!-- DESCRIPTION -->
+                            {% if lesson.content %}
+                                <p class="lesson-description">
+                                    {{ lesson.content|striptags|truncatewords:30 }}
+                                </p>
+                            {% else %}
+                                <p class="lesson-description">
+                                    Continue with this lesson
+                                    to learn the topic.
+                                </p>
+                            {% endif %}
+
+                            <!-- CONTENT TYPES -->
+                            <div class="content-badges">
+
+                                {% if lesson.has_videos %}
+                                    <span class="content-badge">
+                                        <i class="bi bi-play-circle"></i>
+                                        Videos
+                                    </span>
+                                {% endif %}
+
+                                {% if lesson.has_images %}
+                                    <span class="content-badge">
+                                        <i class="bi bi-image"></i>
+                                        Images
+                                    </span>
+                                {% endif %}
+
+                                {% if lesson.has_resources %}
+                                    <span class="content-badge">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                        Resources
+                                    </span>
+                                {% endif %}
+
+                                {% if lesson.has_practical %}
+                                    <span class="content-badge">
+                                        <i class="bi bi-code-slash"></i>
+                                        Practical
+                                    </span>
+                                {% endif %}
+
+                                {% if lesson.has_assessment %}
+                                    <span class="content-badge">
+                                        <i class="bi bi-ui-checks"></i>
+                                        Quiz
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                            <!-- ACTION -->
+                            <div class="lesson-action">
+
+                                <a href="{% url 'student_lesson_detail' lesson.id %}"
+                                   class="lesson-button {% if lesson.is_completed %}lesson-button-success{% else %}lesson-button-primary{% endif %}">
+
+                                    {% if lesson.is_completed %}
+                                        <i class="bi bi-arrow-repeat"></i>
+                                        Review Lesson
+                                    {% else %}
+                                        <i class="bi bi-play-fill"></i>
+                                        Start Lesson
+                                    {% endif %}
+
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- EMPTY STATE -->
+            <section class="empty-state">
+
+                <div class="empty-icon">
+                    <i class="bi bi-journal-x"></i>
+                </div>
+
+                <h2 class="empty-title">
+                    No Lessons Available
+                </h2>
+
+                <p class="empty-description">
+                    There are currently no published lessons
+                    available for this week.
+                </p>
+
+                <a href="{% url 'student_weeks' week.term.id %}"
+                   class="empty-button">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Weeks
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

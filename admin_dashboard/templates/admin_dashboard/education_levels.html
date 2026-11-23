@@ -1,0 +1,660 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Education Levels | PupilAura Admin{% endblock %}
+
+{% block page_title %}Education Levels{% endblock %}
+{% block page_subtitle %}Manage curriculum education levels{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EDUCATION LEVELS LIST — page-specific styles
+    ========================================================= */
+
+    /* ---------- PAGE HEADER ---------- */
+
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .page-title h1 {
+        font-size: 28px;
+        line-height: 1.2;
+        letter-spacing: -0.7px;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .page-title p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* ---------- BUTTONS ---------- */
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--surface-soft);
+        color: var(--text);
+    }
+
+    .btn-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+
+    .btn-small {
+        min-height: 34px;
+        padding: 0 11px;
+        font-size: 12px;
+    }
+
+    /* ---------- STATS ---------- */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.blue { background: #eff6ff; color: var(--primary); }
+    .stat-icon.green { background: #f0fdf4; color: var(--success); }
+    .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+
+    .stat-info span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .stat-info strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--text);
+    }
+
+    /* ---------- MAIN CARD ---------- */
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        font-size: 16px;
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .card-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .search-box {
+        width: 260px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px 0 36px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        color: var(--text);
+        outline: none;
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        background: var(--surface);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    /* ---------- TABLE ---------- */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 750px;
+    }
+
+    thead { background: var(--surface-soft); }
+
+    th {
+        padding: 13px 20px;
+        text-align: left;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    tbody tr { transition: background 0.2s ease; }
+    tbody tr:hover { background: var(--surface-soft); }
+
+    .level-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .level-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .level-name strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .level-name span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 7px;
+        border-radius: 8px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .count {
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .action-form { display: inline-flex; margin: 0; }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+        text-decoration: none;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        background: #eff6ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    .action-btn.delete:hover {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+
+    /* ---------- EMPTY STATES ---------- */
+
+    .empty-state {
+        padding: 70px 25px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+    }
+
+    .empty-state h3 {
+        font-size: 17px;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        max-width: 430px;
+        margin: 0 auto 20px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 800px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .page-header { flex-direction: column; }
+        .page-header .btn { width: 100%; }
+        .search-box { width: 100%; }
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    @media (max-width: 550px) {
+        .page-title h1 { font-size: 23px; }
+        .stat-card { padding: 16px; }
+        .card-header { padding: 16px; }
+        th, td { padding-left: 14px; padding-right: 14px; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .stat-icon.blue { background: rgba(37, 99, 235, 0.16); }
+        .stat-icon.green { background: rgba(22, 163, 74, 0.16); }
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.16); }
+        .level-icon { background: rgba(37, 99, 235, 0.16); color: #93c5fd; }
+        .type-badge { background: rgba(37, 99, 235, 0.16); color: #93c5fd; }
+        tbody tr:hover { background: #1e293b; }
+
+        .action-btn:hover {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+            border-color: #1d4ed8;
+        }
+
+        .action-btn.delete:hover {
+            background: #450a0a;
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Education Levels</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="page-title">
+        <h1>Education Levels</h1>
+        <p>
+            Manage the education levels used to organize classes and the
+            PupilAura school curriculum.
+        </p>
+    </div>
+    <a href="{% url 'admin_dashboard:education_level_create' %}" class="btn btn-primary">
+        <span>+</span>
+        Add Education Level
+    </a>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">▣</div>
+        <div class="stat-info">
+            <span>Total Education Levels</span>
+            <strong>{{ total_education_levels|default:0 }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">♙</div>
+        <div class="stat-info">
+            <span>School Classes</span>
+            <strong>{{ total_school_classes|default:0 }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">✓</div>
+        <div class="stat-info">
+            <span>Curriculum Lessons</span>
+            <strong>{{ total_lessons|default:0 }}</strong>
+        </div>
+    </div>
+
+</div>
+
+<!-- CARD -->
+<div class="card">
+
+    <div class="card-header">
+        <div>
+            <h2>All Education Levels</h2>
+            <p>Create, view, edit, and remove education levels.</p>
+        </div>
+
+        <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input type="search"
+                   id="levelSearch"
+                   placeholder="Search education levels..."
+                   autocomplete="off"
+                   aria-label="Search education levels">
+        </div>
+    </div>
+
+    {% if education_levels %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Education Level</th>
+                        <th>Type</th>
+                        <th>Order</th>
+                        <th>Classes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="levelsTable">
+                    {% for level in education_levels %}
+                        <tr class="level-row"
+                            data-search="{{ level.name|lower }} {{ level.level_type|lower }} {{ level.get_level_type_display|lower }}">
+
+                            <td>
+                                <div class="level-name">
+                                    <div class="level-icon">{{ forloop.counter }}</div>
+                                    <div>
+                                        <strong>{{ level.name }}</strong>
+                                        <span>ID #{{ level.id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="type-badge">{{ level.get_level_type_display }}</span>
+                            </td>
+
+                            <td>
+                                <span class="order-badge">{{ level.order }}</span>
+                            </td>
+
+                            <td>
+                                <span class="count">
+                                    {{ level.class_count|default:0 }}
+                                    class{{ level.class_count|default:0|pluralize }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="actions">
+
+                                    <a href="{% url 'admin_dashboard:education_level_detail' level.id %}"
+                                       class="action-btn"
+                                       title="View education level"
+                                       aria-label="View education level">
+                                        👁
+                                    </a>
+
+                                    <a href="{% url 'admin_dashboard:education_level_edit' level.id %}"
+                                       class="action-btn"
+                                       title="Edit education level"
+                                       aria-label="Edit education level">
+                                        ✎
+                                    </a>
+
+                                    <form method="post"
+                                          action="{% url 'admin_dashboard:education_level_delete' level.id %}"
+                                          class="action-form"
+                                          onsubmit="return confirmDelete('{{ level.name|escapejs }}');">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="action-btn delete"
+                                                title="Delete education level"
+                                                aria-label="Delete education level">
+                                            🗑
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Search-empty state -->
+        <div class="empty-state" id="searchEmptyState" style="display: none;">
+            <div class="empty-icon">⌕</div>
+            <h3>No matching education levels</h3>
+            <p>No education level matches your search. Try another name or education level type.</p>
+        </div>
+
+    {% else %}
+
+        <!-- Database-empty state -->
+        <div class="empty-state">
+            <div class="empty-icon">▣</div>
+            <h3>No education levels yet</h3>
+            <p>
+                You have not created any education levels. Start by adding
+                the first level to build your school curriculum.
+            </p>
+            <a href="{% url 'admin_dashboard:education_level_create' %}" class="btn btn-primary">
+                <span>+</span>
+                Add Education Level
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================================
+       CLIENT-SIDE SEARCH FILTER
+    ========================================================= */
+
+    const searchInput = document.getElementById("levelSearch");
+    const rows = document.querySelectorAll(".level-row");
+    const searchEmptyState = document.getElementById("searchEmptyState");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase().trim();
+            let visibleRows = 0;
+
+            rows.forEach(function (row) {
+                const searchText = row.dataset.search.toLowerCase();
+                const matches = searchText.includes(searchValue);
+                row.style.display = matches ? "" : "none";
+                if (matches) visibleRows++;
+            });
+
+            if (searchEmptyState) {
+                if (searchValue && visibleRows === 0) {
+                    searchEmptyState.style.display = "block";
+                } else {
+                    searchEmptyState.style.display = "none";
+                }
+            }
+        });
+    }
+
+    /* =========================================================
+       DELETE CONFIRMATION
+    ========================================================= */
+
+    function confirmDelete(name) {
+        return confirm(
+            'Are you sure you want to delete "' +
+            name +
+            '"?\n\n' +
+            "This may also remove the classes and curriculum " +
+            "data belonging to this education level."
+        );
+    }
+</script>
+{% endblock %}

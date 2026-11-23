@@ -1,0 +1,210 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ page_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block page_subtitle %}
+Create and manage games in the Play & Learn module.
+{% endblock %}
+
+{% block breadcrumb %}
+<span>Play & Learn</span>
+<span>/</span>
+<a href="{% url 'admin_dashboard:play_games' %}">Games</a>
+<span>/</span>
+<span>{{ page_title }}</span>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">
+                    <span class="hero-icon">🎮</span>
+                    {{ form_title }}
+                </div>
+                <p>
+                    Configure the game name, category, age range,
+                    difficulty and publication settings.
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:play_games' %}"
+                   class="btn btn-light">
+                    ← Back to Games
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="content-grid">
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Game Information</h3>
+                <p class="section-description">
+                    Complete the fields below to configure this game.
+                </p>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <form method="POST"
+                  enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="warning-box">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">
+                        Game Name
+                    </label>
+                    {{ form.name }}
+                    {% for error in form.name.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.slug.id_for_label }}">
+                        URL Slug
+                    </label>
+                    {{ form.slug }}
+                    {% for error in form.slug.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                    <small class="help-text">
+                        A unique URL-friendly identifier, for example memory-match.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    {% for error in form.description.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.category.id_for_label }}">
+                        Category
+                    </label>
+                    {{ form.category }}
+                    {% for error in form.category.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="content-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.min_age.id_for_label }}">
+                            Minimum Age
+                        </label>
+                        {{ form.min_age }}
+                        {% for error in form.min_age.errors %}
+                            <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.max_age.id_for_label }}">
+                            Maximum Age
+                        </label>
+                        {{ form.max_age }}
+                        {% for error in form.max_age.errors %}
+                            <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.difficulty.id_for_label }}">
+                        Difficulty
+                    </label>
+                    {{ form.difficulty }}
+                    {% for error in form.difficulty.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.thumbnail.id_for_label }}">
+                        Game Thumbnail
+                    </label>
+                    {{ form.thumbnail }}
+                    {% for error in form.thumbnail.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+
+                    {% if game and game.thumbnail %}
+                        <div style="margin-top:12px;">
+                            <p class="help-text">Current thumbnail:</p>
+                            <img src="{{ game.thumbnail.url }}"
+                                 alt="{{ game.name }}"
+                                 style="width:180px;max-width:100%;height:120px;object-fit:cover;border-radius:12px;">
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Display Order
+                    </label>
+                    {{ form.order }}
+                    {% for error in form.order.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                    <small class="help-text">
+                        Lower numbers appear earlier in ordered game listings.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form.is_published }}
+                        <label for="{{ form.is_published.id_for_label }}">
+                            Publish this game
+                        </label>
+                    </div>
+                    {% for error in form.is_published.errors %}
+                        <p class="help-text" style="color:#dc2626;">{{ error }}</p>
+                    {% endfor %}
+                    <small class="help-text">
+                        Unpublished games should remain unavailable to learners
+                        on the public-facing platform.
+                    </small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {{ submit_text }}
+                    </button>
+
+                    <a href="{% url 'admin_dashboard:play_games' %}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

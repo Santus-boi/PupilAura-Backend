@@ -1,0 +1,463 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Preparation{% endblock %}
+{% block page_subtitle %}Manage examination subjects{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM SUBJECT FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Header block */
+    .form-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .form-page-header h1 {
+        font-size: 27px;
+        line-height: 1.3;
+        font-weight: 800;
+        margin-bottom: 7px;
+    }
+
+    .form-page-header p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    /* Form + sidebar layout */
+    .form-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        align-items: start;
+        gap: 22px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px 18px;
+    }
+
+    .form-group {
+        min-width: 0;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Checkbox row */
+    .checkbox-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 15px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .checkbox-row label {
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .checkbox-row p {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    /* Sidebar cards */
+    .form-sidebar .card {
+        margin-bottom: 18px;
+    }
+
+    .form-sidebar .card:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 20px;
+    }
+
+    .info-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 16px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .info-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 25px;
+        height: 25px;
+        flex-shrink: 0;
+        border-radius: 7px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    .info-list strong {
+        display: block;
+        color: var(--text);
+        margin-bottom: 3px;
+        font-size: 12px;
+    }
+
+    /* Error summary */
+    .error-summary {
+        padding: 14px 16px;
+        margin-bottom: 20px;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .error-summary strong {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .error-summary ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+        .form-layout {
+            grid-template-columns: minmax(0, 1fr) 240px;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .form-layout {
+            grid-template-columns: 1fr;
+        }
+        .form-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .form-page-header h1 {
+            font-size: 23px;
+        }
+        .form-page-header > .btn {
+            width: 100%;
+        }
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 19px;
+        }
+        .form-group.full-width {
+            grid-column: auto;
+        }
+        .form-sidebar {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .info-icon {
+            background: #172554;
+            color: #93c5fd;
+        }
+        .error-summary {
+            background: #450a0a;
+            color: #fca5a5;
+            border-color: #991b1b;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}">
+        {{ exam.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ page_title }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-{% if is_edit %}pencil-square{% else %}plus-square{% endif %}"></i>
+                </div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p>{{ page_subtitle }}</p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> Back to {{ exam.name }}
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-journal-bookmark-fill" style="margin-right:6px;"></i>
+                {{ exam.name }}
+            </span>
+            {% if is_edit and subject %}
+                <span class="meta-badge">
+                    {% if subject.published %}● Published{% else %}● Unpublished{% endif %}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="form-layout">
+
+    <!-- FORM CARD -->
+    <section class="card">
+
+        <div class="card-header">
+            <h2>Subject Information</h2>
+            <p>
+                Enter the subject details for
+                <strong>{{ exam.name }}</strong>.
+                Fields marked with an asterisk are required.
+            </p>
+        </div>
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="error-summary">
+                    <strong>Please correct the following:</strong>
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-grid">
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.name.id_for_label }}">
+                            Subject Name <span class="required">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% for error in form.name.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                        <div class="help-text">
+                            Enter the full subject name, such as Computer Studies,
+                            Mathematics, or English Language.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.code.id_for_label }}">
+                            Subject Code
+                        </label>
+                        {{ form.code }}
+                        {% for error in form.code.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                        <div class="help-text">
+                            Optional code, such as CSC, ENG, or MATH.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.order.id_for_label }}">
+                            Display Order
+                        </label>
+                        {{ form.order }}
+                        {% for error in form.order.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                        <div class="help-text">
+                            Smaller numbers appear before larger numbers.
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.exam.id_for_label }}">
+                            Examination <span class="required">*</span>
+                        </label>
+                        {{ form.exam }}
+                        {% for error in form.exam.errors %}
+                            <div class="field-error">{{ error }}</div>
+                        {% endfor %}
+                        <div class="help-text">
+                            This subject is being created for {{ exam.name }}.
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="checkbox-row">
+                            {{ form.published }}
+                            <div>
+                                <label for="{{ form.published.id_for_label }}">
+                                    Publish this subject
+                                </label>
+                                <p>
+                                    Published subjects can be made available
+                                    to students on the platform.
+                                </p>
+                                {% for error in form.published.errors %}
+                                    <div class="field-error">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+                    <a
+                        href="{% if is_edit %}{% url 'admin_dashboard:exam_subject_detail' subject_id=subject.id %}{% else %}{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}{% endif %}"
+                        class="btn btn-secondary"
+                    >
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i> {{ form_action }}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <!-- SIDEBAR -->
+    <aside class="form-sidebar">
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Examination</h2>
+                <p>Parent examination for this subject.</p>
+            </div>
+
+            <ul class="info-list">
+                <li>
+                    <span class="info-icon">E</span>
+                    <div>
+                        <strong>Exam Name</strong>
+                        {{ exam.name }}
+                    </div>
+                </li>
+                <li>
+                    <span class="info-icon">#</span>
+                    <div>
+                        <strong>URL Slug</strong>
+                        {{ exam.slug }}
+                    </div>
+                </li>
+                <li>
+                    <span class="info-icon">i</span>
+                    <div>
+                        <strong>Exam Status</strong>
+                        {% if exam.published %}Published{% else %}Unpublished{% endif %}
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Guidelines</h2>
+                <p>Keep subject records consistent.</p>
+            </div>
+
+            <ul class="info-list">
+                <li>
+                    <span class="info-icon">1</span>
+                    <div>
+                        <strong>Use a clear name</strong>
+                        Use the official subject name students will recognize.
+                    </div>
+                </li>
+                <li>
+                    <span class="info-icon">2</span>
+                    <div>
+                        <strong>Avoid duplicates</strong>
+                        A subject name must be unique within this examination.
+                    </div>
+                </li>
+                <li>
+                    <span class="info-icon">3</span>
+                    <div>
+                        <strong>Check publication</strong>
+                        Only publish a subject when it is ready to be used.
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+    </aside>
+
+</div>
+
+{% endblock %}

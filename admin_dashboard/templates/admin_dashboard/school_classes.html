@@ -1,0 +1,455 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}School Classes | PupilAura Admin{% endblock %}
+
+{% block page_title %}School Classes{% endblock %}
+{% block page_subtitle %}Manage the classes within each education level{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SCHOOL CLASSES LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Search input */
+    .class-search-box {
+        position: relative;
+    }
+
+    .class-search-box input {
+        width: 250px;
+        height: 40px;
+        padding: 0 13px 0 38px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        outline: none;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .class-search-box input::placeholder {
+        color: var(--muted);
+    }
+
+    .class-search-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .class-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    /* Table min width */
+    .classes-table {
+        min-width: 850px;
+    }
+
+    /* Class cell */
+    .class-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+    }
+
+    .class-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .class-name {
+        font-weight: 800;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .class-id {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Education level cell */
+    .level-name {
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .level-type {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Search empty state */
+    .search-empty {
+        display: none;
+        padding: 45px 25px;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    .search-empty.show {
+        display: block;
+    }
+
+    .search-empty-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: var(--muted);
+    }
+
+    .search-empty h3 {
+        color: var(--text);
+        font-size: 16px;
+        margin-bottom: 6px;
+        font-weight: 800;
+    }
+
+    .search-empty p {
+        font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+        .class-search-box {
+            flex: 1;
+        }
+        .class-search-box input {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 550px) {
+        .class-search-box {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .class-icon {
+            background: rgba(37, 99, 235, 0.15);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">School Classes</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h1>School Classes</h1>
+                    <p>
+                        Manage the classes within each education level.
+                        School classes organize students, subjects, terms,
+                        weeks, and lessons throughout the PupilAura curriculum.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:school_class_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add School Class
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_school_classes|default:0 }} class{{ total_school_classes|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ total_education_levels|default:0 }} education level{{ total_education_levels|default:0|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_school_classes|default:0 }}</div>
+            <div class="stat-label">Total Classes</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_education_levels|default:0 }}</div>
+            <div class="stat-label">Education Levels</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_subjects|default:0 }}</div>
+            <div class="stat-label">Subjects</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-journal-bookmark"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_lessons|default:0 }}</div>
+            <div class="stat-label">Lessons</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- CLASSES -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All School Classes</div>
+            <div class="section-description">
+                Organize classes under their respective education levels.
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="class-search-box">
+                <i class="bi bi-search class-search-icon" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    id="classSearch"
+                    placeholder="Search school classes..."
+                    autocomplete="off"
+                    aria-label="Search school classes"
+                >
+            </div>
+
+            <a href="{% url 'admin_dashboard:school_class_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Add Class
+            </a>
+        </div>
+    </div>
+
+    {% if school_classes %}
+        <div class="table-wrapper">
+            <table class="classes-table">
+                <thead>
+                    <tr>
+                        <th>School Class</th>
+                        <th>Education Level</th>
+                        <th>Subjects</th>
+                        <th>Lessons</th>
+                        <th>Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="classesTable">
+                    {% for school_class in school_classes %}
+                        <tr class="class-row">
+                            <td>
+                                <div class="class-info">
+                                    <div class="class-icon" aria-hidden="true">
+                                        {{ school_class.name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="class-name">{{ school_class.name }}</div>
+                                        <div class="class-id">ID: {{ school_class.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if school_class.education_level %}
+                                    <div class="level-name">
+                                        {{ school_class.education_level.name }}
+                                    </div>
+                                    <div class="level-type">
+                                        {{ school_class.education_level.get_level_type_display }}
+                                    </div>
+                                {% else %}
+                                    <span class="badge badge-orange">No Level</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <strong>{{ school_class.subject_count|default:0 }}</strong>
+                            </td>
+
+                            <td>
+                                <strong>{{ school_class.lesson_count|default:0 }}</strong>
+                            </td>
+
+                            <td>
+                                <strong>{{ school_class.order|default:0 }}</strong>
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:school_class_detail' school_class.id %}"
+                                        class="action-btn"
+                                        title="View school class"
+                                        aria-label="View {{ school_class.name }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a
+                                        href="{% url 'admin_dashboard:school_class_edit' school_class.id %}"
+                                        class="action-btn"
+                                        title="Edit school class"
+                                        aria-label="Edit {{ school_class.name }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'admin_dashboard:school_class_delete' school_class.id %}"
+                                        class="delete-form"
+                                        onsubmit="return confirmDelete(this);"
+                                    >
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="action-btn danger"
+                                            title="Delete school class"
+                                            aria-label="Delete {{ school_class.name }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="search-empty" id="searchEmpty" aria-live="polite">
+            <div class="search-empty-icon" aria-hidden="true">
+                <i class="bi bi-search"></i>
+            </div>
+            <h3>No matching school classes</h3>
+            <p>Try a different search term.</p>
+        </div>
+
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-building"></i>
+            </div>
+            <h3>No school classes yet</h3>
+            <p>
+                Create your first school class to begin organizing
+                the PupilAura curriculum.
+            </p>
+            <a href="{% url 'admin_dashboard:school_class_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Create School Class
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================================
+       SEARCH SCHOOL CLASSES
+    ========================================================= */
+
+    const searchInput = document.getElementById("classSearch");
+    const searchEmpty = document.getElementById("searchEmpty");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const searchTerm = this.value.trim().toLowerCase();
+            const rows = document.querySelectorAll(".class-row");
+            let visibleRows = 0;
+
+            rows.forEach(function (row) {
+                const text = row.textContent.toLowerCase();
+
+                if (text.includes(searchTerm)) {
+                    row.style.display = "";
+                    visibleRows++;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            if (searchEmpty) {
+                searchEmpty.classList.toggle(
+                    "show",
+                    searchTerm !== "" && visibleRows === 0
+                );
+            }
+        });
+    }
+
+    /* =========================================================
+       DELETE CONFIRMATION
+    ========================================================= */
+
+    function confirmDelete(form) {
+        const className =
+            form.closest(".class-row")
+                ?.querySelector(".class-name")
+                ?.textContent
+                .trim() || "this school class";
+
+        return window.confirm(
+            'Delete "' + className + '"?\n\n' +
+            "This action cannot be undone."
+        );
+    }
+</script>
+{% endblock %}

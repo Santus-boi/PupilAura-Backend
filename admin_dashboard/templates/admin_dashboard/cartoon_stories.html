@@ -1,0 +1,707 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}Interactive Cartoon Stories | PupilAura{% endblock %}
+{% block page_title %}Interactive Cartoon Stories{% endblock %}
+{% block page_subtitle %}Manage animated story experiences, scenes and questions{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* =========================================================
+   INTERACTIVE CARTOON STORIES — PAGE STYLES
+   Uses PupilAura Admin shared theme variables
+   ========================================================= */
+
+.cartoon-stories-page {
+    width: 100%;
+    color: var(--text);
+}
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.cartoon-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.cartoon-stat {
+    min-width: 0;
+    padding: 19px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.cartoon-stat:hover {
+    border-color: #bfdbfe;
+    box-shadow: var(--shadow-sm);
+}
+
+.cartoon-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 650;
+    margin-bottom: 8px;
+}
+
+.cartoon-stat strong {
+    display: block;
+    color: var(--text);
+    font-size: 25px;
+    line-height: 1.3;
+    font-weight: 850;
+}
+
+/* =========================================================
+   TOOLBAR AND FILTERS
+   ========================================================= */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.filter-form {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.filter-input {
+    min-width: 160px;
+    min-height: 42px;
+    padding: 9px 12px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.filter-input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+.filter-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.filter-input option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition), transform var(--transition);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-soft);
+    border-color: #bfdbfe;
+    color: var(--primary);
+}
+
+.btn-light {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-light:hover {
+    background: var(--surface-soft);
+    color: var(--primary);
+    border-color: #bfdbfe;
+}
+
+/* =========================================================
+   TABLE CARD
+   ========================================================= */
+
+.cartoon-table-card {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table-heading {
+    padding: 18px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.table-heading h3 {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0 0 4px;
+}
+
+.table-heading p {
+    color: var(--muted);
+    font-size: 11px;
+    margin: 0;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cartoon-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    background: var(--bg);
+}
+
+.cartoon-table th,
+.cartoon-table td {
+    padding: 14px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.cartoon-table th {
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+.cartoon-table td {
+    color: var(--text);
+}
+
+.cartoon-table tbody tr {
+    background: var(--bg);
+    transition: background var(--transition);
+}
+
+.cartoon-table tbody tr:hover {
+    background: var(--surface-soft);
+}
+
+.cartoon-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* =========================================================
+   STORY IDENTITY
+   ========================================================= */
+
+.story-identity {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 220px;
+}
+
+.story-cover,
+.story-emoji {
+    width: 49px;
+    height: 49px;
+    border-radius: 10px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.story-cover {
+    object-fit: cover;
+}
+
+.story-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.story-identity strong {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.story-identity small {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+/* =========================================================
+   STATUS AND CATEGORY BADGES
+   ========================================================= */
+
+.status-badge,
+.category-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.status-published {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.status-draft {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.category-badge {
+    color: #1e40af;
+    background: #dbeafe;
+}
+
+/* =========================================================
+   TABLE ACTIONS
+   ========================================================= */
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 9px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+    transition: background var(--transition), color var(--transition),
+                border-color var(--transition);
+}
+
+.action-link:hover {
+    background: var(--surface-soft);
+    border-color: #bfdbfe;
+    color: var(--primary);
+}
+
+.action-danger {
+    color: var(--danger);
+}
+
+.action-danger:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.publish-form {
+    margin: 0;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    padding: 55px 20px;
+    background: var(--bg);
+    text-align: center;
+}
+
+.empty-state-icon {
+    color: var(--muted);
+    font-size: 43px;
+    margin-bottom: 12px;
+}
+
+.empty-state h3 {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 7px;
+}
+
+.empty-state p {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0 0 17px;
+}
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.pagination-info {
+    padding: 14px 20px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .cartoon-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .cartoon-stats {
+        grid-template-columns: 1fr;
+        gap: 11px;
+    }
+
+    .cartoon-stat {
+        padding: 16px;
+    }
+
+    .cartoon-stat strong {
+        font-size: 23px;
+    }
+
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .filter-input,
+    .toolbar > .btn,
+    .filter-form .btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .table-heading {
+        padding: 16px;
+    }
+
+    .pagination-info {
+        padding: 13px 16px;
+    }
+}
+
+@media (max-width: 400px) {
+    .cartoon-stat strong {
+        font-size: 21px;
+    }
+
+    .empty-state {
+        padding: 40px 15px;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <span>Interactive Cartoon Stories</span>
+</div>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">🎬 Interactive Cartoon Stories</div>
+                <p>Create scene-based stories with characters, narration, questions and answers.</p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:cartoon_story_create' %}" class="btn btn-light">
+                    + Create Cartoon Story
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="cartoon-stats">
+    <div class="cartoon-stat">
+        <span>Total Cartoon Stories</span>
+        <strong>{{ total_stories|default:cartoon_stories.count }}</strong>
+    </div>
+
+    <div class="cartoon-stat">
+        <span>Published Stories</span>
+        <strong>{{ published_stories|default:0 }}</strong>
+    </div>
+
+    <div class="cartoon-stat">
+        <span>Draft Stories</span>
+        <strong>{{ draft_stories|default:0 }}</strong>
+    </div>
+</div>
+
+<div class="toolbar">
+    <form method="GET" class="filter-form">
+        <input
+            type="search"
+            name="q"
+            class="filter-input"
+            placeholder="Search cartoon stories..."
+            value="{{ search_query|default:'' }}"
+        >
+
+        <select name="status" class="filter-input">
+            <option value="">All statuses</option>
+            <option value="published" {% if selected_status == "published" %}selected{% endif %}>
+                Published
+            </option>
+            <option value="draft" {% if selected_status == "draft" %}selected{% endif %}>
+                Draft
+            </option>
+        </select>
+
+        <select name="category" class="filter-input">
+            <option value="">All categories</option>
+            {% for value, label in cartoon_categories %}
+                <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-primary">Filter</button>
+
+        {% if search_query or selected_status or selected_category %}
+            <a href="{% url 'admin_dashboard:cartoon_stories' %}" class="btn btn-secondary">
+                Clear
+            </a>
+        {% endif %}
+    </form>
+
+    <a href="{% url 'admin_dashboard:cartoon_story_create' %}" class="btn btn-primary">
+        + New Story
+    </a>
+</div>
+
+<section class="cartoon-table-card">
+    <div class="table-heading">
+        <h3>Cartoon Story Collection</h3>
+        <p>Manage stories, scenes, questions and publication status.</p>
+    </div>
+
+    {% if cartoon_stories %}
+        <div class="table-wrapper">
+            <table class="cartoon-table">
+                <thead>
+                    <tr>
+                        <th>Story</th>
+                        <th>Category</th>
+                        <th>Age Range</th>
+                        <th>Duration</th>
+                        <th>Scenes</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for story in cartoon_stories %}
+                        <tr>
+                            <td>
+                                <div class="story-identity">
+                                    {% if story.cover %}
+                                        <img src="{{ story.cover.url }}"
+                                             alt="{{ story.title }}"
+                                             class="story-cover">
+                                    {% else %}
+                                        <div class="story-emoji">
+                                            {{ story.emoji|default:story.cover_emoji|default:"🎬" }}
+                                        </div>
+                                    {% endif %}
+
+                                    <div>
+                                        <strong>{{ story.title }}</strong>
+                                        <small>Created {{ story.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="category-badge">{{ story.get_category_display }}</span>
+                            </td>
+
+                            <td>{{ story.min_age }}–{{ story.max_age }} years</td>
+
+                            <td>{{ story.estimated_duration_minutes }} min</td>
+
+                            <td>{{ story.scene_count }}</td>
+
+                            <td>{{ story.question_count }}</td>
+
+                            <td>
+                                {% if story.status == "published" %}
+                                    <span class="status-badge status-published">Published</span>
+                                {% else %}
+                                    <span class="status-badge status-draft">Draft</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="table-actions">
+                                    <a href="{% url 'admin_dashboard:cartoon_story_detail' story.id %}"
+                                       class="action-link">
+                                        Manage
+                                    </a>
+
+                                    <a href="{% url 'admin_dashboard:cartoon_story_edit' story.id %}"
+                                       class="action-link">
+                                        Edit
+                                    </a>
+
+                                    <form method="POST"
+                                          action="{% url 'admin_dashboard:cartoon_story_publish_toggle' story.id %}"
+                                          class="publish-form">
+                                        {% csrf_token %}
+
+                                        {% if story.status == "published" %}
+                                            <button type="submit" class="action-link">
+                                                Unpublish
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="action-link">
+                                                Publish
+                                            </button>
+                                        {% endif %}
+                                    </form>
+
+                                    <a href="{% url 'admin_dashboard:cartoon_story_delete' story.id %}"
+                                       class="action-link action-danger">
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-info">
+            Showing {{ cartoon_stories|length }} cartoon stor{{ cartoon_stories|length|pluralize:"y,ies" }}.
+        </div>
+
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🎬</div>
+            <h3>No Interactive Cartoon Stories Found</h3>
+            <p>
+                {% if search_query or selected_status or selected_category %}
+                    No stories match your current filters. Try changing your search.
+                {% else %}
+                    Start building interactive stories with scenes, characters and questions.
+                {% endif %}
+            </p>
+
+            {% if search_query or selected_status or selected_category %}
+                <a href="{% url 'admin_dashboard:cartoon_stories' %}" class="btn btn-secondary">
+                    Clear Filters
+                </a>
+            {% else %}
+                <a href="{% url 'admin_dashboard:cartoon_story_create' %}" class="btn btn-primary">
+                    Create First Cartoon Story
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

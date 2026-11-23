@@ -1,0 +1,611 @@
+
+{% extends "base.html" %}
+
+{% block title %}Maze Runner | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    .maze-game {
+        max-width: 850px;
+        margin: 30px auto;
+        padding: 24px;
+        color: white;
+        background: #111827;
+        border-radius: 24px;
+        font-family: Arial, sans-serif;
+    }
+
+    .maze-header { text-align: center; margin-bottom: 22px; }
+    .maze-header h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; }
+    .maze-header p { color: #cbd5e1; }
+
+    .maze-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .maze-stat {
+        padding: 13px 5px;
+        text-align: center;
+        background: #1f2937;
+        border-radius: 13px;
+    }
+
+    .maze-stat span { display: block; color: #cbd5e1; font-size: .82rem; }
+    .maze-stat strong { display: block; margin-top: 5px; font-size: 1.4rem; }
+
+    .maze-panel {
+        padding: 20px;
+        text-align: center;
+        background: #1f2937;
+        border-radius: 20px;
+    }
+
+    .maze-status {
+        min-height: 48px;
+        display: grid;
+        place-items: center;
+        color: #cbd5e1;
+        font-weight: 700;
+    }
+
+    .maze-settings {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .maze-settings select {
+        padding: 10px;
+        color: white;
+        background: #111827;
+        border: 1px solid #64748b;
+        border-radius: 10px;
+    }
+
+    .maze-board {
+        display: grid;
+        grid-template-columns: repeat(11, 1fr);
+        width: min(100%, 495px);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        padding: 5px;
+        background: #080e19;
+        border-radius: 12px;
+        overflow: hidden;
+        gap: 2px;
+    }
+
+    .maze-cell {
+        display: grid;
+        place-items: center;
+        min-width: 0;
+        min-height: 0;
+        background: #263447;
+        border-radius: 3px;
+        font-size: clamp(.55rem, 2.8vw, 1.35rem);
+        user-select: none;
+    }
+
+    .maze-cell.wall { background: #64748b; }
+    .maze-cell.path { background: #263447; }
+    .maze-cell.player { background: #2563eb; }
+    .maze-cell.coin { background: #854d0e; }
+    .maze-cell.exit { background: #047857; }
+
+    .maze-controls {
+        display: grid;
+        grid-template-columns: repeat(3, 58px);
+        justify-content: center;
+        gap: 7px;
+        margin: 18px auto;
+    }
+
+    .maze-move {
+        min-height: 52px;
+        border: none;
+        border-radius: 12px;
+        background: #475569;
+        color: white;
+        font-size: 1.4rem;
+        font-weight: 900;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .maze-move:active { transform: scale(.94); }
+    .maze-empty { visibility: hidden; }
+
+    .maze-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .maze-btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .maze-start { background: #a78bfa; color: #111827; }
+    .maze-secondary { background: #475569; color: white; }
+
+    .maze-result {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #111827;
+        border-radius: 15px;
+    }
+
+    .maze-result h2 { color: #a78bfa; }
+
+    @media (max-width: 520px) {
+        .maze-game { margin: 10px; padding: 12px; }
+        .maze-panel { padding: 12px; }
+        .maze-stats { gap: 5px; }
+        .maze-stat { padding: 10px 3px; }
+        .maze-stat strong { font-size: 1.1rem; }
+        .maze-board { gap: 1px; padding: 3px; }
+    }
+</style>
+
+<div class="maze-game">
+    <header class="maze-header">
+        <h1>🏃 Maze Runner</h1>
+        <p>Find your way through the maze, collect coins and reach the exit!</p>
+    </header>
+
+    <div class="maze-stats">
+        <div class="maze-stat">
+            <span>Level</span>
+            <strong id="mazeLevel">1</strong>
+        </div>
+        <div class="maze-stat">
+            <span>Score</span>
+            <strong id="mazeScore">0</strong>
+        </div>
+        <div class="maze-stat">
+            <span>Coins</span>
+            <strong id="mazeCoins">0</strong>
+        </div>
+        <div class="maze-stat">
+            <span>Time</span>
+            <strong><span id="mazeTime">90</span>s</strong>
+        </div>
+    </div>
+
+    <section class="maze-panel">
+        <div class="maze-status" id="mazeStatus" aria-live="polite">
+            Choose a difficulty and start your adventure.
+        </div>
+
+        <div class="maze-settings">
+            <label for="mazeDifficulty">Difficulty:</label>
+            <select id="mazeDifficulty">
+                <option value="easy">Easy — 90 seconds</option>
+                <option value="medium" selected>Medium — 70 seconds</option>
+                <option value="hard">Hard — 55 seconds</option>
+            </select>
+        </div>
+
+        <div class="maze-board" id="mazeBoard" aria-label="Maze game board"></div>
+
+        <div class="maze-controls" aria-label="Movement controls">
+            <span class="maze-empty"></span>
+            <button type="button" class="maze-move" data-move="up" aria-label="Move up">↑</button>
+            <span class="maze-empty"></span>
+
+            <button type="button" class="maze-move" data-move="left" aria-label="Move left">←</button>
+            <button type="button" class="maze-move" data-move="down" aria-label="Move down">↓</button>
+            <button type="button" class="maze-move" data-move="right" aria-label="Move right">→</button>
+        </div>
+
+        <p style="color:#cbd5e1;font-size:.9rem;">
+            Use the arrow buttons or your keyboard arrow keys.
+        </p>
+
+        <div class="maze-actions">
+            <button type="button" class="maze-btn maze-start" id="mazeStart">
+                Start Game
+            </button>
+            <button type="button" class="maze-btn maze-secondary" id="mazeRestart" hidden>
+                Play Again
+            </button>
+        </div>
+
+        <div class="maze-result" id="mazeResult" aria-live="polite">
+            <h2 id="mazeResultTitle">Game Complete!</h2>
+            <p id="mazeFinalScore"></p>
+            <p id="mazeFinalCoins"></p>
+            <p id="mazeFinalLevel"></p>
+            <p id="mazeBest"></p>
+            <button type="button" class="maze-btn maze-start" id="mazeNext">
+                Continue
+            </button>
+        </div>
+    </section>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const SIZE = 11;
+    const TOTAL = SIZE * SIZE;
+    const START = SIZE + 1;
+    const EXIT = TOTAL - SIZE - 2;
+
+    const $ = id => document.getElementById(id);
+
+    const settings = {
+        easy: 90,
+        medium: 70,
+        hard: 55
+    };
+
+    let maze = [];
+    let player = START;
+    let coins = new Set();
+    let collected = 0;
+    let score = 0;
+    let level = 1;
+    let timeLeft = 70;
+    let playing = false;
+    let timer = null;
+    let bestScore = 0;
+    let completedLevels = 0;
+    let sessionCoins = 0;
+
+    try {
+        bestScore = Number(localStorage.getItem("pupilauraMazeBest")) || 0;
+    } catch (error) {
+        bestScore = 0;
+    }
+
+    function updateStats() {
+        $("mazeLevel").textContent = level;
+        $("mazeScore").textContent = score;
+        $("mazeCoins").textContent = collected;
+        $("mazeTime").textContent = timeLeft;
+    }
+
+    // Generate a randomized maze using depth-first search.
+    function generateMaze() {
+        maze = Array(TOTAL).fill(1);
+
+        const visited = new Set();
+        const stack = [START];
+
+        maze[START] = 0;
+        visited.add(START);
+
+        const directions = [
+            [-2, 0],
+            [2, 0],
+            [0, -2],
+            [0, 2]
+        ];
+
+        while (stack.length) {
+            const current = stack[stack.length - 1];
+            const row = Math.floor(current / SIZE);
+            const col = current % SIZE;
+
+            const neighbors = [];
+
+            directions.forEach(([dr, dc]) => {
+                const newRow = row + dr;
+                const newCol = col + dc;
+
+                if (
+                    newRow > 0 && newRow < SIZE - 1 &&
+                    newCol > 0 && newCol < SIZE - 1
+                ) {
+                    const next = newRow * SIZE + newCol;
+
+                    if (!visited.has(next)) {
+                        neighbors.push({
+                            next,
+                            middle: (row + dr / 2) * SIZE + (col + dc / 2)
+                        });
+                    }
+                }
+            });
+
+            if (neighbors.length === 0) {
+                stack.pop();
+                continue;
+            }
+
+            const choice = neighbors[
+                Math.floor(Math.random() * neighbors.length)
+            ];
+
+            maze[choice.middle] = 0;
+            maze[choice.next] = 0;
+
+            visited.add(choice.next);
+            stack.push(choice.next);
+        }
+
+        // Ensure a clear entrance and exit.
+        maze[START] = 0;
+        maze[EXIT] = 0;
+    }
+
+    function placeCoins() {
+        coins.clear();
+        collected = 0;
+
+        const available = [];
+
+        for (let i = 0; i < TOTAL; i++) {
+            if (
+                maze[i] === 0 &&
+                i !== START &&
+                i !== EXIT
+            ) {
+                available.push(i);
+            }
+        }
+
+        // Coins are placed only on open maze cells.
+        available.sort(() => Math.random() - 0.5);
+
+        const coinCount = Math.min(
+            3 + level,
+            available.length
+        );
+
+        for (let i = 0; i < coinCount; i++) {
+            coins.add(available[i]);
+        }
+    }
+
+    function renderMaze() {
+        const board = $("mazeBoard");
+        board.innerHTML = "";
+
+        for (let i = 0; i < TOTAL; i++) {
+            const cell = document.createElement("div");
+            cell.className = "maze-cell";
+
+            if (maze[i] === 1) {
+                cell.classList.add("wall");
+                cell.setAttribute("aria-label", "Wall");
+            } else {
+                cell.classList.add("path");
+            }
+
+            if (i === EXIT) {
+                cell.classList.add("exit");
+                cell.textContent = "🏁";
+                cell.setAttribute("aria-label", "Exit");
+            }
+
+            if (coins.has(i)) {
+                cell.classList.add("coin");
+                cell.textContent = "🪙";
+                cell.setAttribute("aria-label", "Coin");
+            }
+
+            if (i === player) {
+                cell.classList.remove("coin", "exit");
+                cell.classList.add("player");
+                cell.textContent = "🏃";
+                cell.setAttribute("aria-label", "Your position");
+            }
+
+            board.appendChild(cell);
+        }
+    }
+
+    function move(direction) {
+        if (!playing) return;
+
+        let next = player;
+
+        if (direction === "up") next -= SIZE;
+        if (direction === "down") next += SIZE;
+        if (direction === "left") next--;
+        if (direction === "right") next++;
+
+        // Prevent movement outside the board or through walls.
+        if (next < 0 || next >= TOTAL || maze[next] === 1) {
+            $("mazeStatus").textContent = "🧱 A wall blocks your way!";
+            return;
+        }
+
+        if (
+            direction === "left" && player % SIZE === 0 ||
+            direction === "right" && player % SIZE === SIZE - 1
+        ) {
+            return;
+        }
+
+        player = next;
+
+        if (coins.has(player)) {
+            coins.delete(player);
+            collected++;
+            sessionCoins++;
+            score += 20;
+
+            $("mazeStatus").textContent = "🪙 Coin collected! +20 points";
+        } else if (player === EXIT) {
+            completeLevel();
+            return;
+        } else {
+            $("mazeStatus").textContent = "Keep going! Find the exit. 🏃";
+        }
+
+        updateStats();
+        renderMaze();
+    }
+
+    function startTimer() {
+        window.clearInterval(timer);
+
+        timer = window.setInterval(() => {
+            if (!playing) return;
+
+            timeLeft--;
+            updateStats();
+
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                updateStats();
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function completeLevel() {
+        completedLevels++;
+        score += 100 + (timeLeft * 2);
+
+        playing = false;
+        window.clearInterval(timer);
+
+        $("mazeStatus").textContent =
+            `🎉 Level ${level} completed! You escaped the maze.`;
+
+        updateStats();
+
+        $("mazeResultTitle").textContent = "🏆 Level Completed!";
+        $("mazeFinalScore").textContent = `Current score: ${score}`;
+        $("mazeFinalCoins").textContent = `Coins collected this game: ${sessionCoins}`;
+        $("mazeFinalLevel").textContent = `Levels completed: ${completedLevels}`;
+        $("mazeBest").textContent = `Best score: ${bestScore}`;
+
+        $("mazeResult").style.display = "block";
+        $("mazeNext").hidden = false;
+        $("mazeStart").hidden = true;
+        $("mazeRestart").hidden = false;
+        $("mazeDifficulty").disabled = false;
+
+        saveBestScore();
+    }
+
+    function saveBestScore() {
+        if (score > bestScore) {
+            bestScore = score;
+
+            try {
+                localStorage.setItem(
+                    "pupilauraMazeBest",
+                    String(bestScore)
+                );
+            } catch (error) {
+                // Local storage is optional.
+            }
+        }
+
+        $("mazeBest").textContent = `Best score: ${bestScore}`;
+    }
+
+    function endGame() {
+        playing = false;
+        window.clearInterval(timer);
+
+        saveBestScore();
+
+        $("mazeStatus").textContent = "⏰ Time is up! Game over.";
+        $("mazeResultTitle").textContent = "Game Over!";
+        $("mazeFinalScore").textContent = `Final score: ${score}`;
+        $("mazeFinalCoins").textContent = `Coins collected: ${sessionCoins}`;
+        $("mazeFinalLevel").textContent = `Levels completed: ${completedLevels}`;
+        $("mazeBest").textContent = `Best score: ${bestScore}`;
+
+        $("mazeResult").style.display = "block";
+        $("mazeNext").hidden = true;
+        $("mazeStart").hidden = true;
+        $("mazeRestart").hidden = false;
+        $("mazeDifficulty").disabled = false;
+
+        renderMaze();
+    }
+
+    function startLevel() {
+        playing = true;
+        player = START;
+
+        generateMaze();
+        placeCoins();
+
+        $("mazeResult").style.display = "none";
+        $("mazeDifficulty").disabled = true;
+        $("mazeStart").hidden = true;
+        $("mazeRestart").hidden = true;
+
+        $("mazeStatus").textContent =
+            `Level ${level}: Collect coins and reach the exit!`;
+
+        updateStats();
+        renderMaze();
+        startTimer();
+    }
+
+    function startGame() {
+        window.clearInterval(timer);
+
+        level = 1;
+        score = 0;
+        completedLevels = 0;
+        sessionCoins = 0;
+        timeLeft = settings[$("mazeDifficulty").value];
+
+        $("mazeResult").style.display = "none";
+        $("mazeDifficulty").disabled = true;
+
+        startLevel();
+    }
+
+    function nextLevel() {
+        level++;
+        startLevel();
+    }
+
+    $("mazeStart").addEventListener("click", startGame);
+    $("mazeRestart").addEventListener("click", startGame);
+    $("mazeNext").addEventListener("click", nextLevel);
+
+    document.querySelectorAll(".maze-move").forEach(button => {
+        button.addEventListener("click", () => {
+            move(button.dataset.move);
+        });
+    });
+
+    document.addEventListener("keydown", event => {
+        const keyMap = {
+            ArrowUp: "up",
+            ArrowDown: "down",
+            ArrowLeft: "left",
+            ArrowRight: "right"
+        };
+
+        const direction = keyMap[event.key];
+
+        if (direction && playing) {
+            event.preventDefault();
+            move(direction);
+        }
+    });
+
+    updateStats();
+    generateMaze();
+    renderMaze();
+})();
+</script>
+{% endblock %}

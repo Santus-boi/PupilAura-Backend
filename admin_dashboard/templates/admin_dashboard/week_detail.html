@@ -1,0 +1,498 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ week.title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Week Details{% endblock %}
+{% block page_subtitle %}Week {{ week.number }} — {{ week.term.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       WEEK DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Lesson list */
+    .week-lesson-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .week-lesson-item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .week-lesson-item:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-1px);
+    }
+
+    .week-lesson-main {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .week-lesson-number {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .week-lesson-info {
+        min-width: 0;
+    }
+
+    .week-lesson-info h4 {
+        margin: 0 0 5px;
+        color: var(--text);
+        font-size: 16px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+    }
+
+    .week-lesson-info p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .week-lesson-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    /* Week info rows (sidebar) */
+    .week-info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .week-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .week-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .week-info-label {
+        color: var(--muted);
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .week-info-value {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 700;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .week-info-value a {
+        color: var(--primary);
+    }
+
+    .week-info-value a:hover {
+        text-decoration: underline;
+    }
+
+    .not-assigned {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .week-lesson-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .week-lesson-actions {
+            width: 100%;
+        }
+        .week-lesson-actions .btn {
+            flex: 1;
+        }
+        .week-info-row {
+            flex-direction: column;
+            gap: 5px;
+        }
+        .week-info-value {
+            text-align: left;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .week-lesson-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+
+    {% if week.term.subject.school_class %}
+        <a href="{% url 'admin_dashboard:school_classes' %}">School Classes</a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+        <a href="{% url 'admin_dashboard:school_class_detail' week.term.subject.school_class.id %}">
+            {{ week.term.subject.school_class.name }}
+        </a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    {% endif %}
+
+    <a href="{% url 'admin_dashboard:subject_detail' week.term.subject.id %}">
+        {{ week.term.subject.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:term_detail' week.term.id %}">
+        {{ week.term.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Week {{ week.number }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+                <div>
+                    <h1>Week {{ week.number }} — {{ week.title }}</h1>
+                    <p>
+                        {% if week.overview %}
+                            {{ week.overview }}
+                        {% else %}
+                            Lessons and learning activities assigned to this week.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:term_detail' week.term.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Term
+                </a>
+                <a href="{% url 'admin_dashboard:week_edit' week.id %}" class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Week
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-book" style="margin-right:6px;"></i>
+                {{ week.term.subject.name }}
+            </span>
+            {% if week.term.subject.school_class %}
+                <span class="meta-badge">
+                    <i class="bi bi-building" style="margin-right:6px;"></i>
+                    {{ week.term.subject.school_class.name }}
+                </span>
+                {% if week.term.subject.school_class.education_level %}
+                    <span class="meta-badge">
+                        <i class="bi bi-mortarboard" style="margin-right:6px;"></i>
+                        {{ week.term.subject.school_class.education_level.name }}
+                    </span>
+                {% endif %}
+            {% else %}
+                <span class="meta-badge">Class not assigned</span>
+            {% endif %}
+            <span class="meta-badge">
+                <i class="bi bi-calendar3" style="margin-right:6px;"></i>
+                {{ week.term.name }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ week.term.name }}</div>
+            <div class="stat-label">Term</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-journal-text"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_lessons|default:0 }}</div>
+            <div class="stat-label">Total Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-sort-numeric-down"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ week.number }}</div>
+            <div class="stat-label">Week Number</div>
+        </div>
+    </div>
+
+</section>
+<!-- WEEK STUDY MATERIAL -->
+<section class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <div>
+            <h2>Week Study Material</h2>
+            <p>One consolidated PDF for all learning content in this week.</p>
+        </div>
+
+        <a href="{% url 'admin_dashboard:curriculum_material_manage' 'week' week.id %}"
+           class="btn btn-primary">
+            <i class="bi bi-file-earmark-pdf"></i>
+            {% if curriculum_material %}Manage PDF{% else %}Upload PDF{% endif %}
+        </a>
+    </div>
+
+    <div class="card-body">
+        {% if curriculum_material %}
+            <div class="week-info-list">
+                <div class="week-info-row">
+                    <span class="week-info-label">Title</span>
+                    <span class="week-info-value">{{ curriculum_material.title }}</span>
+                </div>
+
+                <div class="week-info-row">
+                    <span class="week-info-label">Status</span>
+                    <span class="week-info-value">
+                        {% if curriculum_material.published %}
+                            <span class="badge badge-green">Published</span>
+                        {% else %}
+                            <span class="badge badge-orange">Draft</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if curriculum_material.description %}
+                    <div class="week-info-row">
+                        <span class="week-info-label">Description</span>
+                        <span class="week-info-value">
+                            {{ curriculum_material.description }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                <div class="week-info-row">
+                    <span class="week-info-label">PDF</span>
+                    <span class="week-info-value">
+                        {% if curriculum_material.file %}
+                            <a href="{{ curriculum_material.file.url }}"
+                               target="_blank" rel="noopener">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                View PDF
+                            </a>
+                        {% else %}
+                            <span class="not-assigned">No file uploaded</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <form method="post"
+                  action="{% url 'admin_dashboard:curriculum_material_delete' 'week' week.id %}"
+                  onsubmit="return confirm('Delete this Week study material permanently?');"
+                  style="margin-top: 18px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete PDF
+                </button>
+            </form>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <h3>No Week PDF uploaded</h3>
+                <p>Upload a consolidated study material PDF for this week.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+<!-- CONTENT GRID -->
+<section class="content-grid">
+
+    <!-- LESSONS -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <h2>Lessons</h2>
+                <p>Lessons assigned to Week {{ week.number }}.</p>
+            </div>
+            <a href="{% url 'admin_dashboard:lesson_create' %}?week={{ week.id }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add Lesson
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if lessons %}
+                <div class="week-lesson-list">
+                    {% for lesson in lessons %}
+                        <div class="week-lesson-item">
+                            <div class="week-lesson-main">
+                                <div class="week-lesson-number">{{ lesson.order }}</div>
+                                <div class="week-lesson-info">
+                                    <h4>{{ lesson.title }}</h4>
+                                    <p>
+                                        {% if lesson.description %}
+                                            {{ lesson.description|truncatewords:25 }}
+                                        {% else %}
+                                            No lesson description provided.
+                                        {% endif %}
+                                    </p>
+                                    {% if lesson.published %}
+                                        <span class="badge badge-green" style="margin-top:8px;">● Published</span>
+                                    {% else %}
+                                        <span class="badge badge-orange" style="margin-top:8px;">● Draft</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="week-lesson-actions">
+                                <a href="{% url 'admin_dashboard:lesson_detail' lesson.id %}" class="btn btn-secondary">
+                                    View
+                                </a>
+                                <a href="{% url 'admin_dashboard:lesson_edit' lesson.id %}" class="btn btn-secondary">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon" aria-hidden="true">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h3>No lessons yet</h3>
+                    <p>No lessons have been added to this week.</p>
+                    <a href="{% url 'admin_dashboard:lesson_create' %}?week={{ week.id }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add First Lesson
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- WEEK INFORMATION -->
+    <aside class="card">
+        <div class="card-header">
+            <div>
+                <h2>Week Information</h2>
+                <p>Curriculum details.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="week-info-list">
+                <div class="week-info-row">
+                    <span class="week-info-label">Week</span>
+                    <span class="week-info-value">{{ week.number }}</span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">Title</span>
+                    <span class="week-info-value">{{ week.title }}</span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">Term</span>
+                    <span class="week-info-value">
+                        <a href="{% url 'admin_dashboard:term_detail' week.term.id %}">
+                            {{ week.term.name }}
+                        </a>
+                    </span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">Subject</span>
+                    <span class="week-info-value">
+                        <a href="{% url 'admin_dashboard:subject_detail' week.term.subject.id %}">
+                            {{ week.term.subject.name }}
+                        </a>
+                    </span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">School Class</span>
+                    <span class="week-info-value">
+                        {% if week.term.subject.school_class %}
+                            <a href="{% url 'admin_dashboard:school_class_detail' week.term.subject.school_class.id %}">
+                                {{ week.term.subject.school_class.name }}
+                            </a>
+                        {% else %}
+                            <span class="not-assigned">Not assigned</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">Education Level</span>
+                    <span class="week-info-value">
+                        {% if week.term.subject.school_class and week.term.subject.school_class.education_level %}
+                            <a href="{% url 'admin_dashboard:education_level_detail' week.term.subject.school_class.education_level.id %}">
+                                {{ week.term.subject.school_class.education_level.name }}
+                            </a>
+                        {% else %}
+                            <span class="not-assigned">Not assigned</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="week-info-row">
+                    <span class="week-info-label">Week ID</span>
+                    <span class="week-info-value">{{ week.id }}</span>
+                </div>
+            </div>
+        </div>
+    </article>
+
+</section>
+
+{% endblock %}

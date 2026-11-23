@@ -1,0 +1,356 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}Messages | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+    <a href="{% url 'community:dashboard' %}" class="text-decoration-none">Community</a>
+    <span class="mx-2">/</span>
+    <span>Messages</span>
+{% endblock %}
+
+{% block community_content %}
+
+<style>
+    .pa-inbox {
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .pa-inbox-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 22px;
+    }
+
+    .pa-inbox-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .pa-inbox-nav a {
+        padding: 8px 13px;
+        border-radius: 20px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .pa-inbox-nav a:hover {
+        background: #dbeafe;
+    }
+
+    .pa-inbox-card {
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(15, 23, 42, .04);
+    }
+
+    .pa-inbox-title {
+        padding: 17px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .pa-conversation {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 17px 20px;
+        color: inherit;
+        text-decoration: none;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background .2s;
+    }
+
+    .pa-conversation:last-child {
+        border-bottom: none;
+    }
+
+    .pa-conversation:hover {
+        background: #f8fafc;
+    }
+
+    .pa-conversation.unread {
+        background: #f8fbff;
+    }
+
+    .pa-inbox-avatar {
+        width: 52px;
+        height: 52px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .pa-conversation-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pa-conversation-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+
+    .pa-conversation-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .pa-conversation-time {
+        font-size: 10px;
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+
+    .pa-conversation-preview {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pa-last-message {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pa-unread-badge {
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #2563eb;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .pa-empty-state {
+        text-align: center;
+        padding: 65px 20px;
+    }
+
+    .pa-empty-icon {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 30px;
+        margin: 0 auto 18px;
+    }
+
+    @media(max-width: 576px) {
+        .pa-conversation {
+            padding: 14px 12px;
+            gap: 11px;
+        }
+
+        .pa-inbox-avatar {
+            width: 46px;
+            height: 46px;
+            font-size: 17px;
+        }
+
+        .pa-inbox-title {
+            padding: 14px;
+        }
+
+        .pa-conversation-name {
+            font-size: 13px;
+        }
+
+        .pa-conversation-time {
+            font-size: 9px;
+        }
+
+        .pa-last-message {
+            font-size: 11px;
+        }
+    }
+</style>
+
+<div class="container-fluid py-3 pa-inbox">
+
+    <!-- Navigation -->
+    <div class="pa-inbox-nav">
+        <a href="{% url 'community:dashboard' %}">
+            <i class="bi bi-house-door me-1"></i> Community
+        </a>
+
+        <a href="{% url 'community:study_buddy_discover' %}">
+            <i class="bi bi-search me-1"></i> Discover
+        </a>
+
+        <a href="{% url 'community:study_buddy_partners' %}">
+            <i class="bi bi-people me-1"></i> Study Partners
+        </a>
+
+        <a href="{% url 'community:study_buddy_requests' %}">
+            <i class="bi bi-person-plus me-1"></i> Requests
+        </a>
+    </div>
+
+    <!-- Page Heading -->
+    <div class="pa-inbox-header">
+        <div>
+            <h2 class="fw-bold mb-1">Messages</h2>
+            <p class="text-muted mb-0 small">
+                Connect privately and learn together.
+            </p>
+        </div>
+
+        <a href="{% url 'community:study_buddy_partners' %}"
+           class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>
+            New Conversation
+        </a>
+    </div>
+
+    <!-- Conversations -->
+    <div class="pa-inbox-card">
+
+        <div class="pa-inbox-title">
+            <h6 class="fw-bold mb-0">
+                <i class="bi bi-chat-dots-fill text-primary me-2"></i>
+                Your Conversations
+                <span class="text-muted fw-normal small ms-1">
+                    ({{ conversation_items|length }})
+                </span>
+            </h6>
+        </div>
+
+        {% if conversation_items %}
+
+            {% for item in conversation_items %}
+
+                <a href="{% url 'community:private_conversation_detail' item.conversation.id %}"
+                   class="pa-conversation {% if item.unread_count %}unread{% endif %}">
+
+                    <!-- Avatar -->
+                    <div class="pa-inbox-avatar">
+                        {% with name=item.other_user.get_full_name|default:item.other_user.username %}
+                            {{ name|first|upper }}
+                        {% endwith %}
+                    </div>
+
+                    <!-- Conversation Information -->
+                    <div class="pa-conversation-content">
+
+                        <div class="pa-conversation-top">
+                            <h6 class="pa-conversation-name">
+                                {{ item.other_user.get_full_name|default:item.other_user.username }}
+                            </h6>
+
+                            <span class="pa-conversation-time">
+                                {% if item.last_message %}
+                                    {{ item.last_message.created_at|date:"M d, h:i A" }}
+                                {% else %}
+                                    New chat
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="pa-conversation-preview">
+
+                            <p class="pa-last-message">
+                                {% if item.last_message %}
+
+                                    {% if item.last_message.sender_id == request.user.id %}
+                                        <i class="bi bi-check2-all text-primary me-1"></i>
+                                        You:
+                                    {% endif %}
+
+                                    {{ item.last_message.content|truncatechars:75 }}
+
+                                {% else %}
+                                    Start a conversation with your study partner.
+                                {% endif %}
+                            </p>
+
+                            {% if item.unread_count %}
+                                <span class="pa-unread-badge">
+                                    {{ item.unread_count }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <i class="bi bi-chevron-right text-muted small"></i>
+
+                </a>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="pa-empty-state">
+
+                <div class="pa-empty-icon">
+                    <i class="bi bi-chat-heart"></i>
+                </div>
+
+                <h5 class="fw-bold mb-2">No conversations yet</h5>
+
+                <p class="text-muted small mb-4">
+                    Your private conversations with accepted study partners
+                    will appear here.
+                </p>
+
+                <a href="{% url 'community:study_buddy_partners' %}"
+                   class="btn btn-primary">
+                    <i class="bi bi-people me-1"></i>
+                    View Study Partners
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="text-center mt-3">
+        <small class="text-muted">
+            <i class="bi bi-shield-lock me-1"></i>
+            Your conversations are private to their participants.
+        </small>
+    </div>
+
+</div>
+
+{% endblock %}

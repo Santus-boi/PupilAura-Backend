@@ -1,0 +1,1007 @@
+
+{% extends "tech/base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }} | PupilAura Technology Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .course-detail-page {
+        padding: 40px 0 75px;
+    }
+
+    .course-detail-container {
+        width: min(1200px, calc(100% - 40px));
+        margin: 0 auto;
+    }
+
+    .course-breadcrumb {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 25px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .course-breadcrumb a {
+        color: #2563eb;
+        font-weight: 650;
+    }
+
+    .course-breadcrumb a:hover {
+        color: #1d4ed8;
+    }
+
+    .course-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+        align-items: stretch;
+        gap: 30px;
+        margin-bottom: 35px;
+        padding: 35px;
+        border: 1px solid #dbeafe;
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at 95% 5%, rgba(191, 219, 254, .6), transparent 30%),
+            linear-gradient(135deg, #fff 0%, #eff6ff 100%);
+    }
+
+    .course-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 7px 12px;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        background: #fff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .course-hero h1 {
+        margin: 0 0 15px;
+        color: #111827;
+        font-size: clamp(30px, 4vw, 43px);
+        font-weight: 900;
+        letter-spacing: -1.4px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .course-hero-description {
+        margin: 0 0 23px;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .course-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 11px;
+    }
+
+    .course-primary-btn,
+    .course-secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 43px;
+        padding: 11px 15px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 800;
+        transition: all .2s ease;
+    }
+
+    .course-primary-btn {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .course-primary-btn:hover {
+        background: #1d4ed8;
+        color: #fff;
+    }
+
+    .course-secondary-btn {
+        border-color: #e5e7eb;
+        background: #fff;
+        color: #374151;
+    }
+
+    .course-secondary-btn:hover {
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .course-hero-image {
+        display: flex;
+        min-height: 230px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid rgba(37, 99, 235, .12);
+        border-radius: 17px;
+        background: #dbeafe;
+    }
+
+    .course-hero-image img {
+        width: 100%;
+        height: 100%;
+        min-height: 230px;
+        max-height: 320px;
+        object-fit: cover;
+    }
+
+    .course-hero-placeholder {
+        display: flex;
+        width: 90px;
+        height: 90px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 25px;
+        background: rgba(255, 255, 255, .8);
+        color: #2563eb;
+        font-size: 40px;
+    }
+
+    .course-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 17px;
+        margin-bottom: 38px;
+    }
+
+    .overview-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        background: #fff;
+    }
+
+    .overview-icon {
+        display: flex;
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 21px;
+    }
+
+    .overview-card:nth-child(2) .overview-icon {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .overview-card:nth-child(3) .overview-icon {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .overview-label {
+        margin-bottom: 3px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+    .overview-value {
+        color: #111827;
+        font-size: 15px;
+        font-weight: 850;
+        overflow-wrap: anywhere;
+    }
+
+    .course-content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        align-items: start;
+        gap: 28px;
+    }
+
+    .course-main-column {
+        min-width: 0;
+    }
+
+    .course-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .course-section-heading h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 25px;
+        font-weight: 900;
+        letter-spacing: -.6px;
+    }
+
+    .module-count {
+        padding: 7px 11px;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: #fff;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .modules-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .module-card {
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(17, 24, 39, .035);
+    }
+
+    .module-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 22px;
+    }
+
+    .module-number {
+        display: flex;
+        width: 43px;
+        height: 43px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .module-heading-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .module-heading-content h3 {
+        margin: 0 0 7px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 850;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .module-heading-content p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.75;
+        overflow-wrap: anywhere;
+    }
+
+    .module-lessons {
+        padding: 0 22px 20px;
+    }
+
+    .module-lessons-heading {
+        margin: 0 0 10px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+    }
+
+    .module-lesson-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid #f0f2f5;
+    }
+
+    .lesson-status-icon {
+        display: flex;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .lesson-status-icon.completed {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .module-lesson-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .module-lesson-info strong {
+        display: block;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .module-lesson-info small {
+        display: block;
+        margin-top: 3px;
+        color: #9ca3af;
+        font-size: 11px;
+    }
+
+    .lesson-open-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .lesson-open-link:hover {
+        color: #1d4ed8;
+    }
+
+    .module-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 15px 22px;
+        border-top: 1px solid #e5e7eb;
+        background: #f9fafb;
+    }
+
+    .module-footer span {
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .module-open-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .module-open-link:hover {
+        color: #1d4ed8;
+    }
+
+    .course-sidebar {
+        position: sticky;
+        top: 105px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(17, 24, 39, .04);
+    }
+
+    .sidebar-heading {
+        padding: 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sidebar-heading h3 {
+        margin: 0 0 5px;
+        color: #111827;
+        font-size: 17px;
+        font-weight: 850;
+    }
+
+    .sidebar-heading p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .progress-content {
+        padding: 21px;
+    }
+
+    .progress-number-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .progress-number-row span:first-child {
+        color: #4b5563;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .progress-number-row span:last-child {
+        color: #2563eb;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .course-progress-track {
+        width: 100%;
+        height: 9px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5e7eb;
+    }
+
+    .course-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        transition: width .3s ease;
+    }
+
+    .progress-caption {
+        margin-top: 11px;
+        color: #6b7280;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .sidebar-divider {
+        height: 1px;
+        background: #e5e7eb;
+    }
+
+    .sidebar-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .sidebar-stat {
+        padding: 13px 11px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f9fafb;
+    }
+
+    .sidebar-stat strong {
+        display: block;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 900;
+    }
+
+    .sidebar-stat span {
+        display: block;
+        margin-top: 3px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+    .sidebar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 20px 20px;
+    }
+
+    .sidebar-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 43px;
+        padding: 11px 13px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .sidebar-action:hover {
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .sidebar-action.primary {
+        border-color: #2563eb;
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .sidebar-action.primary:hover {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+        color: #fff;
+    }
+
+    .course-empty-state {
+        padding: 45px 24px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    .course-empty-state i {
+        display: block;
+        margin-bottom: 14px;
+        color: #2563eb;
+        font-size: 35px;
+    }
+
+    .course-empty-state h3 {
+        margin: 0 0 9px;
+        color: #111827;
+        font-size: 19px;
+        font-weight: 850;
+    }
+
+    .course-empty-state p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    @media (max-width: 950px) {
+        .course-content-grid {
+            grid-template-columns: minmax(0, 1fr) 270px;
+            gap: 20px;
+        }
+
+        .course-hero {
+            gap: 20px;
+            padding: 27px;
+        }
+
+        .course-overview-grid {
+            gap: 11px;
+        }
+
+        .overview-card {
+            padding: 15px;
+        }
+    }
+
+    @media (max-width: 760px) {
+        .course-detail-page {
+            padding-top: 25px;
+        }
+
+        .course-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .course-hero-image {
+            min-height: 190px;
+        }
+
+        .course-hero-image img {
+            min-height: 190px;
+        }
+
+        .course-content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .course-sidebar {
+            position: static;
+        }
+
+        .course-overview-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .course-detail-container {
+            width: calc(100% - 28px);
+        }
+
+        .course-hero {
+            padding: 22px 18px;
+            border-radius: 17px;
+        }
+
+        .course-hero h1 {
+            font-size: 31px;
+        }
+
+        .course-hero-actions {
+            flex-direction: column;
+        }
+
+        .course-primary-btn,
+        .course-secondary-btn {
+            width: 100%;
+        }
+
+        .module-header {
+            padding: 17px;
+        }
+
+        .module-lessons {
+            padding: 0 17px 17px;
+        }
+
+        .module-footer {
+            padding: 14px 17px;
+        }
+
+        .lesson-open-link {
+            font-size: 11px;
+        }
+
+        .module-lesson-row {
+            gap: 9px;
+        }
+
+        .module-lesson-info strong {
+            font-size: 12px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .course-progress-fill {
+            transition: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="course-detail-page">
+    <div class="course-detail-container">
+
+        <nav class="course-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'tech:tech_home' %}">
+                <i class="bi bi-house" aria-hidden="true"></i>
+                Technology Academy
+            </a>
+
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+
+            <a href="{% url 'tech:tech_category_detail' course.category.id %}">
+                {{ course.category.name }}
+            </a>
+
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+
+            <span aria-current="page">{{ course.title }}</span>
+        </nav>
+
+        <!-- Course introduction -->
+        <header class="course-hero">
+
+            <div class="course-hero-content">
+                <div class="course-eyebrow">
+                    <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                    Technology course
+                </div>
+
+                <h1>{{ course.title }}</h1>
+
+                <p class="course-hero-description">
+                    {% if course.description %}
+                        {{ course.description }}
+                    {% else %}
+                        Work through this course's modules and lessons
+                        to develop your knowledge and practical skills.
+                    {% endif %}
+                </p>
+
+                <div class="course-hero-actions">
+                    <a href="#course-modules" class="course-primary-btn">
+                        <i class="bi bi-play-circle" aria-hidden="true"></i>
+                        Explore modules
+                    </a>
+
+                    <a
+                        href="{% url 'tech:tech_category_detail' course.category.id %}"
+                        class="course-secondary-btn"
+                    >
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        Back to category
+                    </a>
+                </div>
+            </div>
+
+            <div class="course-hero-image">
+                {% if course.thumbnail %}
+                    <img
+                        src="{{ course.thumbnail.url }}"
+                        alt="{{ course.title }}"
+                    >
+                {% else %}
+                    <div class="course-hero-placeholder">
+                        <i class="bi bi-code-slash" aria-hidden="true"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+        </header>
+
+        <!-- Course overview -->
+        <div class="course-overview-grid">
+
+            <div class="overview-card">
+                <div class="overview-icon">
+                    <i class="bi bi-collection" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <div class="overview-label">Course modules</div>
+                    <div class="overview-value">{{ modules|length }} modules</div>
+                </div>
+            </div>
+
+            <div class="overview-card">
+                <div class="overview-icon">
+                    <i class="bi bi-journal-check" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <div class="overview-label">Published lessons</div>
+                    <div class="overview-value">{{ total_lessons }} lessons</div>
+                </div>
+            </div>
+
+            <div class="overview-card">
+                <div class="overview-icon">
+                    <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <div class="overview-label">Your progress</div>
+                    <div class="overview-value">{{ progress_percentage }}%</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main content and progress sidebar -->
+        <div class="course-content-grid">
+
+            <div class="course-main-column" id="course-modules">
+
+                <div class="course-section-heading">
+                    <h2>Course curriculum</h2>
+
+                    <span class="module-count">
+                        {{ modules|length }}
+                        {% if modules|length == 1 %}
+                            module
+                        {% else %}
+                            modules
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="modules-list">
+                    {% for module in modules %}
+                        <article class="module-card">
+
+                            <div class="module-header">
+                                <div class="module-number">
+                                    {{ forloop.counter|stringformat:"02d" }}
+                                </div>
+
+                                <div class="module-heading-content">
+                                    <h3>{{ module.title }}</h3>
+
+                                    <p>
+                                        {% if module.description %}
+                                            {{ module.description|truncatewords:35 }}
+                                        {% else %}
+                                            Explore the lessons in this module
+                                            and develop your understanding of the topic.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="module-lessons">
+                                <div class="module-lessons-heading">
+                                    Lessons in this module
+                                </div>
+
+                                {% for lesson in module.lessons.all %}
+                                    {% if lesson.is_published %}
+                                        <div class="module-lesson-row">
+
+                                            <div class="lesson-status-icon {% if lesson.id in completed_lesson_ids %}completed{% endif %}">
+                                                {% if lesson.id in completed_lesson_ids %}
+                                                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                                {% else %}
+                                                    <i class="bi bi-play" aria-hidden="true"></i>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="module-lesson-info">
+                                                <strong>{{ lesson.title }}</strong>
+
+                                                <small>
+                                                    {% if lesson.id in completed_lesson_ids %}
+                                                        Completed
+                                                    {% else %}
+                                                        Lesson {{ forloop.counter }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+
+                                            <a
+                                                class="lesson-open-link"
+                                                href="{% url 'tech:tech_lesson_detail' lesson.id %}"
+                                            >
+                                                {% if lesson.id in completed_lesson_ids %}
+                                                    Review
+                                                {% else %}
+                                                    Open lesson
+                                                {% endif %}
+                                                <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                                            </a>
+
+                                        </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <p class="text-muted small mb-0">
+                                        No lessons have been added to this module yet.
+                                    </p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="module-footer">
+                                <span>
+                                    <i class="bi bi-journal-text" aria-hidden="true"></i>
+                                    Module {{ forloop.counter }}
+                                </span>
+
+                                <a
+                                    class="module-open-link"
+                                    href="{% url 'tech:tech_module_detail' course.id module.id %}"
+                                >
+                                    View module
+                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+
+                        </article>
+                    {% empty %}
+                        <div class="course-empty-state">
+                            <i class="bi bi-journal-x" aria-hidden="true"></i>
+
+                            <h3>No modules available yet</h3>
+
+                            <p>
+                                Modules have not been published for this
+                                course yet. Check back when the curriculum
+                                becomes available.
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <!-- Course progress -->
+            <aside class="course-sidebar">
+                <div class="sidebar-heading">
+                    <h3>Your learning progress</h3>
+                    <p>Track your progress through this course.</p>
+                </div>
+
+                <div class="progress-content">
+                    <div class="progress-number-row">
+                        <span>Course completion</span>
+                        <span>{{ progress_percentage }}%</span>
+                    </div>
+
+                    <div
+                        class="course-progress-track"
+                        role="progressbar"
+                        aria-label="Course completion"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="{{ progress_percentage }}"
+                    >
+                        <div
+                            class="course-progress-fill"
+                            style="width: {% if progress_percentage > 100 %}100{% elif progress_percentage < 0 %}0{% else %}{{ progress_percentage }}{% endif %}%;"
+                        ></div>
+                    </div>
+
+                    <p class="progress-caption">
+                        {% if enrollment and enrollment.completed %}
+                            You have completed this course. You can revisit
+                            its lessons whenever you need to.
+                        {% elif enrollment %}
+                            Continue working through the published lessons
+                            to complete this course.
+                        {% else %}
+                            Explore the curriculum and open a lesson to begin
+                            learning. Your progress will appear here.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="sidebar-divider"></div>
+
+                <div class="sidebar-stats">
+                    <div class="sidebar-stat">
+                        <strong>{{ completed_lessons }}</strong>
+                        <span>Lessons completed</span>
+                    </div>
+
+                    <div class="sidebar-stat">
+                        <strong>{{ total_lessons }}</strong>
+                        <span>Total lessons</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-actions">
+                    {% if modules %}
+                        <a
+                            class="sidebar-action primary"
+                            href="{% url 'tech:tech_module_detail' course.id modules.0.id %}"
+                        >
+                            <i class="bi bi-play-circle" aria-hidden="true"></i>
+                            Open first module
+                        </a>
+                    {% endif %}
+
+                    <a
+                        class="sidebar-action"
+                        href="{% url 'tech:tech_category_detail' course.category.id %}"
+                    >
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        Back to category
+                    </a>
+                </div>
+            </aside>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

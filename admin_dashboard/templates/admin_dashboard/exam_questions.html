@@ -1,0 +1,629 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Exam Questions | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Questions{% endblock %}
+{% block page_subtitle %}Manage questions for {{ resource.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ---------- PAGE HEADER ---------- */
+
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .page-title h1 {
+        font-size: 28px;
+        line-height: 1.2;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .page-title p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* ---------- BUTTONS ---------- */
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); color: white; }
+
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface-soft); }
+
+    .btn-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+    .btn-danger:hover { background: #fee2e2; }
+
+    .btn-small {
+        min-height: 34px;
+        padding: 0 11px;
+        font-size: 12px;
+    }
+
+    /* ---------- STATS ---------- */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .stat-icon.blue { background: #eff6ff; color: var(--primary); }
+    .stat-icon.green { background: #f0fdf4; color: var(--success); }
+    .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+
+    .stat-info span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .stat-info strong {
+        display: block;
+        font-size: 24px;
+        color: var(--text);
+    }
+
+    /* ---------- CARD ---------- */
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        font-size: 16px;
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .card-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .search-box {
+        width: 260px;
+    }
+
+    .search-box input {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        color: var(--text);
+        outline: none;
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    /* ---------- RESOURCE INFO BANNER ---------- */
+
+    .resource-banner {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .resource-banner-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .resource-banner-header h2 {
+        font-size: 16px;
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .resource-banner-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .resource-banner-body {
+        padding: 20px 22px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+    }
+
+    .resource-banner-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .resource-banner-item strong {
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    /* ---------- TABLE ---------- */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+    thead { background: var(--surface-soft); }
+
+    th {
+        padding: 13px 20px;
+        text-align: left;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    tbody tr:hover { background: var(--surface-soft); }
+
+    .question-cell {
+        min-width: 260px;
+        max-width: 500px;
+    }
+
+    .question-cell strong {
+        display: block;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text);
+    }
+
+    .question-cell span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    /* ---------- BADGES ---------- */
+
+    .type-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .type-badge { background: #eff6ff; color: var(--primary); }
+    .status-published { background: #f0fdf4; color: #166534; }
+    .status-draft { background: #f3f4f6; color: #4b5563; }
+
+    /* ---------- ACTIONS ---------- */
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .action-form {
+        display: inline-flex;
+        margin: 0;
+    }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background: #eff6ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    .action-btn.delete:hover {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+
+    /* ---------- EMPTY ---------- */
+
+    .empty-state {
+        padding: 70px 25px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+    }
+
+    .empty-state h3 {
+        font-size: 17px;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        max-width: 430px;
+        margin: 0 auto 20px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* ---------- BACK LINK ---------- */
+
+    .back-link {
+        margin-top: 22px;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 800px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .page-header { flex-direction: column; }
+        .page-header > .btn { width: 100%; }
+        .search-box { width: 100%; }
+        .card-header { flex-direction: column; align-items: stretch; }
+    }
+
+    @media (max-width: 550px) {
+        .page-title h1 { font-size: 23px; }
+        .stat-card { padding: 16px; }
+        .card-header { padding: 16px; }
+        th, td { padding-left: 14px; padding-right: 14px; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .stat-icon.blue,
+        .type-badge { background: rgba(37, 99, 235, 0.15); color: #93c5fd; }
+        .stat-icon.green { background: rgba(22, 163, 74, 0.15); color: #86efac; }
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.15); color: #c4b5fd; }
+
+        .status-published { background: #052e16; color: #86efac; }
+        .status-draft { background: #374151; color: #d1d5db; }
+
+        .action-btn:hover { background: rgba(37, 99, 235, 0.12); }
+        .action-btn.delete:hover { background: rgba(220, 38, 38, 0.12); }
+
+        .btn-secondary { background: var(--surface); color: var(--text); }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exams' %}">Exams</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}">{{ resource.title }}</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Questions</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="page-title">
+        <h1>Exam Questions</h1>
+        <p>Manage questions for {{ resource.title }}.</p>
+    </div>
+    <a href="{% url 'admin_dashboard:exam_question_create' resource.id %}" class="btn btn-primary">
+        <span>+</span> Add Question
+    </a>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">?</div>
+        <div class="stat-info">
+            <span>Total Questions</span>
+            <strong>{{ question_count|default:0 }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">✓</div>
+        <div class="stat-info">
+            <span>Published Questions</span>
+            <strong>{{ published_questions|default:0 }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">◷</div>
+        <div class="stat-info">
+            <span>Unpublished Questions</span>
+            <strong>{{ unpublished_questions|default:0 }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- RESOURCE INFO BANNER -->
+<div class="resource-banner">
+    <div class="resource-banner-header">
+        <h2>Resource Information</h2>
+        <p>Exam, subject, and year associated with these questions.</p>
+    </div>
+    <div class="resource-banner-body">
+        <div class="resource-banner-item">
+            <span>Exam</span>
+            <strong>{{ exam.name }}</strong>
+        </div>
+        <div class="resource-banner-item">
+            <span>Subject</span>
+            <strong>{{ resource.subject.name|default:"Not assigned" }}</strong>
+        </div>
+        <div class="resource-banner-item">
+            <span>Year</span>
+            <strong>{{ resource.year.year|default:"Not assigned" }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- QUESTIONS -->
+<div class="card">
+
+    <div class="card-header">
+        <div>
+            <h2>All Questions</h2>
+            <p>View, edit, and delete questions for this resource.</p>
+        </div>
+        <div class="search-box">
+            <input type="search"
+                   id="questionSearch"
+                   placeholder="Search questions..."
+                   aria-label="Search questions">
+        </div>
+    </div>
+
+    {% if questions %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Question</th>
+                        <th>Type</th>
+                        <th>Marks</th>
+                        <th>Choices</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="questionsTable">
+                    {% for question in questions %}
+                        <tr class="question-row"
+                            data-search="{{ question.question_number }} {{ question.question_text|lower }} {{ question.get_question_type_display|lower }}">
+
+                            <td><strong>{{ question.question_number }}</strong></td>
+
+                            <td class="question-cell">
+                                <strong>{{ question.question_text|truncatechars:120 }}</strong>
+                                <span>Question ID #{{ question.id }}</span>
+                            </td>
+
+                            <td>
+                                <span class="type-badge">{{ question.get_question_type_display }}</span>
+                            </td>
+
+                            <td>{{ question.marks }}</td>
+                            <td>{{ question.choices.count }}</td>
+
+                            <td>
+                                {% if question.published %}
+                                    <span class="status-badge status-published">Published</span>
+                                {% else %}
+                                    <span class="status-badge status-draft">Draft</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="actions">
+                                    <a href="{% url 'admin_dashboard:exam_question_detail' question.id %}"
+                                       class="action-btn"
+                                       title="View question"
+                                       aria-label="View question">◉</a>
+                                    <a href="{% url 'admin_dashboard:exam_question_edit' question.id %}"
+                                       class="action-btn"
+                                       title="Edit question"
+                                       aria-label="Edit question">✎</a>
+                                    <form method="post"
+                                          action="{% url 'admin_dashboard:exam_question_delete' question.id %}"
+                                          class="action-form"
+                                          onsubmit="return confirm('Delete question {{ question.question_number }}? This action cannot be undone.');">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="action-btn delete"
+                                                title="Delete question"
+                                                aria-label="Delete question">×</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Search-empty state -->
+        <div class="empty-state" id="searchEmptyState" style="display: none;">
+            <div class="empty-icon">⌕</div>
+            <h3>No matching questions</h3>
+            <p>Try searching with a different question number, text, or question type.</p>
+        </div>
+
+    {% else %}
+
+        <!-- Database-empty state -->
+        <div class="empty-state">
+            <div class="empty-icon">?</div>
+            <h3>No questions yet</h3>
+            <p>
+                Add the first question for this resource to begin building the
+                exam question bank.
+            </p>
+            <a href="{% url 'admin_dashboard:exam_question_create' resource.id %}" class="btn btn-primary">
+                + Add First Question
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<div class="back-link">
+    <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}" class="btn btn-secondary">
+        ← Back to Resource
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const searchInput = document.getElementById("questionSearch");
+    const rows = document.querySelectorAll(".question-row");
+    const emptyState = document.getElementById("searchEmptyState");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const term = this.value.toLowerCase().trim();
+            let visible = 0;
+
+            rows.forEach(function (row) {
+                const matches = row.dataset.search.toLowerCase().includes(term);
+                row.style.display = matches ? "" : "none";
+                if (matches) visible++;
+            });
+
+            if (emptyState) {
+                emptyState.style.display = term && visible === 0 ? "block" : "none";
+            }
+        });
+    }
+</script>
+{% endblock %}

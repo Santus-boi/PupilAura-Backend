@@ -1,0 +1,1086 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Business Tycoon | PupilAura{% endblock %}
+
+{% block content %}
+<style>
+.tycoon {
+    --ty-blue: #2563eb;
+    --ty-dark: #172033;
+    --ty-muted: #64748b;
+    color: var(--ty-dark);
+    padding: 15px 0 30px;
+}
+
+.tycoon * { box-sizing: border-box; }
+
+.tycoon-hero {
+    background: linear-gradient(120deg, #101c35, #1d4ed8);
+    color: white;
+    padding: 22px 28px;
+    border-radius: 18px;
+    margin-bottom: 16px;
+}
+
+.tycoon-hero h1 {
+    font-weight: 900;
+    font-size: clamp(25px, 3vw, 34px);
+    margin-bottom: 7px;
+}
+
+.tycoon-hero p {
+    color: #dbeafe;
+    max-width: 650px;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.ty-card {
+    background: white;
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+    padding: 15px;
+    height: 100%;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .035);
+}
+
+.ty-card h5 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.ty-stat {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 11px;
+    height: 100%;
+}
+
+.ty-stat small {
+    color: var(--ty-muted);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 11px;
+}
+
+.ty-stat strong {
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.ty-btn {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-weight: 750;
+    transition: .2s;
+}
+
+.ty-btn:hover { transform: translateY(-1px); }
+
+.ty-primary { background: var(--ty-blue); color: white; }
+.ty-dark { background: #172033; color: white; }
+.ty-light { background: #eff6ff; color: #1d4ed8; }
+
+.ty-input {
+    width: 100%;
+    border: 1px solid #dbe2ea;
+    padding: 9px 11px;
+    border-radius: 9px;
+    outline: none;
+}
+
+.ty-input:focus { border-color: var(--ty-blue); }
+
+.ty-product {
+    border: 1px solid #e5eaf1;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.ty-product:last-child { margin-bottom: 0; }
+
+.ty-log {
+    background: #f8fafc;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 7px;
+    font-size: 12px;
+}
+
+.ty-positive { color: #15803d; }
+.ty-negative { color: #dc2626; }
+
+.ty-progress {
+    height: 7px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.ty-progress div {
+    height: 100%;
+    background: #2563eb;
+    transition: width .3s;
+}
+
+.ty-choice {
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    padding: 13px;
+    cursor: pointer;
+    transition: .2s;
+    height: 100%;
+}
+
+.ty-choice:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+    transform: translateY(-2px);
+}
+
+.ty-choice.selected {
+    border: 2px solid #2563eb;
+    background: #eff6ff;
+}
+
+.ty-hidden { display: none !important; }
+
+.ty-badge {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ty-section-title {
+    font-weight: 850;
+    margin-bottom: 12px;
+}
+
+#activityLog {
+    max-height: 230px;
+    overflow-y: auto;
+}
+
+#productArea { min-height: auto; }
+
+
+/* Compact management cards */
+#gameScreen .ty-card {
+    padding: 12px !important;
+    height: auto;
+}
+
+#gameScreen .ty-card h5 {
+    font-size: 15px;
+    margin-bottom: 9px;
+}
+
+#gameScreen .ty-card p {
+    margin-bottom: 7px;
+}
+
+#gameScreen .ty-product {
+    padding: 8px;
+    margin-bottom: 6px;
+}
+
+#gameScreen .ty-product h6 {
+    margin-bottom: 4px;
+}
+
+#gameScreen .ty-product p {
+    margin-bottom: 5px;
+}
+
+#gameScreen .strategy-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+#gameScreen .ty-input {
+    padding: 7px 9px;
+}
+
+#gameScreen .alert {
+    padding: 9px 11px;
+    margin-bottom: 0;
+}
+
+#gameScreen .ty-progress {
+    margin-top: 6px !important;
+}
+
+#gameScreen .ty-card .row.g-3 {
+    --bs-gutter-y: .5rem;
+}
+
+#gameScreen .ty-card .mb-3 {
+    margin-bottom: .6rem !important;
+}
+
+#gameScreen .ty-card .mt-3 {
+    margin-top: .6rem !important;
+}
+
+@media (max-width: 767px) {
+    #gameScreen .ty-card {
+        padding: 11px !important;
+    }
+}
+
+@media(max-width: 767px) {
+    .tycoon { padding-top: 10px; }
+    .tycoon-hero { padding: 18px; }
+    .ty-card { padding: 12px; }
+    .ty-stat strong { font-size: 17px; }
+    .ty-choice { padding: 10px; }
+    #activityLog { max-height: 180px; }
+}
+</style>
+
+<div class="container tycoon">
+
+    <div class="tycoon-hero">
+        <span class="badge bg-warning text-dark mb-3">BUSINESS SIMULATION</span>
+        <h1>💼 Business Tycoon</h1>
+        <p>
+            Build a business from scratch. Buy stock, set prices, attract customers,
+            manage expenses and make decisions that determine whether your company
+            becomes successful or goes bankrupt.
+        </p>
+    </div>
+
+    <!-- START SCREEN -->
+    <section id="startScreen">
+        <div class="ty-card">
+            <h3 class="fw-bold mb-2">Build Your Business Empire</h3>
+            <p class="text-secondary">
+                Choose your business, name your company and begin your journey.
+            </p>
+
+            <div class="mb-4">
+                <label class="fw-bold mb-2">Business name</label>
+                <input id="businessName" class="ty-input"
+                       maxlength="35" placeholder="e.g. Paul's Empire">
+            </div>
+
+            <h5 class="fw-bold mb-3">Choose your business</h5>
+
+            <div class="row g-3 mb-4" id="businessChoices">
+
+                <div class="col-md-4">
+                    <div class="ty-choice selected" data-business="shop">
+                        <div class="fs-1 mb-2">🛒</div>
+                        <h5 class="fw-bold">Retail Store</h5>
+                        <p class="small text-secondary">Sell everyday products.</p>
+                        <strong>Capital: ₦500,000</strong>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="ty-choice" data-business="restaurant">
+                        <div class="fs-1 mb-2">🍔</div>
+                        <h5 class="fw-bold">Restaurant</h5>
+                        <p class="small text-secondary">Serve customers and manage food stock.</p>
+                        <strong>Capital: ₦700,000</strong>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="ty-choice" data-business="tech">
+                        <div class="fs-1 mb-2">💻</div>
+                        <h5 class="fw-bold">Tech Company</h5>
+                        <p class="small text-secondary">Sell digital products and services.</p>
+                        <strong>Capital: ₦1,000,000</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="ty-btn ty-primary w-100" id="startGame">
+                Launch My Business →
+            </button>
+        </div>
+    </section>
+
+    <!-- GAME SCREEN -->
+    <section id="gameScreen" class="ty-hidden">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h3 class="fw-bold mb-1" id="companyTitle">My Business</h3>
+                <span class="ty-badge" id="businessType">Retail Store</span>
+            </div>
+            <div class="text-end">
+                <small class="text-secondary">Business round</small>
+                <h4 class="fw-bold mb-0"><span id="roundNumber">1</span> / 12</h4>
+            </div>
+        </div>
+
+        <div class="ty-progress mb-4">
+            <div id="roundProgress" style="width:8.33%"></div>
+        </div>
+
+        <!-- STATS -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="ty-stat">
+                    <small>💰 Cash balance</small>
+                    <strong id="cashStat">₦0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="ty-stat">
+                    <small>📦 Inventory units</small>
+                    <strong id="stockStat">0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="ty-stat">
+                    <small>⭐ Reputation</small>
+                    <strong id="reputationStat">50</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="ty-stat">
+                    <small>📈 Total profit</small>
+                    <strong id="profitStat">₦0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- MANAGEMENT -->
+            <div class="col-lg-7">
+
+                <div class="ty-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">📦 Inventory Management</h5>
+                        <span class="ty-badge" id="stockStatus">No stock</span>
+                    </div>
+
+                    <div id="productArea"></div>
+
+                    <div class="alert alert-info small mt-3 mb-0">
+                        Buy inventory before selling. Unsold inventory remains
+                        available in the next round.
+                    </div>
+                </div>
+
+                <div class="ty-card mb-4">
+                    <h5>🏷️ Pricing Strategy</h5>
+                    <label class="fw-bold small mb-2">
+                        Selling price per unit
+                    </label>
+                    <input type="number" id="sellingPrice"
+                           class="ty-input mb-2" min="1">
+
+                    <div class="d-flex justify-content-between small text-secondary">
+                        <span>Purchase cost: <strong id="unitCost">₦0</strong></span>
+                        <span>Suggested price: <strong id="suggestedPrice">₦0</strong></span>
+                    </div>
+                    <p class="small text-secondary mt-2 mb-0">
+                        Higher prices can increase your profit per sale but
+                        may discourage customers.
+                    </p>
+                </div>
+
+                <div class="ty-card mb-4">
+                    <h5>📢 Marketing & Growth</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="ty-product">
+                                <h6 class="fw-bold">Social Media Campaign</h6>
+                                <p class="small text-secondary">Cost: ₦15,000</p>
+                                <button class="ty-btn ty-light w-100"
+                                        id="marketingBtn">
+                                    Launch Campaign
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="ty-product">
+                                <h6 class="fw-bold">Business Upgrade</h6>
+                                <p class="small text-secondary">Cost: ₦80,000</p>
+                                <button class="ty-btn ty-light w-100"
+                                        id="upgradeBtn">
+                                    Upgrade Business
+                                </button>
+                                <small class="text-secondary" id="upgradeLevel">
+                                    Upgrade level: 0
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ty-card">
+                    <h5>📊 Financial Overview</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Total revenue</span>
+                        <strong id="revenueStat">₦0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Operating expenses</span>
+                        <strong id="expenseStat">₦0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Inventory investment</span>
+                        <strong id="investmentStat">₦0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Net profit</strong>
+                        <strong id="netProfitStat">₦0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DECISIONS AND EVENTS -->
+            <div class="col-lg-5">
+
+                <div class="ty-card mb-4">
+                    <h5>🧠 Business Decisions</h5>
+                    <p class="small text-secondary">
+                        Select a strategy for this business round.
+                    </p>
+
+                    <div class="d-grid gap-2" id="strategyChoices">
+                        <button class="ty-btn ty-light strategy-btn"
+                                data-strategy="normal">
+                            ⚖️ Balanced Strategy
+                        </button>
+                        <button class="ty-btn ty-light strategy-btn"
+                                data-strategy="quality">
+                            💎 Focus on Quality
+                        </button>
+                        <button class="ty-btn ty-light strategy-btn"
+                                data-strategy="aggressive">
+                            🚀 Aggressive Expansion
+                        </button>
+                        <button class="ty-btn ty-light strategy-btn"
+                                data-strategy="discount">
+                            🏷️ Discount Pricing
+                        </button>
+                    </div>
+
+                    <p class="small text-secondary mt-3 mb-0" id="strategyDescription">
+                        Balanced strategy maintains steady customer demand.
+                    </p>
+                </div>
+
+                <div class="ty-card mb-4">
+                    <h5>🌍 Market Intelligence</h5>
+                    <div class="ty-product">
+                        <div class="d-flex justify-content-between">
+                            <span>Market demand</span>
+                            <strong id="demandStat">100%</strong>
+                        </div>
+                        <div class="ty-progress mt-2">
+                            <div id="demandBar" style="width:100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="ty-product">
+                        <div class="d-flex justify-content-between">
+                            <span>Competition</span>
+                            <strong id="competitionStat">50%</strong>
+                        </div>
+                        <div class="ty-progress mt-2">
+                            <div id="competitionBar" style="width:50%"></div>
+                        </div>
+                    </div>
+
+                    <div class="ty-product">
+                        <div class="d-flex justify-content-between">
+                            <span>Customer satisfaction</span>
+                            <strong id="satisfactionStat">50%</strong>
+                        </div>
+                        <div class="ty-progress mt-2">
+                            <div id="satisfactionBar" style="width:50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ty-card mb-4">
+                    <h5>📰 Market News</h5>
+                    <div class="alert alert-primary mb-0" id="marketNews">
+                        The market is waiting for your first move.
+                    </div>
+                </div>
+
+                <div class="ty-card">
+                    <h5>📋 Business Activity</h5>
+                    <div id="activityLog">
+                        <div class="ty-log">Your business has not started trading yet.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ty-card mt-4">
+            <h5>🏁 End of Round</h5>
+            <p class="text-secondary">
+                Review your decisions, then advance to the next business day.
+            </p>
+            <button class="ty-btn ty-primary w-100" id="nextRoundBtn">
+                Complete Round 1 →
+            </button>
+        </div>
+
+    </section>
+
+    <!-- FINAL RESULT -->
+    <section id="resultScreen" class="ty-hidden">
+        <div class="ty-card text-center py-5">
+            <div class="display-1 mb-3" id="resultIcon">🏆</div>
+            <h2 class="fw-bold" id="resultTitle">Business Complete!</h2>
+            <p class="text-secondary" id="resultDescription"></p>
+
+            <div class="row g-3 my-4 text-start">
+                <div class="col-6 col-md-3">
+                    <div class="ty-stat">
+                        <small>Final cash</small>
+                        <strong id="finalCash">₦0</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ty-stat">
+                        <small>Total revenue</small>
+                        <strong id="finalRevenue">₦0</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ty-stat">
+                        <small>Net profit</small>
+                        <strong id="finalProfit">₦0</strong>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="ty-stat">
+                        <small>Business value</small>
+                        <strong id="finalValue">₦0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mb-2" id="finalRating"></h3>
+            <p class="text-secondary" id="finalFeedback"></p>
+
+            <button class="ty-btn ty-primary mt-3" onclick="location.reload()">
+                Play Again ↻
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    const businesses = {
+        shop: {
+            name: "Retail Store",
+            capital: 500000,
+            product: "Product",
+            unitCost: 5000,
+            basePrice: 8000,
+            operatingCost: 25000,
+            baseDemand: 35
+        },
+        restaurant: {
+            name: "Restaurant",
+            capital: 700000,
+            product: "Meal",
+            unitCost: 2500,
+            basePrice: 4500,
+            operatingCost: 40000,
+            baseDemand: 55
+        },
+        tech: {
+            name: "Tech Company",
+            capital: 1000000,
+            product: "Digital Product",
+            unitCost: 12000,
+            basePrice: 22000,
+            operatingCost: 60000,
+            baseDemand: 25
+        }
+    };
+
+    let selectedBusiness = "shop";
+    let selectedStrategy = "normal";
+    let state = null;
+    let roundFinished = false;
+
+    const money = value =>
+        "₦" + Math.round(value).toLocaleString("en-NG");
+
+    function log(message, type = "") {
+        const item = document.createElement("div");
+        item.className = "ty-log " + type;
+        item.textContent = message;
+        $("activityLog").prepend(item);
+
+        while ($("activityLog").children.length > 9) {
+            $("activityLog").lastElementChild.remove();
+        }
+    }
+
+    function updateUI() {
+        const b = businesses[selectedBusiness];
+
+        $("cashStat").textContent = money(state.cash);
+        $("stockStat").textContent = state.stock;
+        $("reputationStat").textContent = Math.round(state.reputation);
+        $("profitStat").textContent = money(state.netProfit);
+        $("revenueStat").textContent = money(state.revenue);
+        $("expenseStat").textContent = money(state.expenses);
+        $("investmentStat").textContent = money(state.inventorySpent);
+        $("netProfitStat").textContent = money(state.netProfit);
+
+        $("roundNumber").textContent = state.round;
+        $("roundProgress").style.width = (state.round / 12 * 100) + "%";
+
+        $("upgradeLevel").textContent =
+            "Upgrade level: " + state.upgrades;
+
+        $("demandStat").textContent = state.demand + "%";
+        $("competitionStat").textContent = state.competition + "%";
+        $("satisfactionStat").textContent =
+            Math.round(state.reputation) + "%";
+
+        $("demandBar").style.width = state.demand + "%";
+        $("competitionBar").style.width = state.competition + "%";
+        $("satisfactionBar").style.width =
+            state.reputation + "%";
+
+        $("stockStatus").textContent =
+            state.stock > 0 ? "Stock available" : "Out of stock";
+
+        $("nextRoundBtn").textContent =
+            state.round >= 12 ? "Finish Business Simulation →" :
+            "Complete Round " + state.round + " →";
+
+        $("unitCost").textContent = money(b.unitCost);
+        $("suggestedPrice").textContent = money(b.basePrice);
+
+        if (!state.priceInitialized) {
+            $("sellingPrice").value = b.basePrice;
+            state.priceInitialized = true;
+        }
+
+        $("productArea").innerHTML = `
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <strong>${b.product} inventory</strong>
+                    <div class="small text-secondary">
+                        Cost per unit: ${money(b.unitCost)}
+                    </div>
+                </div>
+                <strong>${state.stock} units</strong>
+            </div>
+            <label class="small fw-bold mb-2">Quantity to purchase</label>
+            <div class="input-group">
+                <input type="number" min="1" max="1000"
+                       value="10" class="form-control"
+                       id="purchaseQuantity">
+                <button class="btn btn-primary fw-bold"
+                        id="purchaseBtn">Buy Stock</button>
+            </div>
+        `;
+
+        $("purchaseBtn").onclick = purchaseStock;
+    }
+
+    function purchaseStock() {
+        if (roundFinished) return;
+
+        const quantity = Number($("purchaseQuantity").value);
+        const b = businesses[selectedBusiness];
+
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000) {
+            alert("Enter a valid quantity between 1 and 1000.");
+            return;
+        }
+
+        const cost = quantity * b.unitCost;
+
+        if (cost > state.cash) {
+            alert("Insufficient funds. Reduce your purchase quantity.");
+            return;
+        }
+
+        state.cash -= cost;
+        state.stock += quantity;
+        state.inventorySpent += cost;
+
+        log("Purchased " + quantity + " units for " + money(cost), "ty-negative");
+        updateUI();
+    }
+
+    function launchMarketing() {
+        if (roundFinished || state.marketingUsed) return;
+
+        if (state.cash < 15000) {
+            alert("You need ₦15,000 for this campaign.");
+            return;
+        }
+
+        state.cash -= 15000;
+        state.expenses += 15000;
+        state.marketingUsed = true;
+        state.demand = Math.min(150, state.demand + 30);
+
+        log("Marketing campaign launched. Customer demand increased.", "ty-positive");
+        updateUI();
+    }
+
+    function upgradeBusiness() {
+        if (roundFinished) return;
+
+        if (state.upgrades >= 3) {
+            alert("You have reached the maximum upgrade level.");
+            return;
+        }
+
+        if (state.cash < 80000) {
+            alert("You need ₦80,000 for this upgrade.");
+            return;
+        }
+
+        state.cash -= 80000;
+        state.expenses += 80000;
+        state.upgrades++;
+        state.demand = Math.min(150, state.demand + 8);
+
+        log("Business upgraded to level " + state.upgrades + ".", "ty-positive");
+        updateUI();
+    }
+
+    function setStrategy(strategy) {
+        if (roundFinished) return;
+
+        selectedStrategy = strategy;
+
+        document.querySelectorAll(".strategy-btn").forEach(button => {
+            button.classList.toggle(
+                "ty-primary",
+                button.dataset.strategy === strategy
+            );
+            button.classList.toggle(
+                "ty-light",
+                button.dataset.strategy !== strategy
+            );
+        });
+
+        const descriptions = {
+            normal: "Balanced strategy maintains steady customer demand.",
+            quality: "Quality improves reputation but increases operating costs.",
+            aggressive: "Aggressive expansion increases demand but adds risk.",
+            discount: "Discount pricing attracts more customers but reduces margins."
+        };
+
+        $("strategyDescription").textContent = descriptions[strategy];
+    }
+
+    function randomEvent() {
+        const events = [
+            {
+                name: "Economic slowdown",
+                message: "An economic slowdown has reduced customer demand.",
+                demand: -20
+            },
+            {
+                name: "Viral recommendation",
+                message: "Customers are recommending your business online!",
+                demand: 25,
+                reputation: 5
+            },
+            {
+                name: "New competitor",
+                message: "A new competitor has entered your market.",
+                competition: 15,
+                demand: -10
+            },
+            {
+                name: "Supplier discount",
+                message: "Your supplier offers a special discount. Operating costs fall.",
+                expense: -10000
+            },
+            {
+                name: "Customer complaint",
+                message: "A customer complaint has affected your reputation.",
+                reputation: -8
+            },
+            {
+                name: "Busy market day",
+                message: "Demand is unusually strong today.",
+                demand: 20
+            },
+            {
+                name: "Equipment maintenance",
+                message: "Unexpected maintenance has increased expenses.",
+                expense: 12000
+            }
+        ];
+
+        const event = events[Math.floor(Math.random() * events.length)];
+
+        state.demand = Math.max(20, Math.min(150, state.demand + (event.demand || 0)));
+        state.competition = Math.max(10, Math.min(100, state.competition + (event.competition || 0)));
+        state.reputation = Math.max(0, Math.min(100, state.reputation + (event.reputation || 0)));
+
+        if (event.expense) {
+            if (event.expense > 0) {
+                state.cash -= event.expense;
+                state.expenses += event.expense;
+            } else {
+                state.cash += Math.abs(event.expense);
+                state.expenses -= Math.abs(event.expense);
+            }
+        }
+
+        $("marketNews").textContent = event.message;
+        log("Market event: " + event.message);
+    }
+
+    function completeRound() {
+        if (roundFinished) return;
+
+        const b = businesses[selectedBusiness];
+        const price = Number($("sellingPrice").value);
+
+        if (!Number.isFinite(price) || price <= 0) {
+            alert("Enter a valid selling price.");
+            return;
+        }
+
+        roundFinished = true;
+
+        const priceRatio = price / b.basePrice;
+        let demandMultiplier = 1;
+
+        demandMultiplier *= state.demand / 100;
+        demandMultiplier *= Math.max(.25, 1 - (state.competition / 200));
+
+        if (selectedStrategy === "quality") {
+            demandMultiplier *= 1.08;
+            state.reputation = Math.min(100, state.reputation + 3);
+        }
+
+        if (selectedStrategy === "aggressive") {
+            demandMultiplier *= 1.25;
+            state.reputation = Math.max(0, state.reputation - 2);
+        }
+
+        if (selectedStrategy === "discount") {
+            demandMultiplier *= 1.35;
+            state.reputation = Math.min(100, state.reputation + 2);
+        }
+
+        if (selectedStrategy === "normal") {
+            demandMultiplier *= 1;
+        }
+
+        demandMultiplier *= Math.max(.3, 1 - Math.max(0, priceRatio - 1) * 1.2);
+        demandMultiplier *= Math.min(1.4, 1 + Math.max(0, 1 - priceRatio) * .6);
+        demandMultiplier *= .75 + state.reputation / 200;
+
+        const demand = Math.max(0, Math.floor(
+            b.baseDemand * demandMultiplier *
+            (1 + state.upgrades * .12) *
+            (0.8 + Math.random() * .4)
+        ));
+
+        const sold = Math.min(state.stock, demand);
+        const revenue = sold * price;
+        const costOfGoods = sold * b.unitCost;
+        const operatingCost = Math.round(
+            b.operatingCost * (1 + state.upgrades * .05)
+        );
+
+        const grossProfit = revenue - costOfGoods;
+        const roundProfit = grossProfit - operatingCost;
+
+        state.stock -= sold;
+        state.cash += revenue - operatingCost;
+        state.revenue += revenue;
+        state.expenses += operatingCost;
+        state.netProfit += roundProfit;
+
+        if (sold >= demand * .9 && sold > 0) {
+            state.reputation = Math.min(100, state.reputation + 3);
+        } else if (sold === 0 || sold < demand * .5) {
+            state.reputation = Math.max(0, state.reputation - 5);
+        }
+
+        log(
+            "Round " + state.round + ": sold " + sold +
+            " units. Revenue: " + money(revenue) +
+            ". Operating costs: " + money(operatingCost) +
+            ". Profit: " + money(roundProfit),
+            roundProfit >= 0 ? "ty-positive" : "ty-negative"
+        );
+
+        randomEvent();
+
+        state.cash = Math.max(-1000000, state.cash);
+        state.reputation = Math.max(0, Math.min(100, state.reputation));
+
+        updateUI();
+
+        if (state.cash <= 0 && state.stock === 0) {
+            finishGame(true);
+            return;
+        }
+
+        $("nextRoundBtn").disabled = false;
+        $("nextRoundBtn").textContent = "Continue to Next Round →";
+        $("nextRoundBtn").onclick = advanceRound;
+    }
+
+    function advanceRound() {
+        if (!roundFinished) {
+            completeRound();
+            return;
+        }
+
+        if (state.round >= 12) {
+            finishGame(false);
+            return;
+        }
+
+        state.round++;
+        state.demand = Math.max(30, Math.min(150, 100 + Math.floor(Math.random() * 25) - 12));
+        state.competition = Math.max(15, Math.min(100, 40 + Math.floor(Math.random() * 30)));
+        state.marketingUsed = false;
+        roundFinished = false;
+
+        $("nextRoundBtn").onclick = completeRound;
+        $("nextRoundBtn").textContent = "Complete Round " + state.round + " →";
+        $("marketNews").textContent = "A new business round has begun. Review your strategy.";
+        updateUI();
+        log("Round " + state.round + " has started.");
+    }
+
+    function finishGame(bankrupt) {
+        $("gameScreen").classList.add("ty-hidden");
+        $("resultScreen").classList.remove("ty-hidden");
+
+        const inventoryValue = state.stock * businesses[selectedBusiness].unitCost;
+        const businessValue = Math.max(0, state.cash + inventoryValue + state.upgrades * 50000);
+
+        let rating;
+        let feedback;
+        let icon;
+
+        if (bankrupt || state.cash < 0) {
+            rating = "Business Failure";
+            feedback = "Your business ran out of working capital. Review cash flow, inventory and expenses.";
+            icon = "📉";
+        } else if (state.netProfit >= 500000) {
+            rating = "Business Mogul";
+            feedback = "Outstanding performance. You built a highly profitable business.";
+            icon = "👑";
+        } else if (state.netProfit >= 150000) {
+            rating = "Successful Entrepreneur";
+            feedback = "Strong performance. Your decisions created a profitable company.";
+            icon = "🏆";
+        } else if (state.netProfit >= 0) {
+            rating = "Growing Entrepreneur";
+            feedback = "You stayed profitable. Better pricing and demand management could improve results.";
+            icon = "📈";
+        } else {
+            rating = "Struggling Entrepreneur";
+            feedback = "Your business survived, but expenses exceeded trading profit. Improve your strategy.";
+            icon = "🛠️";
+        }
+
+        $("resultIcon").textContent = icon;
+        $("resultTitle").textContent = bankrupt ? "Your Business Collapsed" : "Simulation Complete!";
+        $("resultDescription").textContent =
+            "You completed " + state.round + " business rounds as " + state.name + ".";
+        $("finalCash").textContent = money(state.cash);
+        $("finalRevenue").textContent = money(state.revenue);
+        $("finalProfit").textContent = money(state.netProfit);
+        $("finalValue").textContent = money(businessValue);
+        $("finalRating").textContent = rating;
+        $("finalFeedback").textContent = feedback;
+    }
+
+    $("businessChoices").addEventListener("click", event => {
+        const choice = event.target.closest("[data-business]");
+        if (!choice) return;
+
+        selectedBusiness = choice.dataset.business;
+
+        document.querySelectorAll("[data-business]").forEach(item => {
+            item.classList.toggle("selected", item === choice);
+        });
+    });
+
+    $("startGame").addEventListener("click", () => {
+        const b = businesses[selectedBusiness];
+        const name = $("businessName").value.trim() || "My Business";
+
+        state = {
+            name,
+            cash: b.capital,
+            stock: 0,
+            round: 1,
+            revenue: 0,
+            expenses: 0,
+            inventorySpent: 0,
+            netProfit: 0,
+            reputation: 50,
+            demand: 100,
+            competition: 40,
+            upgrades: 0,
+            marketingUsed: false,
+            priceInitialized: false
+        };
+
+        $("companyTitle").textContent = name;
+        $("businessType").textContent = b.name;
+        $("startScreen").classList.add("ty-hidden");
+        $("gameScreen").classList.remove("ty-hidden");
+
+        $("nextRoundBtn").onclick = completeRound;
+        updateUI();
+        log(name + " has officially opened for business!", "ty-positive");
+    });
+
+    $("marketingBtn").addEventListener("click", launchMarketing);
+    $("upgradeBtn").addEventListener("click", upgradeBusiness);
+
+    document.querySelectorAll(".strategy-btn").forEach(button => {
+        button.addEventListener("click", () => {
+            setStrategy(button.dataset.strategy);
+        });
+    });
+
+    $("nextRoundBtn").addEventListener("click", () => {
+        if (!roundFinished) completeRound();
+    });
+
+})();
+</script>
+{% endblock %}

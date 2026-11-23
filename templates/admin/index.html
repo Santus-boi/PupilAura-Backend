@@ -1,0 +1,229 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* =========================================================
+       PUPILAURA ADMIN INDEX — card layout
+    ========================================================= */
+
+    .pa-admin-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 8px 4px 32px;
+    }
+
+    .pa-admin-intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+        padding: 18px 22px;
+        border-radius: 14px;
+        background: linear-gradient(120deg, #eff6ff, #f5f3ff);
+        border: 1px solid #dbeafe;
+    }
+
+    .pa-admin-intro-text strong {
+        display: block;
+        color: #172033;
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .pa-admin-intro-text p {
+        margin: 4px 0 0;
+        color: #4b5563;
+        font-size: 0.82rem;
+        line-height: 1.6;
+    }
+
+    .pa-admin-intro-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 15px;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white !important;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background .15s ease;
+    }
+    .pa-admin-intro-link:hover { background: #1d4ed8; }
+
+    .pa-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .pa-admin-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .pa-admin-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #eef0f3;
+        background: #fafbff;
+    }
+
+    .pa-admin-card-title {
+        color: #172033;
+        font-size: 0.92rem;
+        font-weight: 800;
+    }
+
+    .pa-admin-card-view {
+        color: #2563eb;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .pa-admin-card-view:hover { text-decoration: underline; }
+
+    .pa-admin-model-list {
+        list-style: none;
+        margin: 0;
+        padding: 6px 0;
+    }
+
+    .pa-admin-model-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 18px;
+        transition: background .12s ease;
+    }
+    .pa-admin-model-list li:hover { background: #f8fafc; }
+
+    .pa-admin-model-list a.pa-model-link {
+        color: #1d4ed8;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .pa-admin-model-list a.pa-model-link:hover { text-decoration: underline; }
+
+    .pa-admin-model-list a.pa-model-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1;
+        text-decoration: none;
+        transition: background .15s ease;
+    }
+    .pa-admin-model-list a.pa-model-add:hover {
+        background: #bbf7d0;
+        color: #15803d;
+    }
+
+    @media (max-width: 800px) {
+        .pa-admin-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+        .pa-admin-intro {
+            background: #172554;
+            border-color: #1e40af;
+        }
+        .pa-admin-intro-text strong { color: #f1f5f9; }
+        .pa-admin-intro-text p { color: #cbd5e1; }
+
+        .pa-admin-card {
+            background: #111827;
+            border-color: #334155;
+        }
+        .pa-admin-card-header {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+        .pa-admin-card-title { color: #f1f5f9; }
+        .pa-admin-model-list li:hover { background: #1e293b; }
+        .pa-admin-model-list a.pa-model-link { color: #93c5fd; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pa-admin-wrap">
+
+    <!-- Top intro banner -->
+    <div class="pa-admin-intro">
+        <div class="pa-admin-intro-text">
+            <strong>Advanced Admin</strong>
+            <p>
+                Bulk editing and low-level model access.
+                For everyday use, go back to the
+                <strong>PupilAura Dashboard</strong> — everything is organised there.
+            </p>
+        </div>
+        <a href="{% url 'admin_dashboard:dashboard' %}" class="pa-admin-intro-link">
+            ← Back to PupilAura Dashboard
+        </a>
+    </div>
+
+    <!-- App cards -->
+    <div class="pa-admin-grid">
+        {% for app in app_list %}
+            <div class="pa-admin-card">
+                <div class="pa-admin-card-header">
+                    <div class="pa-admin-card-title">
+                        {{ app.name }}
+                    </div>
+                    <a href="{{ app.app_url }}" class="pa-admin-card-view">
+                        Open app →
+                    </a>
+                </div>
+
+                <ul class="pa-admin-model-list">
+                    {% for model in app.models %}
+                        <li>
+                            {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}" class="pa-model-link">
+                                    {{ model.name }}
+                                </a>
+                            {% else %}
+                                <span class="pa-model-link" style="color: #94a3b8;">
+                                    {{ model.name }}
+                                </span>
+                            {% endif %}
+
+                            {% if model.add_url %}
+                                <a href="{{ model.add_url }}"
+                                   class="pa-model-add"
+                                   title="Add {{ model.name }}">
+                                    +
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,797 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}My Progress | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="Track your learning progress across School Curriculum and Tech Academy on PupilAura.">
+{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>My Progress</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =====================================================
+       PROGRESS PAGE — page-only styles
+       (base already provides heading, buttons, breadcrumb)
+    ===================================================== */
+
+    /* SUMMARY STATS */
+    .pa-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .pa-stat-card {
+        position: relative;
+        overflow: hidden;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .pa-stat-card::after {
+        content: "";
+        position: absolute;
+        width: 90px;
+        height: 90px;
+        right: -35px;
+        bottom: -35px;
+        background: var(--primary-soft);
+        border-radius: 50%;
+        opacity: 0.7;
+    }
+
+    .pa-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.10);
+        border-color: #d9e5f7;
+    }
+
+    .pa-stat-card .pa-stat-inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .pa-stat-label {
+        margin: 0 0 7px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .pa-stat-number {
+        margin: 0;
+        color: var(--ink);
+        font: 800 30px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .pa-stat-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        border-radius: 14px;
+        font-size: 1.2rem;
+    }
+
+    .pa-stat-icon.blue { background: #eff6ff; color: #2563eb; }
+    .pa-stat-icon.green { background: #ecfdf3; color: #16a34a; }
+    .pa-stat-icon.red { background: #fff1f2; color: #e11d48; }
+
+    /* OVERALL PROGRESS */
+    .pa-overall-card {
+        padding: 24px;
+        margin-bottom: 34px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    .pa-overall-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .pa-overall-title {
+        margin: 0 0 4px;
+        color: var(--ink);
+        font: 800 18px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+    }
+
+    .pa-overall-desc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .pa-overall-percentage {
+        color: var(--primary);
+        font: 800 24px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.4px;
+    }
+
+    .pa-progress-track {
+        overflow: hidden;
+        height: 9px;
+        border-radius: 999px;
+        background: #e9edf3;
+    }
+
+    .pa-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #2563eb, #4f9cff);
+        transition: width 0.5s ease;
+    }
+
+    .pa-progress-fill.purple {
+        background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+    }
+
+    /* SECTION HEADERS */
+    .pa-sec-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 14px;
+        margin: 0 0 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .pa-sec-title {
+        margin: 0;
+        color: var(--ink);
+        font: 800 20px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+        line-height: 1.3;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pa-sec-title i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 15px;
+    }
+
+    .pa-sec-desc {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* CARD GRID */
+    .pa-card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 34px;
+    }
+
+    .pa-course-card {
+        display: flex;
+        flex-direction: column;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .pa-course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.10);
+        border-color: #d7e3f4;
+    }
+
+    .pa-course-card.tech {
+        border-top: 3px solid #6d28d9;
+    }
+
+    /* Badge */
+    .pa-course-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        padding: 6px 10px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: #1d4ed8;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .pa-course-badge.tech {
+        background: #f1edff;
+        color: #6d28d9;
+    }
+
+    /* Icon */
+    .pa-course-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        margin-bottom: 14px;
+        border-radius: 15px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 1.4rem;
+    }
+
+    .pa-course-icon.tech {
+        background: #f1edff;
+        color: #6d28d9;
+    }
+
+    /* Title + meta */
+    .pa-course-card h3 {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font: 800 16px "Plus Jakarta Sans", sans-serif;
+        line-height: 1.4;
+        letter-spacing: -0.15px;
+        overflow-wrap: anywhere;
+    }
+
+    .pa-course-meta {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.6;
+    }
+
+    .pa-course-meta i { margin-right: 3px; }
+
+    /* Lessons count */
+    .pa-lesson-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 12.5px;
+    }
+
+    .pa-lesson-row .label { color: var(--muted); }
+    .pa-lesson-row strong { color: var(--ink); font-weight: 800; }
+
+    /* Percentage row */
+    .pa-percentage-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+        margin-bottom: 14px;
+        font-size: 12px;
+    }
+
+    .pa-percentage-row strong { font-weight: 800; color: var(--ink); }
+    .pa-percentage-row span { color: var(--muted); }
+
+    /* Status */
+    .pa-status-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 39px;
+        padding: 8px 11px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        font-weight: 700;
+    }
+
+    .pa-status-box i { font-size: 0.9rem; }
+    .pa-status-box.completed { background: #ecfdf3; color: #157347; }
+    .pa-status-box.progress { background: var(--primary-soft); color: #0b5ed7; }
+    .pa-status-box.not-started { background: #f3f4f6; color: #6b7280; }
+
+    /* Button inside card */
+    .pa-card-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 10px 15px;
+        margin-top: auto;
+        border: 1px solid var(--primary);
+        border-radius: 11px;
+        background: white;
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .2s, color .2s, transform .2s, box-shadow .2s;
+    }
+
+    .pa-card-action:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+    }
+
+    .pa-card-action:disabled,
+    .pa-card-action[disabled] {
+        background: #f3f4f6;
+        border-color: var(--border);
+        color: var(--muted);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* EMPTY STATE */
+    .pa-empty-card {
+        padding: 50px 24px;
+        margin-bottom: 34px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        background:
+            radial-gradient(500px 260px at 50% 0%, rgba(37, 99, 235, 0.06), transparent 60%),
+            white;
+        text-align: center;
+    }
+
+    .pa-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+        border-radius: 20px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 1.8rem;
+    }
+
+    .pa-empty-card h3 {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font: 800 18px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+    }
+
+    .pa-empty-card p {
+        max-width: 420px;
+        margin: 0 auto 20px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* QUICK ACCESS */
+    .pa-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 34px;
+    }
+
+    .pa-quick-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 58px;
+        padding: 14px 18px;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        background: white;
+        color: #374151;
+        font-size: 13.5px;
+        font-weight: 700;
+        transition: transform .2s, box-shadow .2s, border-color .2s, background .2s;
+    }
+
+    .pa-quick-card:hover {
+        background: #fafdff;
+        border-color: #cfdced;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        color: var(--primary);
+    }
+
+    .pa-quick-card i {
+        font-size: 1.05rem;
+        color: var(--primary);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) {
+        .pa-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+        .pa-stat-grid { grid-template-columns: 1fr; }
+        .pa-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 650px) {
+        .pa-card-grid { grid-template-columns: 1fr; }
+        .pa-quick-grid { grid-template-columns: 1fr; }
+        .pa-stat-number { font-size: 24px; }
+        .pa-overall-title { font-size: 16px; }
+        .pa-overall-percentage { font-size: 20px; }
+        .pa-sec-title { font-size: 17px; }
+        .pa-sec-title i { width: 30px; height: 30px; font-size: 14px; }
+        .pa-course-card { padding: 20px; }
+        .pa-empty-card { padding: 40px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADING -->
+<section class="pa-page-heading">
+    <div>
+        <div class="pa-eyebrow">Your learning journey</div>
+        <h1>My Progress</h1>
+        <p>Track your learning progress across School Curriculum and Tech Academy.</p>
+    </div>
+    {% if student %}
+        <div style="flex-shrink:0;">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid var(--border);border-radius:999px;background:white;color:#374151;font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(15,23,42,0.04);">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                {{ student.user.first_name }} {{ student.user.last_name }}
+            </span>
+        </div>
+    {% endif %}
+</section>
+
+<!-- SUMMARY STATS -->
+<div class="pa-stat-grid">
+
+    <div class="pa-stat-card">
+        <div class="pa-stat-inner">
+            <div>
+                <p class="pa-stat-label">Total lessons</p>
+                <h2 class="pa-stat-number">{{ total_lessons }}</h2>
+            </div>
+            <div class="pa-stat-icon blue">
+                <i class="bi bi-book" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="pa-stat-card">
+        <div class="pa-stat-inner">
+            <div>
+                <p class="pa-stat-label">Completed lessons</p>
+                <h2 class="pa-stat-number">{{ completed_lessons }}</h2>
+            </div>
+            <div class="pa-stat-icon green">
+                <i class="bi bi-check-circle" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="pa-stat-card">
+        <div class="pa-stat-inner">
+            <div>
+                <p class="pa-stat-label">Overall progress</p>
+                <h2 class="pa-stat-number">{{ overall_progress }}%</h2>
+            </div>
+            <div class="pa-stat-icon red">
+                <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- OVERALL PROGRESS -->
+<div class="pa-overall-card">
+    <div class="pa-overall-head">
+        <div>
+            <h2 class="pa-overall-title">Overall learning progress</h2>
+            <p class="pa-overall-desc">
+                Your progress across all enrolled School Curriculum and Tech Academy lessons.
+            </p>
+        </div>
+        <strong class="pa-overall-percentage">{{ overall_progress }}%</strong>
+    </div>
+
+    <div class="pa-progress-track" aria-label="Overall learning progress">
+        <div class="pa-progress-fill"
+             role="progressbar"
+             style="width: {{ overall_progress }}%;"
+             aria-valuenow="{{ overall_progress }}"
+             aria-valuemin="0"
+             aria-valuemax="100"></div>
+    </div>
+</div>
+
+<!-- SCHOOL CURRICULUM -->
+<div class="pa-sec-heading">
+    <div>
+        <h2 class="pa-sec-title">
+            <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+            School Curriculum
+        </h2>
+        <p class="pa-sec-desc">Your progress through your enrolled school subjects.</p>
+    </div>
+</div>
+
+{% if enrollments %}
+
+    <div class="pa-card-grid">
+        {% for enrollment in enrollments %}
+            <div class="pa-course-card">
+
+                <span class="pa-course-badge">
+                    <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                    School Curriculum
+                </span>
+
+                <div class="pa-course-icon">
+                    <i class="bi bi-book-half" aria-hidden="true"></i>
+                </div>
+
+                <h3>{{ enrollment.subject.name }}</h3>
+
+                {% if enrollment.subject.school_class %}
+                    <p class="pa-course-meta">
+                        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                        {% if enrollment.subject.school_class.education_level %}
+                            {{ enrollment.subject.school_class.education_level.name }} —
+                        {% endif %}
+                        {{ enrollment.subject.school_class.name }}
+                    </p>
+                {% endif %}
+
+                <div class="pa-lesson-row">
+                    <span class="label">Lessons completed</span>
+                    <strong>{{ enrollment.completed_lessons }} / {{ enrollment.total_lessons }}</strong>
+                </div>
+
+                <div class="pa-progress-track" style="margin-bottom:6px;">
+                    <div class="pa-progress-fill"
+                         role="progressbar"
+                         style="width: {{ enrollment.progress }}%;"
+                         aria-valuenow="{{ enrollment.progress }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100"></div>
+                </div>
+
+                <div class="pa-percentage-row">
+                    <strong>{{ enrollment.progress }}%</strong>
+                    <span>{{ enrollment.completed_lessons }} of {{ enrollment.total_lessons }} lessons</span>
+                </div>
+
+                {% if enrollment.progress == 100 %}
+                    <div class="pa-status-box completed">
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        <strong>Subject completed</strong>
+                    </div>
+                {% elif enrollment.progress > 0 %}
+                    <div class="pa-status-box progress">
+                        <i class="bi bi-play-circle-fill" aria-hidden="true"></i>
+                        <strong>In progress</strong>
+                    </div>
+                {% else %}
+                    <div class="pa-status-box not-started">
+                        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                        <strong>Not started</strong>
+                    </div>
+                {% endif %}
+
+                {% if enrollment.first_lesson %}
+                    <a href="{% url 'student_lesson_detail' enrollment.first_lesson.id %}"
+                       class="pa-card-action">
+                        {% if enrollment.progress == 100 %}
+                            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                            Review subject
+                        {% else %}
+                            <i class="bi bi-play-circle-fill" aria-hidden="true"></i>
+                            Continue learning
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <button type="button" class="pa-card-action" disabled>
+                        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                        No lessons available
+                    </button>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+
+    <div class="pa-empty-card">
+        <div class="pa-empty-icon">
+            <i class="bi bi-book" aria-hidden="true"></i>
+        </div>
+        <h3>No school subjects enrolled</h3>
+        <p>Enroll in a school subject to start tracking your curriculum progress.</p>
+        <a href="{% url 'student_classes' %}" class="pa-btn-primary">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            Explore school curriculum
+        </a>
+    </div>
+
+{% endif %}
+
+<!-- TECH ACADEMY -->
+<div class="pa-sec-heading">
+    <div>
+        <h2 class="pa-sec-title">
+            <i class="bi bi-laptop-fill" aria-hidden="true"></i>
+            Tech Academy
+        </h2>
+        <p class="pa-sec-desc">Track your progress through programming and digital skills courses.</p>
+    </div>
+</div>
+
+{% if tech_enrollments %}
+
+    <div class="pa-card-grid">
+        {% for enrollment in tech_enrollments %}
+            <div class="pa-course-card tech">
+
+                <span class="pa-course-badge tech">
+                    <i class="bi bi-laptop-fill" aria-hidden="true"></i>
+                    Tech Academy
+                </span>
+
+                <div class="pa-course-icon tech">
+                    <i class="bi bi-code-slash" aria-hidden="true"></i>
+                </div>
+
+                <h3>{{ enrollment.course.title }}</h3>
+
+                {% if enrollment.course.description %}
+                    <p class="pa-course-meta">
+                        {{ enrollment.course.description|truncatewords:18 }}
+                    </p>
+                {% endif %}
+
+                <div class="pa-lesson-row">
+                    <span class="label">Lessons completed</span>
+                    <strong>{{ enrollment.completed_lessons }} / {{ enrollment.total_lessons }}</strong>
+                </div>
+
+                <div class="pa-progress-track" style="margin-bottom:6px;">
+                    <div class="pa-progress-fill purple"
+                         role="progressbar"
+                         style="width: {{ enrollment.progress }}%;"
+                         aria-valuenow="{{ enrollment.progress }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100"></div>
+                </div>
+
+                <div class="pa-percentage-row">
+                    <strong>{{ enrollment.progress }}%</strong>
+                    <span>{{ enrollment.completed_lessons }} of {{ enrollment.total_lessons }} lessons</span>
+                </div>
+
+                {% if enrollment.progress == 100 %}
+                    <div class="pa-status-box completed">
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        <strong>Course completed</strong>
+                    </div>
+                {% elif enrollment.progress > 0 %}
+                    <div class="pa-status-box progress">
+                        <i class="bi bi-play-circle-fill" aria-hidden="true"></i>
+                        <strong>In progress</strong>
+                    </div>
+                {% else %}
+                    <div class="pa-status-box not-started">
+                        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                        <strong>Not started</strong>
+                    </div>
+                {% endif %}
+
+                {% if enrollment.current_lesson %}
+                    <a href="{% url 'tech:tech_lesson_detail' enrollment.current_lesson.id %}"
+                       class="pa-card-action">
+                        {% if enrollment.progress == 100 %}
+                            <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                            Review course
+                        {% else %}
+                            <i class="bi bi-play-circle-fill" aria-hidden="true"></i>
+                            Continue learning
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'tech:tech_course_detail' enrollment.course.id %}"
+                       class="pa-card-action">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                        View course
+                    </a>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+
+    <div class="pa-empty-card">
+        <div class="pa-empty-icon">
+            <i class="bi bi-laptop" aria-hidden="true"></i>
+        </div>
+        <h3>No tech courses yet</h3>
+        <p>Start building practical programming and digital skills with Tech Academy.</p>
+        <a href="{% url 'tech:tech_home' %}" class="pa-btn-primary">
+            <i class="bi bi-laptop" aria-hidden="true"></i>
+            Explore Tech Academy
+        </a>
+    </div>
+
+{% endif %}
+
+<!-- QUICK ACCESS -->
+<div class="pa-sec-heading">
+    <div>
+        <h2 class="pa-sec-title">
+            <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i>
+            Quick access
+        </h2>
+        <p class="pa-sec-desc">Quickly return to your main learning areas.</p>
+    </div>
+</div>
+
+<div class="pa-quick-grid">
+    <a href="{% url 'my_courses' %}" class="pa-quick-card">
+        <i class="bi bi-book-fill" aria-hidden="true"></i>
+        My Courses
+    </a>
+    <a href="{% url 'tech:tech_home' %}" class="pa-quick-card">
+        <i class="bi bi-laptop-fill" aria-hidden="true"></i>
+        Tech Academy
+    </a>
+    <a href="{% url 'student_assessments' %}" class="pa-quick-card">
+        <i class="bi bi-clipboard-check-fill" aria-hidden="true"></i>
+        Assessments
+    </a>
+</div>
+
+{% endblock %}

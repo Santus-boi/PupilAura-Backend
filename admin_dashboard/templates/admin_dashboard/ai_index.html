@@ -1,0 +1,518 @@
+ 
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Studio | PupilAura Admin{% endblock %}
+
+{% block page_title %}AI Studio{% endblock %}
+
+{% block page_subtitle %}
+    Generate lessons, quizzes, examination resources, technology learning content and interactive stories with AI.
+{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <span>AI Studio</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-studio {
+        width: 100%;
+    }
+
+    .ai-studio-intro {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 23px;
+        margin-bottom: 30px;
+        background: linear-gradient(120deg, #312e81, #4f46e5, #6366f1);
+        border-radius: 16px;
+        color: #fff;
+    }
+
+    .ai-studio-intro-icon {
+        width: 54px;
+        height: 54px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(255,255,255,.15);
+        font-size: 25px;
+    }
+
+    .ai-studio-intro h2 {
+        margin: 0 0 7px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .ai-studio-intro p {
+        margin: 0;
+        color: rgba(255,255,255,.85);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .ai-studio-section-title {
+        margin: 30px 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .ai-studio-section-title h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text, #111827);
+    }
+
+    .ai-studio-section-title span {
+        color: var(--muted, #6b7280);
+        font-size: 12px;
+    }
+
+    .ai-tools-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        max-width: 1120px;
+    }
+
+    .ai-tool-card {
+        min-width: 0;
+        min-height: 245px;
+        display: flex;
+        flex-direction: column;
+        padding: 19px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 14px;
+        transition: transform .2s ease, border-color .2s ease,
+                    box-shadow .2s ease;
+    }
+
+    .ai-tool-card:hover {
+        transform: translateY(-3px);
+        border-color: #818cf8;
+        box-shadow: 0 12px 25px rgba(0,0,0,.18);
+    }
+
+    .ai-tool-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 17px;
+    }
+
+    .ai-tool-icon {
+        width: 43px;
+        height: 43px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 20px;
+    }
+
+    .ai-icon-purple {
+        color: #c4b5fd;
+        background: rgba(139,92,246,.18);
+    }
+
+    .ai-icon-blue {
+        color: #93c5fd;
+        background: rgba(59,130,246,.18);
+    }
+
+    .ai-icon-green {
+        color: #6ee7b7;
+        background: rgba(16,185,129,.18);
+    }
+
+    .ai-icon-orange {
+        color: #fdba74;
+        background: rgba(249,115,22,.18);
+    }
+
+    .ai-icon-pink {
+        color: #f9a8d4;
+        background: rgba(236,72,153,.18);
+    }
+
+    .ai-icon-cyan {
+        color: #67e8f9;
+        background: rgba(6,182,212,.18);
+    }
+
+    .ai-icon-indigo {
+        color: #a5b4fc;
+        background: rgba(99,102,241,.18);
+    }
+
+    .ai-icon-yellow {
+        color: #fde68a;
+        background: rgba(234,179,8,.18);
+    }
+
+    .ai-icon-red {
+        color: #fca5a5;
+        background: rgba(239,68,68,.18);
+    }
+
+    .ai-tool-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 8px;
+        border-radius: 20px;
+        background: #334155;
+        color: #cbd5e1;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        white-space: nowrap;
+    }
+
+    .ai-tool-card h4 {
+        margin: 0 0 8px;
+        color: #f8fafc;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .ai-tool-card > p {
+        flex: 1;
+        margin: 0 0 18px;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .ai-tool-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 10px 13px;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: #fff !important;
+        text-decoration: none !important;
+        font-size: 12px;
+        font-weight: 700;
+        transition: background .2s ease;
+    }
+
+    .ai-tool-action:hover {
+        background: #4338ca;
+    }
+
+    .ai-studio-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        max-width: 1120px;
+        padding: 16px;
+        margin-top: 27px;
+        background: var(--card, #fff);
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 12px;
+    }
+
+    .ai-studio-notice i {
+        color: #6366f1;
+        font-size: 18px;
+    }
+
+    .ai-studio-notice p {
+        margin: 0;
+        color: var(--muted, #6b7280);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1000px) {
+        .ai-tools-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ai-tools-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ai-studio-intro {
+            align-items: flex-start;
+            padding: 18px;
+        }
+
+        .ai-studio-intro h2 {
+            font-size: 17px;
+        }
+
+        .ai-tool-card {
+            min-height: 220px;
+        }
+
+        .ai-studio-section-title {
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-studio">
+
+    <div class="ai-studio-intro">
+        <div class="ai-studio-intro-icon">
+            <i class="bi bi-stars"></i>
+        </div>
+
+        <div>
+            <h2>Welcome to PupilAura AI Studio</h2>
+            <p>
+                Your AI-powered content generation workspace.
+                Select a tool to create educational content, technology
+                learning materials and interactive stories for PupilAura.
+            </p>
+        </div>
+    </div>
+
+    <!-- CURRICULUM AND ASSESSMENT -->
+    <div class="ai-studio-section-title">
+        <h3>Curriculum &amp; Assessment</h3>
+        <span>4 AI tools</span>
+    </div>
+
+    <div class="ai-tools-grid">
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-purple">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+                <span class="ai-tool-label">CURRICULUM</span>
+            </div>
+
+            <h4>AI Lesson Generator</h4>
+            <p>
+                Generate structured lesson content using an existing
+                curriculum week. Review the generated lesson before
+                publishing it to students.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_lesson_week_picker' %}"
+               class="ai-tool-action">
+                Select Week <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-blue">
+                    <i class="bi bi-patch-question"></i>
+                </div>
+                <span class="ai-tool-label">ASSESSMENT</span>
+            </div>
+
+            <h4>AI Quiz Generator</h4>
+            <p>
+                Select an existing lesson and generate quiz questions
+                with answer choices for student assessment.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_quiz_generator_from_lesson' %}"
+               class="ai-tool-action">
+                Select Lesson <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-green">
+                    <i class="bi bi-file-earmark-richtext"></i>
+                </div>
+                <span class="ai-tool-label">EXAM PREPARATION</span>
+            </div>
+
+            <h4>AI Exam Resource Generator</h4>
+            <p>
+                Select an examination and generate revision resources
+                and study materials for exam preparation.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_exam_picker' %}"
+               class="ai-tool-action">
+                Select Exam <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-orange">
+                    <i class="bi bi-card-checklist"></i>
+                </div>
+                <span class="ai-tool-label">EXAM PREPARATION</span>
+            </div>
+
+            <h4>AI Exam Question Generator</h4>
+            <p>
+                Choose an existing examination resource and generate
+                examination questions with answer choices.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_exam_resource_picker' %}"
+               class="ai-tool-action">
+                Select Resource <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- TECHNOLOGY ACADEMY -->
+    <div class="ai-studio-section-title">
+        <h3>Technology Academy</h3>
+        <span>3 AI tools</span>
+    </div>
+
+    <div class="ai-tools-grid">
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-pink">
+                    <i class="bi bi-laptop"></i>
+                </div>
+                <span class="ai-tool-label">TECH ACADEMY</span>
+            </div>
+
+            <h4>AI Tech Course Generator</h4>
+            <p>
+                Generate a technology course with an organized
+                learning structure and draft modules.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_tech_course_generator' %}"
+               class="ai-tool-action">
+                Generate Course <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-cyan">
+                    <i class="bi bi-collection"></i>
+                </div>
+                <span class="ai-tool-label">TECH ACADEMY</span>
+            </div>
+
+            <h4>AI Tech Module Generator</h4>
+            <p>
+                Select an existing technology course and generate
+                structured learning modules for that course.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_tech_course_picker' %}"
+               class="ai-tool-action">
+                Select Course <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-indigo">
+                    <i class="bi bi-code-slash"></i>
+                </div>
+                <span class="ai-tool-label">TECH ACADEMY</span>
+            </div>
+
+            <h4>AI Tech Lesson Generator</h4>
+            <p>
+                Select an existing technology module and generate
+                lessons that follow its learning objectives.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_tech_module_picker' %}"
+               class="ai-tool-action">
+                Select Module <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- PLAY AND LEARN -->
+    <div class="ai-studio-section-title">
+        <h3>Play &amp; Learn</h3>
+        <span>2 AI tools</span>
+    </div>
+
+    <div class="ai-tools-grid">
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-yellow">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <span class="ai-tool-label">STORY LIBRARY</span>
+            </div>
+
+            <h4>AI Story Library Generator</h4>
+            <p>
+                Generate complete stories with chapters, descriptions,
+                genres and age-appropriate content. Generated stories
+                are saved as drafts for review and editing.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_story_generator' %}"
+               class="ai-tool-action">
+                Create Library Story <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ai-tool-card">
+            <div class="ai-tool-top">
+                <div class="ai-tool-icon ai-icon-red">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <span class="ai-tool-label">INTERACTIVE STORIES</span>
+            </div>
+
+            <h4>AI Cartoon Story Generator</h4>
+            <p>
+                Create interactive cartoon stories with characters,
+                scenes, narration and quiz questions. Generated stories
+                are saved as drafts for review and editing.
+            </p>
+
+            <a href="{% url 'admin_dashboard:ai_story_generator' %}"
+               class="ai-tool-action">
+                Create Cartoon Story <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- IMPORTANT NOTICE -->
+    <div class="ai-studio-notice">
+        <i class="bi bi-info-circle"></i>
+        <p>
+            <strong>Important:</strong>
+            AI-generated content should be reviewed before publishing.
+            Generated lessons, questions, resources, technology content
+            and stories remain drafts where supported. The dashboard does
+            not imply that an external AI API is already connected.
+        </p>
+    </div>
+
+</div>
+{% endblock %}

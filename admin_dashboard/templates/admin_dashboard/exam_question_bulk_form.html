@@ -1,0 +1,801 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}Bulk Add Past Questions | PupilAura Admin{% endblock %}
+{% block page_title %}Bulk Add Past Questions{% endblock %}
+{% block page_subtitle %}
+    Add multiple individual questions to {{ resource.title }}.
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bulk-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-bottom: 35px;
+        color: var(--text);
+    }
+
+    .resource-banner,
+    .question-card {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .resource-banner {
+        padding: 20px;
+        margin-bottom: 22px;
+    }
+
+    .resource-banner h3 {
+        margin: 0 0 8px;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .resource-meta {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .bulk-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .bulk-toolbar strong {
+        color: var(--text);
+    }
+
+    .question-card {
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .question-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 18px;
+        background: var(--surface-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .question-card-header h4 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .question-card-body {
+        padding: 20px;
+        background: var(--surface);
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .form-control,
+    .form-select {
+        display: block;
+        width: 100%;
+        min-height: 43px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: var(--surface);
+        color: var(--text);
+        outline: none;
+        font-size: 13px;
+        line-height: 1.5;
+        transition: var(--transition);
+    }
+
+    .form-control::placeholder {
+        color: var(--muted);
+        opacity: .8;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .form-control[type="file"] {
+        padding: 9px;
+        color: var(--text);
+        background: var(--surface-soft);
+    }
+
+    textarea.form-control {
+        min-height: 105px;
+        resize: vertical;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+    }
+
+    .choices-section {
+        border-top: 1px solid var(--border);
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
+    .choices-section h5 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 14px;
+    }
+
+    .choice-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 150px;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .correct-choice {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+        cursor: pointer;
+    }
+
+    .correct-choice input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+    }
+
+    .published-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        color: var(--text);
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .published-row input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+    }
+
+    .question-errors,
+    .bulk-errors {
+        background: var(--surface-soft);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        border-radius: 9px;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        font-size: 13px;
+    }
+
+    .bulk-errors {
+        padding: 15px 18px;
+        border-radius: 10px;
+    }
+
+    .bulk-errors ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+    }
+
+    .help-text {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+        margin-top: 6px;
+    }
+
+    .btn-add,
+    .btn-submit,
+    .btn-remove,
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-add {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .btn-add:hover {
+        background: var(--primary-dark);
+        color: #fff;
+    }
+
+    .btn-remove {
+        background: var(--surface-soft);
+        color: var(--danger);
+        border-color: var(--border);
+        padding: 7px 11px;
+        font-size: 12px;
+    }
+
+    .btn-remove:hover {
+        background: var(--surface);
+        border-color: var(--danger);
+    }
+
+    .btn-submit {
+        background: #16a34a;
+        color: #fff;
+        padding: 12px 22px;
+    }
+
+    .btn-submit:hover {
+        background: #15803d;
+    }
+
+    .btn-cancel {
+        color: var(--text);
+        background: var(--surface);
+        border-color: var(--border);
+        padding: 11px 17px;
+    }
+
+    .btn-cancel:hover {
+        background: var(--surface-soft);
+        color: var(--text);
+    }
+
+    .bottom-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    @media (max-width: 700px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .choice-row {
+            grid-template-columns: 1fr;
+            gap: 7px;
+        }
+
+        .question-card-body {
+            padding: 15px;
+        }
+
+        .bottom-actions > * {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bulk-page">
+
+    <div class="resource-banner">
+        <h3>{{ resource.title }}</h3>
+
+        <div class="resource-meta">
+            {{ exam.name }}
+            {% if resource.subject %} · {{ resource.subject.name }}{% endif %}
+            {% if resource.year %} · {{ resource.year.year }}{% endif %}
+            · Past Questions
+        </div>
+
+        <p class="help-text">
+            Each question is saved as an individual exam question.
+            MCQ questions require four options and one correct answer.
+        </p>
+    </div>
+
+    {% if bulk_errors %}
+        <div class="bulk-errors">
+            <strong>Please correct the following:</strong>
+            <ul>
+                {% for error in bulk_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="bulk-question-form">
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="question_count"
+            id="question-count"
+            value="{{ form_data|length }}"
+        >
+
+        <div class="bulk-toolbar">
+            <div>
+                <strong id="question-total">{{ form_data|length }} question(s)</strong>
+                <div class="help-text">Maximum 50 questions per submission.</div>
+            </div>
+
+            <button type="button" class="btn-add" id="add-question">
+                + Add Another Question
+            </button>
+        </div>
+
+        <div id="questions-container">
+
+            {% for item in form_data %}
+                <div class="question-card">
+
+                    <div class="question-card-header">
+                        <h4 class="question-heading">
+                            Question {{ forloop.counter }}
+                        </h4>
+
+                        <button type="button" class="btn-remove remove-question">
+                            Remove
+                        </button>
+                    </div>
+
+                    <div class="question-card-body">
+
+                        {% if item.errors %}
+                            <div class="question-errors">
+                                {% for error in item.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label class="form-label">Question Number</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="question_{{ forloop.counter0 }}_question_number"
+                                    value="{{ item.question_number }}"
+                                    min="1"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Question Type</label>
+                                <select
+                                    class="form-select question-type"
+                                    name="question_{{ forloop.counter0 }}_question_type"
+                                >
+                                    <option value="mcq" {% if item.question_type == "mcq" %}selected{% endif %}>Multiple Choice</option>
+                                    <option value="theory" {% if item.question_type == "theory" %}selected{% endif %}>Theory</option>
+                                    <option value="practical" {% if item.question_type == "practical" %}selected{% endif %}>Practical</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Marks</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="question_{{ forloop.counter0 }}_marks"
+                                    value="{{ item.marks }}"
+                                    min="1"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Text</label>
+                            <textarea
+                                class="form-control"
+                                name="question_{{ forloop.counter0 }}_question_text"
+                                required
+                            >{{ item.question_text }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Image (Optional)</label>
+                            <input
+                                type="file"
+                                class="form-control"
+                                name="question_{{ forloop.counter0 }}_image"
+                                accept="image/*"
+                            >
+                            <div class="help-text">
+                                Upload a diagram or image related to this question.
+                                If validation fails, you may need to select the image again.
+                            </div>
+                        </div>
+
+                        <div class="choices-section">
+                            <h5>Answer Options</h5>
+
+                            <div class="mcq-fields">
+                                {% for choice in item.choices %}
+                                    <div class="choice-row">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            name="question_{{ forloop.parentloop.counter0 }}_choice_{{ forloop.counter0 }}"
+                                            value="{{ choice }}"
+                                            placeholder="Option {{ forloop.counter }}"
+                                        >
+
+                                        <label class="correct-choice">
+                                            <input
+                                                type="radio"
+                                                name="question_{{ forloop.parentloop.counter0 }}_correct_choice"
+                                                value="{{ forloop.counter0 }}"
+                                                {% if item.correct_choice == forloop.counter0|stringformat:"s" %}checked{% endif %}
+                                            >
+                                            Correct answer
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="help-text mcq-fields">
+                                Select exactly one correct answer for each MCQ.
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top:20px;">
+                            <label class="form-label">Explanation / Solution</label>
+                            <textarea
+                                class="form-control"
+                                name="question_{{ forloop.counter0 }}_explanation"
+                                placeholder="Explain why the answer is correct..."
+                            >{{ item.explanation }}</textarea>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Display Order</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="question_{{ forloop.counter0 }}_order"
+                                    value="{{ item.order }}"
+                                    min="0"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <label class="published-row">
+                            <input
+                                type="checkbox"
+                                name="question_{{ forloop.counter0 }}_published"
+                                {% if item.published %}checked{% endif %}
+                            >
+                            Publish this question
+                        </label>
+
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="bulk-toolbar">
+            <span class="help-text">
+                Review every question and its correct answer before saving.
+            </span>
+
+            <button type="button" class="btn-add" id="add-question-bottom">
+                + Add Another Question
+            </button>
+        </div>
+
+        <div class="bottom-actions">
+            <a
+                href="{% url 'admin_dashboard:exam_questions' resource.id %}"
+                class="btn-cancel"
+            >
+                Cancel
+            </a>
+
+            <button type="submit" class="btn-submit">
+                Save All Questions
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<template id="question-template">
+    <div class="question-card">
+
+        <div class="question-card-header">
+            <h4 class="question-heading">New Question</h4>
+            <button type="button" class="btn-remove remove-question">Remove</button>
+        </div>
+
+        <div class="question-card-body">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Question Number</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        name="question___INDEX___question_number"
+                        value="__NUMBER__"
+                        min="1"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Question Type</label>
+                    <select
+                        class="form-select question-type"
+                        name="question___INDEX___question_type"
+                    >
+                        <option value="mcq" selected>Multiple Choice</option>
+                        <option value="theory">Theory</option>
+                        <option value="practical">Practical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Marks</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        name="question___INDEX___marks"
+                        value="1"
+                        min="1"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Question Text</label>
+                <textarea
+                    class="form-control"
+                    name="question___INDEX___question_text"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Question Image (Optional)</label>
+                <input
+                    type="file"
+                    class="form-control"
+                    name="question___INDEX___image"
+                    accept="image/*"
+                >
+            </div>
+
+            <div class="choices-section">
+                <h5>Answer Options</h5>
+
+                <div class="mcq-fields">
+                    <div class="choice-row">
+                        <input type="text" class="form-control" name="question___INDEX___choice_0" placeholder="Option A">
+                        <label class="correct-choice">
+                            <input type="radio" name="question___INDEX___correct_choice" value="0">
+                            Correct answer
+                        </label>
+                    </div>
+
+                    <div class="choice-row">
+                        <input type="text" class="form-control" name="question___INDEX___choice_1" placeholder="Option B">
+                        <label class="correct-choice">
+                            <input type="radio" name="question___INDEX___correct_choice" value="1">
+                            Correct answer
+                        </label>
+                    </div>
+
+                    <div class="choice-row">
+                        <input type="text" class="form-control" name="question___INDEX___choice_2" placeholder="Option C">
+                        <label class="correct-choice">
+                            <input type="radio" name="question___INDEX___correct_choice" value="2">
+                            Correct answer
+                        </label>
+                    </div>
+
+                    <div class="choice-row">
+                        <input type="text" class="form-control" name="question___INDEX___choice_3" placeholder="Option D">
+                        <label class="correct-choice">
+                            <input type="radio" name="question___INDEX___correct_choice" value="3">
+                            Correct answer
+                        </label>
+                    </div>
+                </div>
+
+                <div class="help-text mcq-fields">
+                    Select exactly one correct answer.
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top:20px;">
+                <label class="form-label">Explanation / Solution</label>
+                <textarea
+                    class="form-control"
+                    name="question___INDEX___explanation"
+                    placeholder="Explain why the answer is correct..."
+                ></textarea>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Display Order</label>
+                    <input
+                        type="number"
+                        class="form-control"
+                        name="question___INDEX___order"
+                        value="__ORDER__"
+                        min="0"
+                        required
+                    >
+                </div>
+            </div>
+
+            <label class="published-row">
+                <input type="checkbox" name="question___INDEX___published" checked>
+                Publish this question
+            </label>
+
+        </div>
+    </div>
+</template>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("questions-container");
+    const template = document.getElementById("question-template");
+    const countInput = document.getElementById("question-count");
+    const totalDisplay = document.getElementById("question-total");
+    const addTop = document.getElementById("add-question");
+    const addBottom = document.getElementById("add-question-bottom");
+    const form = document.getElementById("bulk-question-form");
+
+    let nextQuestionNumber = Number("{{ next_question_number|default:1 }}");
+    let nextIndex = Number(countInput.value || 0);
+
+    function cards() {
+        return Array.from(container.querySelectorAll(".question-card"));
+    }
+
+    function updateCount() {
+        const total = cards().length;
+        countInput.value = total;
+        totalDisplay.textContent = total + " question(s)";
+    }
+
+    function updateQuestionType(card) {
+        const typeSelect = card.querySelector(".question-type");
+        const mcqFields = card.querySelectorAll(".mcq-fields");
+
+        if (!typeSelect) return;
+
+        const isMCQ = typeSelect.value === "mcq";
+
+        mcqFields.forEach(function (field) {
+            field.style.display = isMCQ ? "" : "none";
+        });
+    }
+
+    function addQuestion() {
+        if (cards().length >= 50) {
+            alert("You can add a maximum of 50 questions per submission.");
+            return;
+        }
+
+        const html = template.innerHTML
+            .replaceAll("__INDEX__", nextIndex)
+            .replaceAll("__NUMBER__", nextQuestionNumber)
+            .replaceAll("__ORDER__", nextQuestionNumber);
+
+        container.insertAdjacentHTML("beforeend", html);
+
+        const newCard = cards()[cards().length - 1];
+        updateQuestionType(newCard);
+
+        nextIndex++;
+        nextQuestionNumber++;
+        updateCount();
+        updateHeadings();
+    }
+
+    function updateHeadings() {
+        cards().forEach(function (card, index) {
+            const heading = card.querySelector(".question-heading");
+            if (heading) {
+                heading.textContent = "Question " + (index + 1);
+            }
+        });
+    }
+
+    addTop.addEventListener("click", addQuestion);
+    addBottom.addEventListener("click", addQuestion);
+
+    container.addEventListener("click", function (event) {
+        const removeButton = event.target.closest(".remove-question");
+        if (!removeButton) return;
+
+        if (cards().length <= 1) {
+            alert("At least one question is required.");
+            return;
+        }
+
+        removeButton.closest(".question-card").remove();
+
+        updateCount();
+        updateHeadings();
+    });
+
+    container.addEventListener("change", function (event) {
+        if (event.target.classList.contains("question-type")) {
+            updateQuestionType(event.target.closest(".question-card"));
+        }
+    });
+
+    form.addEventListener("submit", function (event) {
+        const allCards = cards();
+
+        if (allCards.length < 1) {
+            event.preventDefault();
+            alert("Add at least one question.");
+            return;
+        }
+
+        if (allCards.length > 50) {
+            event.preventDefault();
+            alert("A maximum of 50 questions can be submitted at once.");
+        }
+    });
+
+    cards().forEach(updateQuestionType);
+    updateCount();
+    updateHeadings();
+});
+</script>
+{% endblock %}

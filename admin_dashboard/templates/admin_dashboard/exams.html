@@ -1,0 +1,380 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Exam Preparation | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Preparation{% endblock %}
+{% block page_subtitle %}Manage examinations and exam preparation content{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    .exam-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .exam-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .exam-card:hover {
+        transform: translateY(-3px);
+        border-color: #bfdbfe;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .exam-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .exam-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .exam-name {
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 7px;
+        overflow-wrap: anywhere;
+    }
+
+    .exam-description {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+        min-height: 42px;
+        margin-bottom: 17px;
+    }
+
+    .exam-meta {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 14px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .meta-item i {
+        color: var(--primary);
+    }
+
+    .exam-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .exam-actions .btn,
+    .exam-actions form {
+        flex: 1;
+    }
+
+    .exam-actions .btn {
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 8px 10px;
+    }
+
+    .btn-view {
+        color: var(--primary);
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+    }
+
+    .btn-edit {
+        color: #475569;
+        border: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    .btn-delete {
+        color: var(--danger);
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+    }
+
+    /* Section header (list title + action) */
+    .list-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+
+    .list-section-header .section-title {
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .list-section-header .section-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 3px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+        .exam-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 650px) {
+        .exam-grid {
+            grid-template-columns: 1fr;
+        }
+        .exam-actions {
+            flex-wrap: wrap;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .exam-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .meta-item {
+            color: #cbd5e1;
+        }
+        .btn-edit {
+            background: #1e293b;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span>Exam Preparation</span>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Examinations</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+                <div>
+                    <h1>Exam Preparation</h1>
+                    <p>
+                        Manage examinations such as WAEC, JAMB, NECO,
+                        and other academic examinations available to
+                        PupilAura students.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_create' %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-plus-lg"></i> Add Examination
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ exam_count }} examination{{ exam_count|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-folder-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ exam_count }}</div>
+            <div class="stat-label">Total Examinations</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_exams }}</div>
+            <div class="stat-label">Published</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-eye-slash-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ unpublished_exams }}</div>
+            <div class="stat-label">Unpublished</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- LIST HEADER -->
+<div class="list-section-header">
+    <div>
+        <div class="section-title">Examinations</div>
+        <div class="section-subtitle">
+            Create and manage examinations for PupilAura.
+        </div>
+    </div>
+    <a
+        href="{% url 'admin_dashboard:exam_create' %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-plus-lg"></i> New Examination
+    </a>
+</div>
+
+<!-- EXAM GRID -->
+{% if exams %}
+    <div class="exam-grid">
+        {% for exam in exams %}
+            <article class="exam-card">
+                <div class="exam-top">
+                    <div class="exam-icon" aria-hidden="true">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+
+                    {% if exam.published %}
+                        <span class="badge badge-green">
+                            <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                            Published
+                        </span>
+                    {% else %}
+                        <span class="badge badge-orange">
+                            <i class="bi bi-eye-slash-fill" style="margin-right:4px;"></i>
+                            Unpublished
+                        </span>
+                    {% endif %}
+                </div>
+
+                <h3 class="exam-name">{{ exam.name }}</h3>
+
+                <p class="exam-description">
+                    {% if exam.description %}
+                        {{ exam.description|truncatechars:120 }}
+                    {% else %}
+                        No description has been added for this examination.
+                    {% endif %}
+                </p>
+
+                <div class="exam-meta">
+                    <div class="meta-item">
+                        <i class="bi bi-book"></i>
+                        <span>
+                            {{ exam.subjects.count }}
+                            Subject{{ exam.subjects.count|pluralize }}
+                        </span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        <span>
+                            {{ exam.years.count }}
+                            Year{{ exam.years.count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="exam-actions">
+                    <a
+                        href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}"
+                        class="btn btn-view"
+                    >
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    <a
+                        href="{% url 'admin_dashboard:exam_edit' exam_id=exam.id %}"
+                        class="btn btn-edit"
+                    >
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <form
+                        method="post"
+                        action="{% url 'admin_dashboard:exam_delete' exam_id=exam.id %}"
+                        onsubmit="return confirm('Are you sure you want to delete this examination?');"
+                        style="margin:0;"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-delete" style="width:100%;">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">
+            <i class="bi bi-file-earmark-plus"></i>
+        </div>
+        <h3>No Examinations Yet</h3>
+        <p>
+            Create your first examination to begin building
+            PupilAura's exam preparation system.
+        </p>
+        <a
+            href="{% url 'admin_dashboard:exam_create' %}"
+            class="btn btn-primary"
+        >
+            <i class="bi bi-plus-lg"></i> Create First Examination
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}

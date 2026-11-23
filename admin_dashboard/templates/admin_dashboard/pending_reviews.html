@@ -1,0 +1,413 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Pending Reviews | PupilAura Admin{% endblock %}
+
+{% block page_title %}Pending Reviews{% endblock %}
+{% block page_subtitle %}Review theory and practical assessment answers{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       PENDING REVIEWS — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Review list */
+    .review-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .review-item {
+        padding: 21px;
+        border-bottom: 1px solid var(--border);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        transition: background 0.2s ease;
+    }
+
+    .review-item:last-child {
+        border-bottom: 0;
+    }
+
+    .review-item:hover {
+        background: var(--surface-soft);
+    }
+
+    .review-main {
+        min-width: 0;
+    }
+
+    .review-top {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 11px;
+    }
+
+    .review-student {
+        font-size: 14px;
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .review-email {
+        color: var(--muted);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .review-badge {
+        min-height: 24px;
+        padding: 0 9px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 750;
+    }
+
+    .badge-theory {
+        background: #f5f3ff;
+        color: var(--purple);
+    }
+
+    .badge-practical {
+        background: #eff6ff;
+        color: var(--primary);
+    }
+
+    /* Question + answer blocks */
+    .review-question {
+        margin-bottom: 12px;
+    }
+
+    .question-label {
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .question-text {
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .student-answer {
+        padding: 13px 14px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .review-meta {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .review-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Review action */
+    .review-action {
+        min-width: 145px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .review-button {
+        min-height: 40px;
+        padding: 0 15px;
+        border-radius: 9px;
+        background: var(--primary);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 750;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .review-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+
+    /* Card footer */
+    .card-footer {
+        padding: 15px 21px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .result-count {
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+        .review-item {
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+        .review-action {
+            min-width: 0;
+            justify-content: flex-start;
+        }
+        .review-button {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .review-item {
+            padding: 18px 17px;
+        }
+        .review-meta {
+            gap: 8px;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .badge-theory {
+            background: rgba(124, 58, 237, 0.15);
+            color: #c4b5fd;
+        }
+        .badge-practical {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .student-answer {
+            color: #cbd5e1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:assessment_attempts' %}">Assessments</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Pending Reviews</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <div>
+                    <h1>Pending Reviews</h1>
+                    <p>
+                        Review and grade theory and practical answers
+                        that require manual assessment.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:assessment_attempts' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> All Attempts
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ pending_answers|length }} pending answer{{ pending_answers|length|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-exclamation-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ pending_answers|length }}</div>
+            <div class="stat-label">Pending Answers</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ pending_answers|length }}</div>
+            <div class="stat-label">Manual Reviews</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ pending_answers|length }}</div>
+            <div class="stat-label">Awaiting Grading</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- REVIEW CARD -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Answers Awaiting Review</div>
+            <div class="section-description">
+                Theory and practical responses requiring administrator grading.
+            </div>
+        </div>
+    </div>
+
+    {% if pending_answers %}
+        <div class="review-list">
+
+            {% for answer in pending_answers %}
+                <article class="review-item">
+
+                    <div class="review-main">
+                        <!-- Student -->
+                        <div class="review-top">
+                            <span class="review-student">
+                                {% if answer.attempt.student.first_name or answer.attempt.student.last_name %}
+                                    {{ answer.attempt.student.first_name }}
+                                    {{ answer.attempt.student.last_name }}
+                                {% else %}
+                                    {{ answer.attempt.student.email }}
+                                {% endif %}
+                            </span>
+
+                            <span class="review-email">
+                                {{ answer.attempt.student.email }}
+                            </span>
+
+                            {% if answer.question.question_type == "theory" %}
+                                <span class="review-badge badge-theory">Theory</span>
+                            {% else %}
+                                <span class="review-badge badge-practical">Practical</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Question -->
+                        <div class="review-question">
+                            <div class="question-label">
+                                Question {{ answer.question.order }}
+                            </div>
+                            <div class="question-text">
+                                {{ answer.question.text }}
+                            </div>
+                        </div>
+
+                        <!-- Student answer -->
+                        <div>
+                            <div class="question-label">Student Answer</div>
+                            <div class="student-answer">
+                                {% if answer.text_answer %}
+                                    {{ answer.text_answer }}
+                                {% else %}
+                                    No written answer provided.
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Metadata -->
+                        <div class="review-meta">
+                            <span class="review-meta-item">
+                                <i class="bi bi-book"></i>
+                                {{ answer.attempt.quiz.title }}
+                            </span>
+                            <span class="review-meta-item">
+                                <i class="bi bi-bullseye"></i>
+                                {{ answer.question.points }}
+                                point{{ answer.question.points|pluralize }}
+                            </span>
+                            {% if answer.attempt.started_at %}
+                                <span class="review-meta-item">
+                                    <i class="bi bi-clock"></i>
+                                    {{ answer.attempt.started_at|date:"M d, Y, g:i A" }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Review action -->
+                    <div class="review-action">
+                        <a
+                            href="{% url 'admin_dashboard:review_attempt' answer.attempt.id %}"
+                            class="review-button"
+                        >
+                            Review Answer <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+
+                </article>
+            {% endfor %}
+
+        </div>
+
+        <div class="card-footer">
+            <span class="result-count">
+                Showing {{ pending_answers|length }}
+                pending answer{{ pending_answers|length|pluralize }}
+            </span>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true" style="background:#f0fdf4;color:#16a34a;">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <h3>All caught up!</h3>
+            <p>
+                There are currently no theory or practical
+                answers waiting for manual review.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

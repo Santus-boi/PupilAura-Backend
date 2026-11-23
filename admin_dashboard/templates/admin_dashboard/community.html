@@ -1,0 +1,423 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}Community Management | PupilAura Admin{% endblock %}
+
+{% block content %}
+
+<style>
+    .community-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .community-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .community-header h1 {
+        margin: 0 0 6px;
+        font-size: 1.7rem;
+        font-weight: 750;
+    }
+
+    .community-header p {
+        margin: 0;
+        color: var(--text-muted, #64748b);
+    }
+
+    .community-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .community-stat {
+        background: var(--card-bg, #f5f7fb;);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .community-stat span {
+        display: block;
+        color: var(--text-muted, #64748b);
+        font-size: .85rem;
+        margin-bottom: 10px;
+    }
+
+    .community-stat strong {
+        font-size: 1.8rem;
+        font-weight: 750;
+    }
+
+    .community-panel {
+        background: var(--card-bg, ##f5f7fb);
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 14px;
+        padding: 22px;
+    }
+
+    .community-panel h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0 0 18px;
+    }
+
+    .community-filters {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) 190px 190px auto;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .community-filters input,
+    .community-filters select {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--border-color, #d1d5db);
+        border-radius: 8px;
+        padding: 8px 12px;
+        background: var(--card-bg, #f5f7fb);
+        color: inherit;
+    }
+
+    .community-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 9px 15px;
+        border: 0;
+        border-radius: 8px;
+        background: #dc2626;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .community-btn:hover {
+        background: #b91c1c;
+        color: #fff;
+    }
+
+    .community-btn.secondary {
+        background: #475569;
+    }
+
+    .community-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .community-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+    }
+
+    .community-table th,
+    .community-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .community-table th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: var(--text-muted, #64748b);
+        white-space: nowrap;
+    }
+
+    .community-table td {
+        font-size: .9rem;
+    }
+
+    .group-name {
+        font-weight: 700;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    {% comment %} .group-name:hover {
+        color: #dc2626;
+    } {% endcomment %}
+
+    .community-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 30px;
+        font-size: .75rem;
+        font-weight: 700;
+        white-space: nowrap;
+        background: #f5f7fb;
+        color: #475569;
+    }
+
+    .status-approved {
+        background: #f5f7fb;
+        color: #166534;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-suspended {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .community-empty {
+        padding: 40px 15px;
+        text-align: center;
+        color: var(--text-muted, #64748b);
+    }
+
+    .community-empty i {
+        display: block;
+        font-size: 2rem;
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 1000px) {
+        .community-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .community-filters {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .community-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .community-stat {
+            padding: 15px;
+        }
+
+        .community-stat strong {
+            font-size: 1.4rem;
+        }
+
+        .community-panel {
+            padding: 15px;
+        }
+
+        .community-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .community-header h1 {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<div class="community-page">
+
+    <!-- HEADER -->
+    <div class="community-header">
+        <div>
+            <h1>Community Management</h1>
+            <p>Manage student communities, memberships and caretakers.</p>
+        </div>
+    </div>
+
+    <!-- STATISTICS -->
+    <div class="community-stats">
+
+        <div class="community-stat">
+            <span>Total Groups</span>
+            <strong>{{ total_groups }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Pending Approval</span>
+            <strong>{{ pending_groups }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Approved Groups</span>
+            <strong>{{ approved_groups }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Suspended Groups</span>
+            <strong>{{ suspended_groups }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Active Memberships</span>
+            <strong>{{ active_memberships }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Pending Memberships</span>
+            <strong>{{ pending_memberships }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Active Caretakers</span>
+            <strong>{{ total_caretakers }}</strong>
+        </div>
+
+        <div class="community-stat">
+            <span>Community Groups</span>
+            <strong>{{ total_groups }}</strong>
+        </div>
+
+    </div>
+
+    <!-- GROUP MANAGEMENT -->
+    <div class="community-panel">
+
+        <h2>Community Groups</h2>
+
+        <form method="GET" class="community-filters">
+
+            <input
+                type="search"
+                name="q"
+                placeholder="Search groups or creators..."
+                value="{{ search_query }}"
+            >
+
+            <select name="status">
+                <option value="">All statuses</option>
+
+                {% for value, label in review_statuses %}
+                    <option
+                        value="{{ value }}"
+                        {% if status_filter == value %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="type">
+                <option value="">All group types</option>
+
+                {% for value, label in group_types %}
+                    <option
+                        value="{{ value }}"
+                        {% if type_filter == value %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="community-btn">
+                <i class="bi bi-search"></i>
+                Filter
+            </button>
+
+        </form>
+
+        <div class="community-table-wrapper">
+
+            <table class="community-table">
+
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Type</th>
+                        <th>Creator</th>
+                        <th>Status</th>
+                        <th>Members</th>
+                        <th>Pending Requests</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for group in groups %}
+
+                        <tr>
+
+                            <td>
+                                <a
+                                    href="{% url 'admin_dashboard:community_group_detail' group.id %}"
+                                    class="group-name"
+                                >
+                                    {{ group.name }}
+                                </a>
+                            </td>
+
+                            <td>
+                                {{ group.get_group_type_display }}
+                            </td>
+
+                            <td>
+                                {{ group.created_by }}
+                            </td>
+
+                            <td>
+                                <span class="community-badge status-{{ group.review_status }}">
+                                    {{ group.get_review_status_display }}
+                                </span>
+                            </td>
+
+                            <td>{{ group.member_count }}</td>
+
+                            <td>{{ group.pending_member_count }}</td>
+
+                            <td>
+                                <a
+                                    href="{% url 'admin_dashboard:community_group_detail' group.id %}"
+                                    class="community-btn"
+                                >
+                                    Manage
+                                </a>
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="7">
+                                <div class="community-empty">
+                                    <i class="bi bi-people"></i>
+                                    <strong>No community groups found.</strong>
+                                    <p>Groups created by students will appear here.</p>
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

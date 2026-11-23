@@ -1,0 +1,423 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}My Study Partners | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+    <span class="text-muted">Study Buddies</span>
+    <i class="bi bi-chevron-right small mx-2"></i>
+    <span class="fw-semibold">My Partners</span>
+{% endblock %}
+
+{% block community_content %}
+
+<style>
+    .sp-page {
+        color: #1e293b;
+    }
+
+    .sp-hero {
+        padding: 27px;
+        border-radius: 22px;
+        background: linear-gradient(120deg, #eff6ff, #f8fafc);
+        border: 1px solid #dbeafe;
+    }
+
+    .sp-hero-icon {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 18px;
+        background: #dbeafe;
+        color: #2563eb;
+        font-size: 25px;
+    }
+
+    .sp-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0;
+    }
+
+    .sp-nav a {
+        padding: 9px 15px;
+        border-radius: 30px;
+        background: #f1f5f9;
+        color: #475569;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sp-nav a:hover,
+    .sp-nav a.active {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .sp-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 30px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .sp-card {
+        height: 100%;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #e8edf4;
+        border-radius: 20px;
+        transition: .2s ease;
+    }
+
+    .sp-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 35px rgba(15, 23, 42, .08);
+    }
+
+    .sp-card-top {
+        height: 7px;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+    }
+
+    .sp-avatar {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 18px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .sp-name {
+        color: #172554;
+        font-size: 16px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .sp-connected {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 30px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 750;
+    }
+
+    .sp-date {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .sp-divider {
+        border-top: 1px solid #f1f5f9;
+        margin: 17px 0;
+    }
+
+    .sp-label {
+        margin-bottom: 5px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+    }
+
+    .sp-info {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .sp-info-block {
+        margin-bottom: 15px;
+    }
+
+    .sp-message-btn {
+        border-radius: 12px;
+        padding: 11px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .sp-empty {
+        padding: 55px 20px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 20px;
+        background: #f8fafc;
+    }
+
+    .sp-empty-icon {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 24px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 32px;
+    }
+
+    @media(max-width: 576px) {
+        .sp-hero {
+            padding: 20px;
+        }
+
+        .sp-hero .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="sp-page container-fluid py-3">
+
+    <!-- Hero -->
+    <section class="sp-hero">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="sp-hero-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-1">My Study Partners</h3>
+                    <p class="text-muted small mb-0">
+                        Build meaningful learning connections and study together.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'community:study_buddy_discover' %}"
+               class="btn btn-primary rounded-pill px-4 py-2">
+                <i class="bi bi-person-plus me-2"></i>
+                Find Study Buddies
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <nav class="sp-nav">
+        <a href="{% url 'community:dashboard' %}">
+            <i class="bi bi-grid me-1"></i> Community
+        </a>
+
+        <a href="{% url 'community:study_buddy_discover' %}">
+            <i class="bi bi-search me-1"></i> Discover
+        </a>
+
+        <a href="{% url 'community:study_buddy_profile' %}">
+            <i class="bi bi-person me-1"></i> My Profile
+        </a>
+
+        <a href="{% url 'community:study_buddy_requests' %}">
+            <i class="bi bi-person-plus me-1"></i> Requests
+        </a>
+
+        <a href="{% url 'community:study_buddy_partners' %}" class="active">
+            <i class="bi bi-people me-1"></i> Partners
+        </a>
+
+        <a href="{% url 'community:private_message_inbox' %}">
+            <i class="bi bi-chat-dots me-1"></i> Messages
+        </a>
+    </nav>
+
+    <!-- Section heading -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h5 class="fw-bold mb-1">Your learning network</h5>
+            <p class="text-muted small mb-0">
+                Students you have successfully connected with.
+            </p>
+        </div>
+
+        <span class="sp-count">
+            {{ partners|length }} connected
+        </span>
+    </div>
+
+    <!-- Partners -->
+    {% if partners %}
+
+        <div class="row g-3">
+
+            {% for partner in partners %}
+
+                <div class="col-12 col-md-6 col-xl-4">
+
+                    <article class="sp-card">
+
+                        <div class="sp-card-top"></div>
+
+                        <div class="p-3 p-lg-4">
+
+                            <!-- Identity -->
+                            <div class="d-flex align-items-center gap-3">
+
+                                <div class="sp-avatar">
+                                    {{ partner.user.first_name|default:partner.user.username|first|upper }}
+                                </div>
+
+                                <div class="min-w-0">
+                                    <h6 class="sp-name mb-1">
+                                        {{ partner.user.get_full_name|default:partner.user.username }}
+                                    </h6>
+
+                                    <span class="sp-connected">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Connected
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <div class="sp-divider"></div>
+
+                            <!-- Connection date -->
+                            <div class="sp-date mb-3">
+                                <i class="bi bi-calendar-check me-1"></i>
+                                Connected since
+                                {% if partner.partnership.responded_at %}
+                                    {{ partner.partnership.responded_at|date:"M d, Y" }}
+                                {% else %}
+                                    recently
+                                {% endif %}
+                            </div>
+
+                            <!-- Bio -->
+                            {% if partner.profile.bio %}
+                                <div class="sp-info-block">
+                                    <div class="sp-label">
+                                        <i class="bi bi-person-lines-fill me-1"></i>
+                                        About
+                                    </div>
+
+                                    <p class="sp-info mb-0">
+                                        {{ partner.profile.bio|truncatewords:25 }}
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            <!-- Subjects -->
+                            {% if partner.profile.subjects %}
+                                <div class="sp-info-block">
+                                    <div class="sp-label">
+                                        <i class="bi bi-book me-1"></i>
+                                        Subjects
+                                    </div>
+
+                                    <p class="sp-info mb-0">
+                                        {{ partner.profile.subjects|truncatechars:120 }}
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            <!-- Study mode -->
+                            {% if partner.profile.study_mode %}
+                                <div class="sp-info-block">
+                                    <div class="sp-label">
+                                        <i class="bi bi-laptop me-1"></i>
+                                        Study preference
+                                    </div>
+
+                                    <p class="sp-info mb-0">
+                                        {{ partner.profile.get_study_mode_display }}
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            <!-- Availability -->
+                            {% if partner.profile.availability %}
+                                <div class="sp-info-block">
+                                    <div class="sp-label">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Availability
+                                    </div>
+
+                                    <p class="sp-info mb-0">
+                                        {{ partner.profile.availability }}
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            <div class="sp-divider"></div>
+
+                            <!-- Message action -->
+                            <form method="POST"
+                                  action="{% url 'community:start_private_conversation' partner.partnership.id %}">
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-primary w-100 sp-message-btn">
+                                    <i class="bi bi-chat-dots-fill me-2"></i>
+                                    Send Message
+                                </button>
+                            </form>
+
+                        </div>
+                    </article>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <!-- Empty state -->
+        <div class="sp-empty text-center">
+
+            <div class="sp-empty-icon">
+                <i class="bi bi-people"></i>
+            </div>
+
+            <h5 class="fw-bold mt-4 mb-2">
+                No study partners yet
+            </h5>
+
+            <p class="text-muted small mb-4">
+                Your learning network starts with one connection.
+                Discover students who share your interests and send them a request.
+            </p>
+
+            <a href="{% url 'community:study_buddy_discover' %}"
+               class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-search me-2"></i>
+                Discover Students
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,492 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ selection_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ selection_title }}{% endblock %}
+
+{% block page_subtitle %}
+    {{ selection_description }}
+{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:ai_index' %}">AI Studio</a>
+    <span>/</span>
+    <span>{{ selection_title }}</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-picker-wrapper {
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
+    /* Hero */
+    .ai-picker-hero {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 27px;
+        margin-bottom: 28px;
+        border-radius: 18px;
+        background: linear-gradient(120deg, #312e81, #4f46e5, #6366f1);
+        color: #fff;
+    }
+
+    .ai-picker-hero::before,
+    .ai-picker-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.07);
+        pointer-events: none;
+    }
+
+    .ai-picker-hero::before {
+        width: 190px;
+        height: 190px;
+        right: -45px;
+        top: -95px;
+    }
+
+    .ai-picker-hero::after {
+        width: 130px;
+        height: 130px;
+        right: 110px;
+        bottom: -85px;
+    }
+
+    .ai-picker-hero-icon {
+        position: relative;
+        z-index: 1;
+        width: 58px;
+        height: 58px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: rgba(255,255,255,.16);
+        border: 1px solid rgba(255,255,255,.2);
+        font-size: 26px;
+    }
+
+    .ai-picker-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ai-picker-hero-content .eyebrow {
+        display: inline-block;
+        margin-bottom: 7px;
+        color: #c7d2fe;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+    }
+
+    .ai-picker-hero h2 {
+        margin: 0 0 7px;
+        color: #fff;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .ai-picker-hero p {
+        max-width: 650px;
+        margin: 0;
+        color: rgba(255,255,255,.84);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    /* Section heading */
+    .ai-picker-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 16px;
+    }
+
+    .ai-picker-section-heading h3 {
+        margin: 0;
+        color: var(--text, #111827);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .ai-picker-count {
+        padding: 6px 11px;
+        border-radius: 20px;
+        background: rgba(99,102,241,.12);
+        color: #818cf8;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    /* Record grid */
+    .ai-picker-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    /* Individual record card */
+    .ai-picker-item {
+        position: relative;
+        overflow: hidden;
+        min-width: 0;
+        min-height: 225px;
+        display: flex;
+        flex-direction: column;
+        padding: 19px;
+        border: 1px solid #334155;
+        border-radius: 15px;
+        background: #1e293b;
+        transition: transform .22s ease,
+                    border-color .22s ease,
+                    box-shadow .22s ease;
+    }
+
+    .ai-picker-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1, #a78bfa);
+        opacity: .8;
+    }
+
+    .ai-picker-item:hover {
+        transform: translateY(-4px);
+        border-color: #818cf8;
+        box-shadow: 0 13px 28px rgba(0,0,0,.2);
+    }
+
+    .ai-picker-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .ai-picker-card-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(99,102,241,.18);
+        color: #a5b4fc;
+        font-size: 19px;
+    }
+
+    .ai-picker-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+        background: #334155;
+        color: #cbd5e1;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .ai-picker-item h4 {
+        margin: 0 0 9px;
+        color: #f8fafc;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .ai-picker-item p {
+        flex: 1;
+        margin: 0 0 18px;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .ai-picker-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 10px 13px;
+        border-radius: 9px;
+        background: #4f46e5;
+        color: #fff !important;
+        text-decoration: none !important;
+        font-size: 12px;
+        font-weight: 800;
+        transition: background .2s ease;
+    }
+
+    .ai-picker-action:hover {
+        background: #4338ca;
+    }
+
+    .ai-picker-action i:last-child {
+        transition: transform .2s ease;
+    }
+
+    .ai-picker-action:hover i:last-child {
+        transform: translateX(4px);
+    }
+
+    /* Empty state */
+    .ai-picker-empty {
+        padding: 55px 22px;
+        text-align: center;
+        background: #1e293b;
+        border: 1px dashed #475569;
+        border-radius: 16px;
+    }
+
+    .ai-picker-empty-icon {
+        width: 65px;
+        height: 65px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        border-radius: 18px;
+        background: rgba(99,102,241,.17);
+        color: #a5b4fc;
+        font-size: 25px;
+    }
+
+    .ai-picker-empty h3 {
+        margin: 0 0 9px;
+        color: #f8fafc;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .ai-picker-empty p {
+        max-width: 450px;
+        margin: 0 auto 21px;
+        color: #cbd5e1;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .ai-picker-empty a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 18px;
+        border-radius: 9px;
+        background: #4f46e5;
+        color: #fff;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .ai-picker-empty a:hover {
+        background: #4338ca;
+    }
+
+    /* Footer */
+    .ai-picker-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 27px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border, #e5e7eb);
+    }
+
+    .ai-picker-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted, #6b7280);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .ai-picker-back:hover {
+        color: var(--text, #111827);
+    }
+
+    .ai-picker-footer-note {
+        color: var(--muted, #6b7280);
+        font-size: 11px;
+    }
+
+    /* Responsive */
+    @media (max-width: 950px) {
+        .ai-picker-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ai-picker-hero {
+            align-items: flex-start;
+            padding: 19px;
+            gap: 13px;
+        }
+
+        .ai-picker-hero-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 21px;
+        }
+
+        .ai-picker-hero h2 {
+            font-size: 17px;
+        }
+
+        .ai-picker-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ai-picker-item {
+            min-height: 210px;
+        }
+
+        .ai-picker-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-picker-wrapper">
+
+    <!-- Hero -->
+    <div class="ai-picker-hero">
+        <div class="ai-picker-hero-icon">
+            <i class="bi bi-stars"></i>
+        </div>
+
+        <div class="ai-picker-hero-content">
+            <span class="eyebrow">PupilAura Intelligence</span>
+
+            <h2>Choose Your Learning Record</h2>
+
+            <p>
+                {{ selection_description }}
+                Select a record below to continue to the AI generation workspace.
+            </p>
+        </div>
+    </div>
+
+    <!-- Records -->
+    <div class="ai-picker-section-heading">
+        <h3>Available Records</h3>
+
+        {% if records %}
+            <span class="ai-picker-count">
+                {{ records|length }} Available
+            </span>
+        {% else %}
+            <span class="ai-picker-count">0 Available</span>
+        {% endif %}
+    </div>
+
+    {% if records %}
+
+        <div class="ai-picker-grid">
+
+            {% for record in records %}
+                <article class="ai-picker-item">
+
+                    <div class="ai-picker-card-top">
+                        <div class="ai-picker-card-icon">
+                            <i class="bi bi-journal-bookmark"></i>
+                        </div>
+
+                        <span class="ai-picker-number">
+                            {{ forloop.counter|stringformat:"02d" }}
+                        </span>
+                    </div>
+
+                    <h4>{{ record.title }}</h4>
+
+                    {% if record.details %}
+                        <p>{{ record.details }}</p>
+                    {% else %}
+                        <p>
+                            Select this record to continue with AI-powered
+                            content generation.
+                        </p>
+                    {% endif %}
+
+                    <a href="{{ record.action_url }}"
+                       class="ai-picker-action">
+                        <i class="bi bi-stars"></i>
+                        Continue with AI
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="ai-picker-empty">
+
+            <div class="ai-picker-empty-icon">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+
+            <h3>{{ empty_title }}</h3>
+
+            <p>{{ empty_message }}</p>
+
+            <a href="{{ empty_url }}">
+                <i class="bi bi-plus-lg"></i>
+                {{ empty_label }}
+            </a>
+
+        </div>
+
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="ai-picker-footer">
+
+        <a href="{% url 'admin_dashboard:ai_index' %}"
+           class="ai-picker-back">
+            <i class="bi bi-arrow-left"></i>
+            Back to AI Studio
+        </a>
+
+        <span class="ai-picker-footer-note">
+            <i class="bi bi-shield-check"></i>
+            Review AI-generated content before publishing.
+        </span>
+
+    </div>
+
+</div>
+{% endblock %}

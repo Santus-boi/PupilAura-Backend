@@ -1,0 +1,642 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Resource Generator | PupilAura Admin{% endblock %}
+
+{% block page_title %}Resource Generator{% endblock %}
+{% block page_subtitle %}Import exam questions from a CSV file{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       RESOURCE GENERATOR — PAGE SPECIFIC
+       ========================================================= */
+
+    .generator-page {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* ---------- Success / Error blocks ---------- */
+    .errors-block {
+        padding: 18px 22px;
+        border-radius: 12px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        margin-bottom: 22px;
+    }
+
+    .errors-block h3 {
+        margin-bottom: 10px;
+        color: #b91c1c;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .errors-block ul {
+        list-style: disc inside;
+        color: #7f1d1d;
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .errors-block li {
+        margin-bottom: 4px;
+    }
+
+    .success-block {
+        padding: 22px 26px;
+        border-radius: 12px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        margin-bottom: 22px;
+    }
+
+    .success-block h3 {
+        margin-bottom: 12px;
+        color: #15803d;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .success-block .stat-row {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .success-block .stat {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .success-block .stat-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: #14532d;
+        line-height: 1.2;
+    }
+
+    .success-block .stat-label {
+        color: #166534;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .success-block .resource-info {
+        color: #166534;
+        font-size: 13px;
+        margin-bottom: 16px;
+        line-height: 1.65;
+    }
+
+    .success-block .resource-info strong {
+        color: #14532d;
+    }
+
+    .success-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- Panel (form container) ---------- */
+    .generator-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        padding: 26px;
+        margin-bottom: 22px;
+    }
+
+    .panel-title {
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .panel-description {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 20px;
+        line-height: 1.65;
+    }
+
+    /* ---------- Mode switch (radio cards) ---------- */
+    .mode-switch {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+    .mode-option {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .mode-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .mode-card {
+        display: flex;
+        flex-direction: column;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mode-option input:checked + .mode-card {
+        border-color: var(--primary);
+        background: #eff6ff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .mode-card strong {
+        display: block;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .mode-card span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    /* ---------- Form grid ---------- */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .form-grid-full {
+        grid-column: 1 / -1;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .field label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    .field .hint {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 5px;
+        line-height: 1.55;
+    }
+
+    .field input[type="text"],
+    .field input[type="number"],
+    .field input[type="file"],
+    .field select {
+        min-height: 42px;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .field-checkbox {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .field-checkbox label {
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .field-checkbox input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--primary);
+    }
+
+    /* ---------- Form dividers ---------- */
+    .form-divider {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+        margin-top: 6px;
+    }
+
+    .form-divider-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 12px;
+    }
+
+    /* ---------- CSV example ---------- */
+    .csv-example {
+        background: var(--surface-soft);
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-top: 12px;
+        overflow-x: auto;
+    }
+
+    .csv-example code {
+        display: block;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #334155;
+        white-space: pre;
+    }
+
+    .csv-example-title {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+    }
+
+    /* ---------- Form actions ---------- */
+    .generator-form-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* ---------- Utility ---------- */
+    .is-hidden {
+        display: none !important;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 760px) {
+        .generator-panel {
+            padding: 20px;
+        }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        .mode-switch {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ---------- Dark mode overrides for page-only elements ---------- */
+    @media (prefers-color-scheme: dark) {
+        .csv-example code {
+            color: #cbd5e1;
+        }
+        .mode-option input:checked + .mode-card {
+            background: #172554;
+        }
+        .success-block {
+            background: #052e16;
+            border-color: #166534;
+        }
+        .success-block h3 {
+            color: #86efac;
+        }
+        .success-block .stat-value {
+            color: #bbf7d0;
+        }
+        .success-block .stat-label,
+        .success-block .resource-info {
+            color: #86efac;
+        }
+        .success-block .resource-info strong {
+            color: #bbf7d0;
+        }
+        .errors-block {
+            background: #450a0a;
+            border-color: #7f1d1d;
+        }
+        .errors-block h3 {
+            color: #fca5a5;
+        }
+        .errors-block ul {
+            color: #fecaca;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Admin</a>
+    <span class="breadcrumb-separator" aria-hidden="true">/</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exams</a>
+    <span class="breadcrumb-separator" aria-hidden="true">/</span>
+    <span class="breadcrumb-current">Resource Generator</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-upload"></i>
+                </div>
+                <div>
+                    <h1>Bulk import exam questions</h1>
+                    <p>
+                        Upload a CSV file to create a new exam resource (or append
+                        questions to an existing one), with all questions and answer
+                        choices imported in a single step. All-or-nothing: if any row
+                        is invalid, nothing is saved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="generator-page">
+
+    <!-- IMPORT ERRORS -->
+    {% if import_errors %}
+        <div class="errors-block">
+            <h3>
+                <strong>{{ import_errors|length }}</strong>
+                error{{ import_errors|length|pluralize }} prevented the import
+            </h3>
+            <ul>
+                {% for error in import_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- IMPORT SUCCESS -->
+    {% if import_result %}
+        <div class="success-block">
+            <h3>
+                <i class="bi bi-check2-circle" style="margin-right:4px;"></i>
+                Import complete
+            </h3>
+
+            <div class="stat-row">
+                <div class="stat">
+                    <span class="stat-value">{{ import_result.questions }}</span>
+                    <span class="stat-label">Question{{ import_result.questions|pluralize }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ import_result.choices }}</span>
+                    <span class="stat-label">Choice{{ import_result.choices|pluralize }}</span>
+                </div>
+            </div>
+
+            <div class="resource-info">
+                Imported into
+                <strong>{{ import_result.resource_title }}</strong>
+                ({{ import_result.exam_name }} · {{ import_result.subject_name }} · {{ import_result.year }}).
+            </div>
+
+            <div class="success-actions">
+                <a href="{% url 'admin_dashboard:exam_resource_detail' import_result.resource_id %}"
+                   class="btn btn-primary">
+                    <i class="bi bi-eye"></i> View resource
+                </a>
+                <a href="{% url 'admin_dashboard:resource_generator' %}"
+                   class="btn btn-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Import another
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- UPLOAD FORM -->
+    <form method="POST" enctype="multipart/form-data" class="generator-panel">
+        {% csrf_token %}
+
+        <div class="panel-title">Step 1 — Choose where the questions go</div>
+        <div class="panel-description">
+            Pick <strong>New resource</strong> to create a fresh past-paper
+            wrapper, or <strong>Existing resource</strong> to append questions
+            to a resource you already have.
+        </div>
+
+        <div class="mode-switch">
+            <label class="mode-option">
+                <input type="radio" name="mode" value="new"
+                       {% if mode != 'existing' %}checked{% endif %}
+                       onchange="updateModeVisibility()">
+                <div class="mode-card">
+                    <strong>New resource</strong>
+                    <span>Create a new exam resource and import questions into it.</span>
+                </div>
+            </label>
+
+            <label class="mode-option">
+                <input type="radio" name="mode" value="existing"
+                       {% if mode == 'existing' %}checked{% endif %}
+                       onchange="updateModeVisibility()">
+                <div class="mode-card">
+                    <strong>Existing resource</strong>
+                    <span>Append these questions to an already-created resource.</span>
+                </div>
+            </label>
+        </div>
+
+        <!-- NEW MODE -->
+        <div id="newModeFields">
+            <div class="form-grid">
+
+                <div class="field">
+                    <label for="id_exam">Examination</label>
+                    <select name="exam" id="id_exam">
+                        <option value="">— Select examination —</option>
+                        {% for exam in exams %}
+                            <option value="{{ exam.id }}">{{ exam.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="id_new_title">Resource title</label>
+                    <input type="text" name="new_title" id="id_new_title"
+                           placeholder="e.g. WAEC Computer Studies 2024 Past Questions">
+                    <span class="hint">Shown to students. Be specific.</span>
+                </div>
+
+                <div class="field">
+                    <label for="id_new_subject">Subject</label>
+                    <select name="new_subject" id="id_new_subject">
+                        <option value="">— Select subject —</option>
+                        {% for exam in exams %}
+                            {% for subject in exam.subjects.all %}
+                                <option value="{{ subject.id }}" data-exam="{{ exam.id }}">
+                                    {{ exam.name }} · {{ subject.name }}
+                                </option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="id_new_year">Year</label>
+                    <select name="new_year" id="id_new_year">
+                        <option value="">— Select year —</option>
+                        {% for exam in exams %}
+                            {% for y in exam.years.all %}
+                                <option value="{{ y.id }}" data-exam="{{ exam.id }}">
+                                    {{ exam.name }} · {{ y.year }}
+                                </option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="id_new_resource_type">Resource type</label>
+                    <select name="new_resource_type" id="id_new_resource_type">
+                        <option value="past_questions">Past Questions</option>
+                        <option value="solutions">Solutions / Answers</option>
+                        <option value="lesson">Exam Lesson</option>
+                        <option value="practical">Practical</option>
+                        <option value="mock_exam">Mock Exam</option>
+                        <option value="revision">Revision Materials</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="id_new_price">Price (₦, optional)</label>
+                    <input type="number" name="new_price" id="id_new_price"
+                           min="0" step="0.01"
+                           placeholder="Leave blank for free">
+                </div>
+
+                <div class="field field-checkbox">
+                    <input type="checkbox" name="new_published" id="id_new_published" checked>
+                    <label for="id_new_published">Publish immediately</label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- EXISTING MODE -->
+        <div id="existingModeFields" class="is-hidden">
+            <div class="form-grid">
+                <div class="field form-grid-full">
+                    <label for="id_resource">Existing resource</label>
+                    <select name="resource" id="id_resource">
+                        <option value="">— Select a resource —</option>
+                        {% for r in existing_resources %}
+                            <option value="{{ r.id }}">
+                                {{ r.exam.name }} · {{ r.subject.name }} · {{ r.year.year }} · {{ r.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <span class="hint">
+                        Appends the imported questions to this resource
+                        without touching the questions already there.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSV UPLOAD -->
+        <div class="form-divider">
+            <div class="form-divider-title">Step 2 — Upload the CSV file</div>
+
+            <div class="form-grid">
+                <div class="field form-grid-full">
+                    <label for="id_csv_file">CSV file</label>
+                    <input type="file" name="csv_file" id="id_csv_file"
+                           accept=".csv,text/csv">
+                </div>
+            </div>
+
+            <div class="csv-example">
+                <div class="csv-example-title">Required format (one row per question)</div>
+                <code>question_number,question_text,option_a,option_b,option_c,option_d,correct,explanation,marks
+1,What is 2+2?,3,4,5,6,B,Two plus two equals four,1
+2,Capital of Nigeria?,Lagos,Abuja,Kano,Ibadan,B,Abuja is the capital,1</code>
+            </div>
+
+            <span class="hint" style="display:block; margin-top:12px;">
+                <strong>correct</strong> must be <code>A</code>, <code>B</code>, <code>C</code> or <code>D</code>.
+                <strong>marks</strong> and <strong>explanation</strong> are optional.
+                Save your spreadsheet as <em>CSV UTF-8</em> to avoid encoding errors.
+            </span>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="generator-form-actions">
+            <a href="{% url 'admin_dashboard:dashboard' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-arrow-right"></i> Import questions
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateModeVisibility() {
+    var mode = document.querySelector('input[name="mode"]:checked');
+    var newFields = document.getElementById('newModeFields');
+    var existingFields = document.getElementById('existingModeFields');
+
+    if (!mode) return;
+
+    if (mode.value === 'existing') {
+        newFields.classList.add('is-hidden');
+        existingFields.classList.remove('is-hidden');
+    } else {
+        newFields.classList.remove('is-hidden');
+        existingFields.classList.add('is-hidden');
+    }
+}
+updateModeVisibility();
+</script>
+{% endblock %}

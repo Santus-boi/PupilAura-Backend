@@ -1,0 +1,702 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Word Builder | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --wb-primary: #6c4ce5;
+        --wb-dark: #20213b;
+        --wb-muted: #777b91;
+        --wb-bg: #f5f4ff;
+        --wb-success: #159b69;
+        --wb-danger: #e05252;
+    }
+
+    .wb-page {
+        min-height: 100vh;
+        padding: 35px 15px 60px;
+        background:
+            radial-gradient(circle at 10% 10%, #e9e4ff 0, transparent 28%),
+            radial-gradient(circle at 90% 80%, #e2f8ef 0, transparent 28%),
+            var(--wb-bg);
+        color: var(--wb-dark);
+    }
+
+    .wb-container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .wb-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .wb-back {
+        color: var(--wb-primary);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .wb-heading {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .wb-heading h1 {
+        font-weight: 900;
+        font-size: clamp(2rem, 5vw, 3rem);
+        margin-bottom: 8px;
+    }
+
+    .wb-heading p {
+        color: var(--wb-muted);
+        margin: 0;
+    }
+
+    .wb-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .wb-stat {
+        background: white;
+        padding: 15px;
+        border-radius: 18px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(35, 30, 80, .05);
+    }
+
+    .wb-stat span {
+        display: block;
+        font-size: .8rem;
+        color: var(--wb-muted);
+    }
+
+    .wb-stat strong {
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .wb-card {
+        background: white;
+        border-radius: 28px;
+        padding: clamp(20px, 5vw, 38px);
+        box-shadow: 0 15px 45px rgba(35, 30, 80, .08);
+    }
+
+    .wb-progress-track {
+        height: 9px;
+        background: #eeecf8;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .wb-progress-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #6c4ce5, #a58afc);
+        border-radius: 20px;
+        transition: width .3s ease;
+    }
+
+    .wb-category {
+        display: inline-block;
+        padding: 7px 14px;
+        border-radius: 30px;
+        background: #f0edff;
+        color: var(--wb-primary);
+        font-size: .8rem;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .wb-picture {
+        text-align: center;
+        font-size: clamp(4rem, 12vw, 6rem);
+        margin-bottom: 10px;
+    }
+
+    .wb-instruction {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
+
+    .wb-answer {
+        min-height: 65px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        border: 2px dashed #d8d1f5;
+        border-radius: 18px;
+        background: #faf9ff;
+        margin-bottom: 25px;
+    }
+
+    .wb-answer.empty::before {
+        content: "Tap the letters below to build your word";
+        color: #a2a0b4;
+        font-size: .85rem;
+        text-align: center;
+    }
+
+    .wb-letter {
+        width: 48px;
+        height: 52px;
+        border: 0;
+        border-radius: 12px;
+        background: #6c4ce5;
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 900;
+        box-shadow: 0 4px 0 #4930b5;
+        cursor: pointer;
+        transition: transform .15s;
+    }
+
+    .wb-letter:hover {
+        transform: translateY(-3px);
+    }
+
+    .wb-letter:disabled {
+        opacity: .25;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .wb-answer .wb-letter {
+        background: #252343;
+        box-shadow: 0 4px 0 #15142d;
+    }
+
+    .wb-tiles {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+
+    .wb-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .wb-btn {
+        border: 0;
+        padding: 12px 20px;
+        border-radius: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .wb-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .wb-primary {
+        background: var(--wb-primary);
+        color: white;
+    }
+
+    .wb-light {
+        background: #f0edff;
+        color: var(--wb-primary);
+    }
+
+    .wb-hint {
+        min-height: 28px;
+        text-align: center;
+        color: var(--wb-muted);
+        font-size: .9rem;
+        margin: 15px 0 0;
+    }
+
+    .wb-feedback {
+        text-align: center;
+        font-weight: 800;
+        min-height: 28px;
+        margin-top: 18px;
+    }
+
+    .wb-feedback.correct {
+        color: var(--wb-success);
+    }
+
+    .wb-feedback.wrong {
+        color: var(--wb-danger);
+    }
+
+    .wb-result {
+        display: none;
+        text-align: center;
+        padding: 20px 5px;
+    }
+
+    .wb-result-icon {
+        font-size: 5rem;
+    }
+
+    .wb-result h2 {
+        font-size: 2rem;
+        font-weight: 900;
+    }
+
+    .wb-result p {
+        color: var(--wb-muted);
+    }
+
+    @media(max-width: 480px) {
+        .wb-page {
+            padding: 22px 12px 40px;
+        }
+
+        .wb-stats {
+            gap: 7px;
+        }
+
+        .wb-stat {
+            padding: 11px 5px;
+        }
+
+        .wb-stat strong {
+            font-size: 1.2rem;
+        }
+
+        .wb-letter {
+            width: 42px;
+            height: 47px;
+        }
+
+        .wb-actions .wb-btn {
+            flex: 1;
+            padding: 11px 9px;
+            font-size: .85rem;
+        }
+    }
+</style>
+
+<div class="wb-page">
+    <div class="wb-container">
+
+        <div class="wb-top">
+            <a href="{% url 'play_learn:home' %}" class="wb-back">
+                <i class="bi bi-arrow-left"></i> Back to Play & Learn
+            </a>
+            <span class="badge text-bg-primary">Ages 6–8</span>
+        </div>
+
+        <div class="wb-heading">
+            <h1>🔤 Word Builder</h1>
+            <p>Look at the picture, arrange the letters and discover the word!</p>
+        </div>
+
+        <div class="wb-stats">
+            <div class="wb-stat">
+                <span>⭐ Score</span>
+                <strong id="score">0</strong>
+            </div>
+            <div class="wb-stat">
+                <span>🧩 Question</span>
+                <strong id="questionNumber">1/12</strong>
+            </div>
+            <div class="wb-stat">
+                <span>🏆 Correct</span>
+                <strong id="correctCount">0</strong>
+            </div>
+        </div>
+
+        <div class="wb-card">
+
+            <div id="gameArea">
+                <div class="wb-progress-track">
+                    <div class="wb-progress-fill" id="progress"></div>
+                </div>
+
+                <div class="text-center">
+                    <span class="wb-category" id="category">Fruits</span>
+                </div>
+
+                <div class="wb-picture" id="picture">🍎</div>
+
+                <p class="wb-instruction">
+                    What word does this picture represent?
+                </p>
+
+                <div class="wb-answer empty" id="answerArea"></div>
+
+                <div class="wb-tiles" id="letterTiles"></div>
+
+                <div class="wb-actions">
+                    <button class="wb-btn wb-light" id="clearBtn">
+                        <i class="bi bi-arrow-counterclockwise"></i> Clear
+                    </button>
+
+                    <button class="wb-btn wb-light" id="hintBtn">
+                        <i class="bi bi-lightbulb"></i> Hint
+                    </button>
+
+                    <button class="wb-btn wb-primary" id="checkBtn">
+                        Check Word <i class="bi bi-check-circle"></i>
+                    </button>
+                </div>
+
+                <p class="wb-hint" id="hintText"></p>
+                <div class="wb-feedback" id="feedback"></div>
+
+                <div class="text-center mt-3" id="nextContainer" style="display:none;">
+                    <button class="wb-btn wb-primary" id="nextBtn">
+                        Next Word <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="wb-result" id="resultArea">
+                <div class="wb-result-icon" id="resultIcon">🏆</div>
+                <h2 id="resultTitle">Amazing Work!</h2>
+                <p id="resultMessage"></p>
+                <h3 class="fw-bold mb-4">
+                    Your Score: <span id="finalScore">0</span>
+                </h3>
+                <button class="wb-btn wb-primary" id="restartBtn">
+                    <i class="bi bi-arrow-repeat"></i> Play Again
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{{ words|json_script:"word-data" }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const wordsElement = document.getElementById("word-data");
+
+    if (!wordsElement) {
+        console.error("Word Builder: Word data was not found.");
+        return;
+    }
+
+    const words = JSON.parse(wordsElement.textContent);
+    const TOTAL_QUESTIONS = Math.min(10, words.length);
+
+    let questions = [];
+    let questionIndex = 0;
+    let score = 0;
+    let correctCount = 0;
+    let selectedLetters = [];
+    let hintUsed = false;
+    let answered = false;
+
+    const scoreDisplay = document.getElementById("score");
+    const questionNumber = document.getElementById("questionNumber");
+    const correctDisplay = document.getElementById("correctCount");
+    const progress = document.getElementById("progress");
+    const picture = document.getElementById("picture");
+    const category = document.getElementById("category");
+    const answerArea = document.getElementById("answerArea");
+    const letterTiles = document.getElementById("letterTiles");
+    const feedback = document.getElementById("feedback");
+    const hintText = document.getElementById("hintText");
+    const nextContainer = document.getElementById("nextContainer");
+
+    function shuffle(array) {
+        const shuffled = [...array];
+
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        return shuffled;
+    }
+
+    function startGame() {
+        questions = shuffle(words).slice(0, TOTAL_QUESTIONS);
+
+        questionIndex = 0;
+        score = 0;
+        correctCount = 0;
+
+        scoreDisplay.textContent = score;
+        correctDisplay.textContent = correctCount;
+
+        document.getElementById("gameArea").style.display = "block";
+        document.getElementById("resultArea").style.display = "none";
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (questionIndex >= questions.length) {
+            finishGame();
+            return;
+        }
+
+        const current = questions[questionIndex];
+
+        selectedLetters = [];
+        hintUsed = false;
+        answered = false;
+
+        picture.textContent = current.emoji;
+        category.textContent = current.category;
+
+        questionNumber.textContent =
+            `${questionIndex + 1}/${questions.length}`;
+
+        progress.style.width =
+            `${(questionIndex / questions.length) * 100}%`;
+
+        answerArea.innerHTML = "";
+        answerArea.classList.add("empty");
+
+        feedback.textContent = "";
+        feedback.className = "wb-feedback";
+
+        hintText.textContent = "";
+        nextContainer.style.display = "none";
+
+        const letters = shuffle(
+            current.word.split("").map((letter, index) => ({
+                id: index,
+                letter: letter
+            }))
+        );
+
+        letterTiles.innerHTML = "";
+
+        letters.forEach(item => {
+            const button = document.createElement("button");
+
+            button.className = "wb-letter";
+            button.textContent = item.letter;
+            button.type = "button";
+            button.dataset.letterId = item.id;
+
+            button.addEventListener("click", function () {
+                if (answered || button.disabled) return;
+
+                selectedLetters.push(item);
+                button.disabled = true;
+
+                renderAnswer();
+            });
+
+            letterTiles.appendChild(button);
+        });
+    }
+
+    function renderAnswer() {
+        answerArea.innerHTML = "";
+
+        if (selectedLetters.length === 0) {
+            answerArea.classList.add("empty");
+            return;
+        }
+
+        answerArea.classList.remove("empty");
+
+        selectedLetters.forEach(item => {
+            const button = document.createElement("button");
+
+            button.className = "wb-letter";
+            button.textContent = item.letter;
+            button.type = "button";
+
+            button.addEventListener("click", function () {
+                if (answered) return;
+
+                selectedLetters = selectedLetters.filter(
+                    selected => selected.id !== item.id
+                );
+
+                const originalTile = letterTiles.querySelector(
+                    `[data-letter-id="${item.id}"]`
+                );
+
+                if (originalTile) {
+                    originalTile.disabled = false;
+                }
+
+                renderAnswer();
+            });
+
+            answerArea.appendChild(button);
+        });
+    }
+
+    function clearAnswer() {
+        if (answered) return;
+
+        selectedLetters = [];
+
+        letterTiles.querySelectorAll("button").forEach(button => {
+            button.disabled = false;
+        });
+
+        renderAnswer();
+    }
+
+    function showHint() {
+        if (answered) return;
+
+        const current = questions[questionIndex];
+
+        hintUsed = true;
+        hintText.textContent = "💡 " + current.hint;
+    }
+
+    function checkAnswer() {
+        if (answered) return;
+
+        const current = questions[questionIndex];
+
+        const userAnswer = selectedLetters
+            .map(item => item.letter)
+            .join("");
+
+        if (userAnswer.length !== current.word.length) {
+            feedback.textContent =
+                "Select all the letters before checking!";
+
+            feedback.className = "wb-feedback wrong";
+            return;
+        }
+
+        if (userAnswer === current.word) {
+            answered = true;
+            correctCount++;
+
+            const points = hintUsed ? 5 : 10;
+            score += points;
+
+            feedback.textContent = hintUsed
+                ? `🌟 Correct! You earned ${points} points.`
+                : `🎉 Excellent! You earned ${points} points!`;
+
+            feedback.className = "wb-feedback correct";
+
+            speakWord(current.word);
+
+            scoreDisplay.textContent = score;
+            correctDisplay.textContent = correctCount;
+
+            nextContainer.style.display = "block";
+
+        } else {
+            feedback.textContent =
+                "Not quite! Clear your letters and try again.";
+
+            feedback.className = "wb-feedback wrong";
+        }
+    }
+
+    function speakWord(word) {
+        if (!("speechSynthesis" in window)) {
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const speech = new SpeechSynthesisUtterance(word);
+
+        speech.lang = "en-US";
+        speech.rate = 0.8;
+        speech.pitch = 1;
+
+        window.speechSynthesis.speak(speech);
+    }
+
+    function finishGame() {
+        document.getElementById("gameArea").style.display = "none";
+        document.getElementById("resultArea").style.display = "block";
+
+        progress.style.width = "100%";
+
+        document.getElementById("finalScore").textContent = score;
+
+        const percentage = Math.round(
+            (correctCount / questions.length) * 100
+        );
+
+        if (percentage >= 80) {
+            document.getElementById("resultIcon").textContent = "🏆";
+
+            document.getElementById("resultTitle").textContent =
+                "Word Master!";
+
+            document.getElementById("resultMessage").textContent =
+                "Outstanding! You have a fantastic vocabulary.";
+
+        } else if (percentage >= 50) {
+            document.getElementById("resultIcon").textContent = "🌟";
+
+            document.getElementById("resultTitle").textContent =
+                "Great Effort!";
+
+            document.getElementById("resultMessage").textContent =
+                "You're improving. Keep practising!";
+
+        } else {
+            document.getElementById("resultIcon").textContent = "💪";
+
+            document.getElementById("resultTitle").textContent =
+                "Keep Learning!";
+
+            document.getElementById("resultMessage").textContent =
+                "Every attempt makes you better. Try again!";
+        }
+    }
+
+    document.getElementById("clearBtn").addEventListener(
+        "click",
+        clearAnswer
+    );
+
+    document.getElementById("hintBtn").addEventListener(
+        "click",
+        showHint
+    );
+
+    document.getElementById("checkBtn").addEventListener(
+        "click",
+        checkAnswer
+    );
+
+    document.getElementById("nextBtn").addEventListener(
+        "click",
+        function () {
+            if (!answered) return;
+
+            questionIndex++;
+            showQuestion();
+        }
+    );
+
+    document.getElementById("restartBtn").addEventListener(
+        "click",
+        startGame
+    );
+
+    startGame();
+});
+</script>
+{% endblock %}

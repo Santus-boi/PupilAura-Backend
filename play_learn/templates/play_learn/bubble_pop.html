@@ -1,0 +1,384 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bubble Pop | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    .bubble-game {
+        max-width: 1050px;
+        margin: 30px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .bubble-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .bubble-header h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 900;
+        color: #6d5dfc;
+    }
+
+    .bubble-header p { color: #64748b; }
+
+    .bubble-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 15px 8px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,.04);
+    }
+
+    .stat-card small {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 25px;
+        margin-top: 5px;
+        color: #172554;
+    }
+
+    .bubble-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .bubble-controls select,
+    .bubble-controls button {
+        padding: 11px 17px;
+        border-radius: 12px;
+        border: 1px solid #dbeafe;
+        font-weight: 700;
+    }
+
+    .bubble-controls button {
+        background: #6d5dfc;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .bubble-controls button:hover { background: #5142d8; }
+
+    .bubble-arena {
+        position: relative;
+        height: 480px;
+        overflow: hidden;
+        border-radius: 24px;
+        background:
+            radial-gradient(circle at 15% 20%, rgba(255,255,255,.15) 0 3px, transparent 4px),
+            radial-gradient(circle at 80% 70%, rgba(255,255,255,.15) 0 4px, transparent 5px),
+            linear-gradient(135deg, #312e81, #6d5dfc 55%, #0ea5e9);
+        background-size: 80px 80px, 100px 100px, auto;
+        box-shadow: 0 15px 35px rgba(49,46,129,.2);
+        cursor: crosshair;
+        touch-action: manipulation;
+    }
+
+    .bubble {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        border: 3px solid rgba(255,255,255,.75);
+        box-shadow:
+            inset -8px -12px 18px rgba(0,0,0,.12),
+            inset 7px 7px 14px rgba(255,255,255,.5),
+            0 7px 15px rgba(0,0,0,.15);
+        cursor: pointer;
+        user-select: none;
+        animation: bubbleFloat 2.5s ease-in-out infinite alternate;
+        transition: transform .12s, opacity .12s;
+    }
+
+    .bubble::after {
+        content: "";
+        position: absolute;
+        width: 25%;
+        height: 15%;
+        top: 17%;
+        left: 20%;
+        border-radius: 50%;
+        background: rgba(255,255,255,.8);
+        transform: rotate(-35deg);
+    }
+
+    .bubble:hover { transform: scale(1.12); }
+
+    .bubble.pop {
+        transform: scale(1.7);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    @keyframes bubbleFloat {
+        from { margin-top: 0; }
+        to { margin-top: -12px; }
+    }
+
+    .arena-message {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .arena-message h2 {
+        font-size: clamp(1.8rem, 5vw, 2.6rem);
+        font-weight: 900;
+    }
+
+    .arena-message p { font-size: 1rem; }
+
+    .arena-message.hidden { display: none; }
+
+    .bubble-result {
+        margin-top: 18px;
+        text-align: center;
+        font-weight: 700;
+        color: #6d5dfc;
+        min-height: 28px;
+    }
+
+    @media (max-width: 600px) {
+        .bubble-game { padding: 10px; }
+
+        .bubble-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .stat-card { padding: 10px; }
+        .stat-card strong { font-size: 22px; }
+        .bubble-arena { height: 420px; }
+    }
+</style>
+
+<div class="bubble-game">
+    <div class="bubble-header">
+        <h1>🫧 Bubble Pop!</h1>
+        <p>Pop as many colourful bubbles as you can before time runs out!</p>
+    </div>
+
+    <div class="bubble-stats">
+        <div class="stat-card">
+            <small>⭐ Score</small>
+            <strong id="score">0</strong>
+        </div>
+        <div class="stat-card">
+            <small>⏱️ Time</small>
+            <strong id="time">45</strong>
+        </div>
+        <div class="stat-card">
+            <small>💥 Popped</small>
+            <strong id="popped">0</strong>
+        </div>
+        <div class="stat-card">
+            <small>🔥 Combo</small>
+            <strong id="combo">0</strong>
+        </div>
+    </div>
+
+    <div class="bubble-controls">
+        <select id="difficulty" aria-label="Choose difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button id="startButton" type="button">▶ Start Game</button>
+    </div>
+
+    <div class="bubble-arena" id="arena">
+        <div class="arena-message" id="message">
+            <h2>Ready, Player? 🫧</h2>
+            <p>Tap or click Start Game to begin!</p>
+        </div>
+    </div>
+
+    <div class="bubble-result" id="result" aria-live="polite">
+        Choose your difficulty and start popping!
+    </div>
+</div>
+
+<script>
+(() => {
+    const arena = document.getElementById("arena");
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+    const poppedDisplay = document.getElementById("popped");
+    const comboDisplay = document.getElementById("combo");
+    const difficultySelect = document.getElementById("difficulty");
+    const startButton = document.getElementById("startButton");
+    const message = document.getElementById("message");
+    const result = document.getElementById("result");
+
+    const settings = {
+        easy: { duration: 60, interval: 850, size: 65, points: 5 },
+        medium: { duration: 45, interval: 650, size: 55, points: 10 },
+        hard: { duration: 30, interval: 450, size: 43, points: 15 }
+    };
+
+    const colours = [
+        "#ff5c8a", "#ffbd4a", "#21d4fd",
+        "#8b5cf6", "#34d399", "#fb7185", "#facc15"
+    ];
+
+    let score = 0;
+    let popped = 0;
+    let combo = 0;
+    let timeLeft = 45;
+    let timer = null;
+    let spawnTimer = null;
+    let running = false;
+
+    function updateStats() {
+        scoreDisplay.textContent = score;
+        poppedDisplay.textContent = popped;
+        comboDisplay.textContent = combo;
+        timeDisplay.textContent = timeLeft;
+    }
+
+    function clearBubbles() {
+        arena.querySelectorAll(".bubble").forEach(bubble => bubble.remove());
+    }
+
+    function finishGame() {
+        running = false;
+        clearInterval(timer);
+        clearInterval(spawnTimer);
+        clearBubbles();
+
+        const title = popped >= 20 ? "Amazing performance! 🏆" :
+                      popped >= 10 ? "Great effort! 🌟" :
+                      "Good try! 💪";
+
+        message.innerHTML = `
+            <h2>${title}</h2>
+            <p>You popped ${popped} bubbles!</p>
+            <p>Final score: ${score}</p>
+            <p>Press Start Game to play again.</p>
+        `;
+
+        message.classList.remove("hidden");
+        result.textContent = `Game over! Your final score is ${score}.`;
+        startButton.textContent = "↻ Play Again";
+    }
+
+    function popBubble(bubble) {
+        if (!running || bubble.classList.contains("pop")) return;
+
+        bubble.classList.add("pop");
+        combo += 1;
+        popped += 1;
+
+        const level = settings[difficultySelect.value];
+        const bonus = Math.min(combo - 1, 5) * 2;
+
+        score += level.points + bonus;
+        updateStats();
+
+        setTimeout(() => bubble.remove(), 130);
+    }
+
+    function createBubble() {
+        if (!running) return;
+
+        const bubble = document.createElement("button");
+        bubble.type = "button";
+        bubble.className = "bubble";
+        bubble.setAttribute("aria-label", "Pop bubble");
+
+        const level = settings[difficultySelect.value];
+        const size = level.size + Math.random() * 25;
+
+        const maxX = Math.max(0, arena.clientWidth - size);
+        const maxY = Math.max(0, arena.clientHeight - size);
+
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${Math.random() * maxX}px`;
+        bubble.style.top = `${Math.random() * maxY}px`;
+        bubble.style.background = colours[
+            Math.floor(Math.random() * colours.length)
+        ];
+
+        bubble.addEventListener("click", () => popBubble(bubble));
+        arena.appendChild(bubble);
+
+        setTimeout(() => {
+            if (bubble.isConnected && running) {
+                bubble.remove();
+                combo = 0;
+                updateStats();
+            }
+        }, difficultySelect.value === "hard" ? 2200 : 3500);
+    }
+
+    function startGame() {
+        clearInterval(timer);
+        clearInterval(spawnTimer);
+        clearBubbles();
+
+        const level = settings[difficultySelect.value];
+
+        score = 0;
+        popped = 0;
+        combo = 0;
+        timeLeft = level.duration;
+        running = true;
+
+        updateStats();
+        message.classList.add("hidden");
+        result.textContent = "Pop quickly! Build your combo!";
+        startButton.textContent = "Game Running...";
+
+        createBubble();
+        spawnTimer = setInterval(createBubble, level.interval);
+
+        timer = setInterval(() => {
+            timeLeft -= 1;
+            updateStats();
+
+            if (timeLeft <= 0) finishGame();
+        }, 1000);
+    }
+
+    startButton.addEventListener("click", () => {
+        if (!running) startGame();
+    });
+
+    updateStats();
+})();
+</script>
+{% endblock %}

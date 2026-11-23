@@ -1,0 +1,666 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if course %}Edit {{ course.title }}{% else %}Create Course{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if course %}Edit Course{% else %}Create Course{% endif %}
+{% endblock %}
+{% block page_subtitle %}Independent course management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       COURSE FORM — page-specific styles
+    ========================================================= */
+
+    /* ---------- HERO overrides ---------- */
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 30px;
+        margin-bottom: 24px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+        color: #ffffff;
+        box-shadow: var(--shadow-md);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        right: -80px;
+        top: -100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+    }
+
+    .hero-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 13px;
+        font-size: 23px;
+        margin-bottom: 17px;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.25;
+        margin-bottom: 8px;
+        color: #ffffff;
+    }
+
+    .hero p {
+        max-width: 650px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* ---------- LAYOUT ---------- */
+
+    .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .card-header h2 {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+
+    .card-header p {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .card-body {
+        padding: 22px;
+    }
+
+    /* ---------- FORM ---------- */
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .required-mark {
+        color: var(--danger);
+    }
+
+    .form-group input:not([type="checkbox"]):not([type="file"]),
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 11px 12px;
+        outline: none;
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+    .form-group textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+
+    .form-group input:not([type="checkbox"]):not([type="file"]):focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* ---------- FILE INPUT ---------- */
+
+    .form-group input[type="file"] {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 10px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+        color: var(--text);
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .form-group input[type="file"]:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.25);
+        outline-offset: 2px;
+    }
+
+    /* ---------- CHECKBOX ---------- */
+
+    .checkbox-field {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 11px 12px;
+        min-height: 42px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+    }
+
+    .checkbox-field input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        margin-top: 1px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .checkbox-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .checkbox-content label {
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .checkbox-content .help-text {
+        margin: 0;
+    }
+
+    /* ---------- HELP + ERRORS ---------- */
+
+    .help-text {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .error-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        color: var(--danger);
+        font-size: 12px;
+    }
+
+    .error-list li {
+        margin-bottom: 5px;
+    }
+
+    .error-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-error-card {
+        margin-bottom: 20px;
+        border-color: rgba(220, 38, 38, 0.3);
+        background: rgba(220, 38, 38, 0.04);
+    }
+
+    .field-error {
+        color: var(--danger);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .field-error ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ---------- IMAGE PREVIEW ---------- */
+
+    .image-preview {
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--surface-soft);
+    }
+
+    .image-preview img {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .image-preview-caption {
+        padding: 8px 10px;
+        font-size: 10px;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+    }
+
+    /* ---------- SIDE INFO ---------- */
+
+    .side-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .side-item {
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .side-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .side-label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 5px;
+    }
+
+    .side-value {
+        font-size: 13px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    /* ---------- ACTIONS ---------- */
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 9px 15px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+        background: var(--primary);
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: #ffffff;
+    }
+
+    .btn-light {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .btn-light:hover { background: var(--surface-soft); }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 1000px) {
+        .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+        .hero { padding: 22px; }
+        .hero h1 { font-size: 24px; }
+
+        .form-grid { grid-template-columns: 1fr; }
+        .form-group.full { grid-column: auto; }
+
+        .card-body { padding: 18px; }
+        .card-header { padding: 18px; }
+
+        .actions { flex-direction: column-reverse; }
+        .actions .btn { width: 100%; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .form-group input:not([type="checkbox"]):not([type="file"]),
+        .form-group select,
+        .form-group textarea {
+            background: #0f172a;
+            color: var(--text);
+        }
+
+        .form-group input[type="file"],
+        .checkbox-field {
+            background: var(--surface-soft);
+            color: var(--text);
+        }
+
+        .form-error-card {
+            background: rgba(127, 29, 29, 0.18);
+            border-color: #7f1d1d;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:courses' %}">Courses</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">
+            {% if course %}Edit Course{% else %}Create Course{% endif %}
+        </span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-icon">🎓</div>
+        <h1>{% if course %}Edit Course{% else %}Create Course{% endif %}</h1>
+        <p>
+            {% if course %}
+                Update the course information, category, curriculum relationship and publishing status.
+            {% else %}
+                Create an independent learning course for PupilAura.
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- NON-FIELD ERRORS -->
+{% if form.non_field_errors %}
+    <div class="card form-error-card">
+        <div class="card-body">
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+
+<!-- FORM -->
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="layout">
+
+        <!-- MAIN FORM -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Course Information</h2>
+                <p>Enter the main information for this course.</p>
+            </div>
+
+            <div class="card-body">
+                <div class="form-grid">
+
+                    <!-- TITLE -->
+                    <div class="form-group full">
+                        <label for="{{ form.title.id_for_label }}">
+                            Course Title
+                            {% if form.title.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.help_text %}
+                            <span class="help-text">{{ form.title.help_text }}</span>
+                        {% endif %}
+                        {% if form.title.errors %}
+                            <div class="field-error">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- DESCRIPTION -->
+                    <div class="form-group full">
+                        <label for="{{ form.description.id_for_label }}">
+                            Description
+                            {% if form.description.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                            <span class="help-text">{{ form.description.help_text }}</span>
+                        {% endif %}
+                        {% if form.description.errors %}
+                            <div class="field-error">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- CATEGORY -->
+                    <div class="form-group">
+                        <label for="{{ form.category.id_for_label }}">
+                            Category
+                            {% if form.category.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.help_text %}
+                            <span class="help-text">{{ form.category.help_text }}</span>
+                        {% endif %}
+                        {% if form.category.errors %}
+                            <div class="field-error">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- EDUCATION LEVEL -->
+                    <div class="form-group">
+                        <label for="{{ form.education_level.id_for_label }}">
+                            Education Level
+                            {% if form.education_level.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.education_level }}
+                        {% if form.education_level.help_text %}
+                            <span class="help-text">{{ form.education_level.help_text }}</span>
+                        {% endif %}
+                        {% if form.education_level.errors %}
+                            <div class="field-error">{{ form.education_level.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- SUBJECT -->
+                    <div class="form-group">
+                        <label for="{{ form.subject.id_for_label }}">
+                            Subject
+                            {% if form.subject.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.subject }}
+                        {% if form.subject.help_text %}
+                            <span class="help-text">{{ form.subject.help_text }}</span>
+                        {% endif %}
+                        {% if form.subject.errors %}
+                            <div class="field-error">{{ form.subject.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- PRICE -->
+                    <div class="form-group">
+                        <label for="{{ form.price.id_for_label }}">
+                            Price
+                            {% if form.price.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.price }}
+                        {% if form.price.help_text %}
+                            <span class="help-text">{{ form.price.help_text }}</span>
+                        {% else %}
+                            <span class="help-text">Leave at zero for a free course.</span>
+                        {% endif %}
+                        {% if form.price.errors %}
+                            <div class="field-error">{{ form.price.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- THUMBNAIL -->
+                    <div class="form-group">
+                        <label for="{{ form.thumbnail.id_for_label }}">
+                            Course Thumbnail
+                            {% if form.thumbnail.field.required %}
+                                <span class="required-mark" aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+                        {{ form.thumbnail }}
+                        {% if form.thumbnail.help_text %}
+                            <span class="help-text">{{ form.thumbnail.help_text }}</span>
+                        {% endif %}
+                        {% if form.thumbnail.errors %}
+                            <div class="field-error">{{ form.thumbnail.errors }}</div>
+                        {% endif %}
+
+                        {% if course.thumbnail %}
+                            <div class="image-preview">
+                                <img src="{{ course.thumbnail.url }}"
+                                     alt="{{ course.title }} course thumbnail">
+                                <div class="image-preview-caption">
+                                    Current course thumbnail. Upload a new image to replace it.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- PUBLISHED -->
+                    <div class="form-group full">
+                        <label>Publishing</label>
+                        <div class="checkbox-field">
+                            {{ form.published }}
+                            <div class="checkbox-content">
+                                <label for="{{ form.published.id_for_label }}">
+                                    Publish this course
+                                </label>
+                                <span class="help-text">
+                                    Enable this when the course is ready for students.
+                                </span>
+                            </div>
+                        </div>
+                        {% if form.published.errors %}
+                            <div class="field-error">{{ form.published.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="actions">
+                    <a href="{% url 'admin_dashboard:courses' %}" class="btn btn-light">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if course %}✓ Update Course{% else %}＋ Create Course{% endif %}
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIDE INFO -->
+        <aside class="card">
+            <div class="card-header">
+                <h2>Course Structure</h2>
+                <p>How this course relates to PupilAura.</p>
+            </div>
+            <div class="card-body">
+                <div class="side-list">
+                    <div class="side-item">
+                        <span class="side-label">Course Type</span>
+                        <span class="side-value">Independent Course</span>
+                    </div>
+                    <div class="side-item">
+                        <span class="side-label">Category</span>
+                        <span class="side-value">Learning Category</span>
+                    </div>
+                    <div class="side-item">
+                        <span class="side-label">Optional Relationship</span>
+                        <span class="side-value">Education Level / Subject</span>
+                    </div>
+                    <div class="side-item">
+                        <span class="side-label">Publishing</span>
+                        <span class="side-value">Draft or Published</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</form>
+
+{% endblock %}

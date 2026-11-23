@@ -1,0 +1,538 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}Study Buddy Requests | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+    <span class="text-muted">Study Buddies</span>
+    <i class="bi bi-chevron-right small mx-2"></i>
+    <span class="fw-semibold">Requests</span>
+{% endblock %}
+
+{% block community_content %}
+
+<style>
+    .sbr-page {
+        color: #1e293b;
+    }
+
+    .sbr-hero {
+        padding: 27px;
+        border: 1px solid #dbeafe;
+        border-radius: 22px;
+        background: linear-gradient(120deg, #eff6ff, #f8fafc);
+    }
+
+    .sbr-hero-icon {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 18px;
+        background: #dbeafe;
+        color: #2563eb;
+        font-size: 25px;
+    }
+
+    .sbr-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0;
+    }
+
+    .sbr-nav a {
+        padding: 9px 15px;
+        border-radius: 30px;
+        background: #f1f5f9;
+        color: #475569;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sbr-nav a:hover,
+    .sbr-nav a.active {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .sbr-section {
+        border: 1px solid #e8edf4;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 5px 22px rgba(15, 23, 42, .035);
+        overflow: hidden;
+    }
+
+    .sbr-section-header {
+        padding: 22px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .sbr-section-icon {
+        width: 43px;
+        height: 43px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 14px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 19px;
+    }
+
+    .sbr-count {
+        min-width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+        border-radius: 30px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .sbr-outgoing-count {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .sbr-card {
+        height: 100%;
+        padding: 18px;
+        border: 1px solid #e8edf4;
+        border-radius: 17px;
+        background: #fff;
+        transition: .2s ease;
+    }
+
+    .sbr-card:hover {
+        border-color: #bfdbfe;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+        transform: translateY(-2px);
+    }
+
+    .sbr-avatar {
+        width: 49px;
+        height: 49px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 16px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .sbr-name {
+        color: #172554;
+        font-size: 14px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .sbr-time {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+    .sbr-message {
+        padding: 13px;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .sbr-message-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+    }
+
+    .sbr-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 30px;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .sbr-status-incoming {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .sbr-action {
+        border-radius: 10px;
+        padding: 9px 15px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .sbr-empty {
+        padding: 38px 15px;
+        text-align: center;
+    }
+
+    .sbr-empty-icon {
+        width: 65px;
+        height: 65px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 21px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 27px;
+    }
+
+    @media(max-width: 576px) {
+        .sbr-hero {
+            padding: 20px;
+        }
+
+        .sbr-hero .btn {
+            width: 100%;
+        }
+
+        .sbr-card-actions form {
+            flex: 1;
+        }
+
+        .sbr-card-actions button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="sbr-page container-fluid py-3">
+
+    <!-- Hero -->
+    <section class="sbr-hero">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="sbr-hero-icon">
+                    <i class="bi bi-person-hearts"></i>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-1">Study Buddy Requests</h3>
+                    <p class="text-muted small mb-0">
+                        Manage your learning connections and partnership invitations.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'community:study_buddy_discover' %}"
+               class="btn btn-primary rounded-pill px-4 py-2">
+                <i class="bi bi-search me-2"></i>
+                Discover Students
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <nav class="sbr-nav">
+        <a href="{% url 'community:dashboard' %}">
+            <i class="bi bi-grid me-1"></i> Community
+        </a>
+
+        <a href="{% url 'community:study_buddy_discover' %}">
+            <i class="bi bi-search me-1"></i> Discover
+        </a>
+
+        <a href="{% url 'community:study_buddy_profile' %}">
+            <i class="bi bi-person me-1"></i> My Profile
+        </a>
+
+        <a href="{% url 'community:study_buddy_requests' %}" class="active">
+            <i class="bi bi-person-plus me-1"></i> Requests
+        </a>
+
+        <a href="{% url 'community:study_buddy_partners' %}">
+            <i class="bi bi-people me-1"></i> Partners
+        </a>
+
+        <a href="{% url 'community:private_message_inbox' %}">
+            <i class="bi bi-chat-dots me-1"></i> Messages
+        </a>
+    </nav>
+
+    <!-- Incoming requests -->
+    <section class="sbr-section mb-4">
+
+        <div class="sbr-section-header">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+                <div class="d-flex align-items-center gap-3">
+                    <div class="sbr-section-icon">
+                        <i class="bi bi-inbox-fill"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="fw-bold mb-1">Incoming Requests</h5>
+                        <p class="text-muted small mb-0">
+                            Students who want to become your study partners.
+                        </p>
+                    </div>
+                </div>
+
+                <span class="sbr-count">
+                    {{ received_requests|length }}
+                </span>
+
+            </div>
+        </div>
+
+        <div class="p-3 p-md-4">
+            <div class="row g-3">
+
+                {% for buddy_request in received_requests %}
+
+                    <div class="col-12 col-lg-6">
+
+                        <article class="sbr-card">
+
+                            <!-- Student -->
+                            <div class="d-flex align-items-center gap-3 mb-3">
+
+                                <div class="sbr-avatar">
+                                    {{ buddy_request.from_user.first_name|default:buddy_request.from_user.username|first|upper }}
+                                </div>
+
+                                <div class="min-w-0 flex-grow-1">
+                                    <h6 class="sbr-name mb-1">
+                                        {{ buddy_request.from_user.get_full_name|default:buddy_request.from_user.username }}
+                                    </h6>
+
+                                    <span class="sbr-time">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Sent {{ buddy_request.created_at|timesince }} ago
+                                    </span>
+                                </div>
+
+                                <span class="sbr-status sbr-status-incoming">
+                                    New request
+                                </span>
+
+                            </div>
+
+                            <!-- Message -->
+                            {% if buddy_request.message %}
+                                <div class="sbr-message mb-3">
+                                    <span class="sbr-message-label">Their message</span>
+                                    {{ buddy_request.message }}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-3">
+                                    This student hasn't added a message.
+                                </p>
+                            {% endif %}
+
+                            <!-- Actions -->
+                            <div class="sbr-card-actions d-flex flex-wrap gap-2">
+
+                                <form method="POST"
+                                      action="{% url 'community:manage_study_buddy_request' buddy_request.id 'accept' %}">
+                                    {% csrf_token %}
+
+                                    <button type="submit"
+                                            class="btn btn-success sbr-action">
+                                        <i class="bi bi-check-lg me-1"></i>
+                                        Accept Request
+                                    </button>
+                                </form>
+
+                                <form method="POST"
+                                      action="{% url 'community:manage_study_buddy_request' buddy_request.id 'decline' %}">
+                                    {% csrf_token %}
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger sbr-action">
+                                        <i class="bi bi-x-lg me-1"></i>
+                                        Decline
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="col-12">
+                        <div class="sbr-empty">
+
+                            <div class="sbr-empty-icon">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+
+                            <h6 class="fw-bold mt-3 mb-2">
+                                No incoming requests
+                            </h6>
+
+                            <p class="text-muted small mb-0">
+                                New study partnership invitations will appear here.
+                            </p>
+
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Outgoing requests -->
+    <section class="sbr-section">
+
+        <div class="sbr-section-header">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+                <div class="d-flex align-items-center gap-3">
+                    <div class="sbr-section-icon"
+                         style="background:#f1f5f9;color:#475569;">
+                        <i class="bi bi-send-fill"></i>
+                    </div>
+
+                    <div>
+                        <h5 class="fw-bold mb-1">Sent Requests</h5>
+                        <p class="text-muted small mb-0">
+                            Track partnership invitations you have sent.
+                        </p>
+                    </div>
+                </div>
+
+                <span class="sbr-count sbr-outgoing-count">
+                    {{ sent_requests|length }}
+                </span>
+
+            </div>
+        </div>
+
+        <div class="p-3 p-md-4">
+            <div class="row g-3">
+
+                {% for buddy_request in sent_requests %}
+
+                    <div class="col-12 col-lg-6">
+
+                        <article class="sbr-card">
+
+                            <div class="d-flex align-items-center gap-3 mb-3">
+
+                                <div class="sbr-avatar"
+                                     style="background:#f1f5f9;color:#475569;">
+                                    {{ buddy_request.to_user.first_name|default:buddy_request.to_user.username|first|upper }}
+                                </div>
+
+                                <div class="min-w-0 flex-grow-1">
+                                    <h6 class="sbr-name mb-1">
+                                        {{ buddy_request.to_user.get_full_name|default:buddy_request.to_user.username }}
+                                    </h6>
+
+                                    <span class="sbr-time">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Sent {{ buddy_request.created_at|timesince }} ago
+                                    </span>
+                                </div>
+
+                                <span class="sbr-status">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    Pending
+                                </span>
+
+                            </div>
+
+                            {% if buddy_request.message %}
+                                <div class="sbr-message mb-3">
+                                    <span class="sbr-message-label">Your message</span>
+                                    {{ buddy_request.message }}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-3">
+                                    No message was included with this request.
+                                </p>
+                            {% endif %}
+
+                            <form method="POST"
+                                  action="{% url 'community:manage_study_buddy_request' buddy_request.id 'cancel' %}">
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-outline-secondary sbr-action">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Cancel Request
+                                </button>
+                            </form>
+
+                        </article>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="col-12">
+                        <div class="sbr-empty">
+
+                            <div class="sbr-empty-icon"
+                                 style="background:#f1f5f9;color:#64748b;">
+                                <i class="bi bi-send"></i>
+                            </div>
+
+                            <h6 class="fw-bold mt-3 mb-2">
+                                No sent requests
+                            </h6>
+
+                            <p class="text-muted small mb-3">
+                                Students you invite will appear here while their requests are pending.
+                            </p>
+
+                            <a href="{% url 'community:study_buddy_discover' %}"
+                               class="btn btn-outline-primary rounded-pill px-4">
+                                Discover Students
+                            </a>
+
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

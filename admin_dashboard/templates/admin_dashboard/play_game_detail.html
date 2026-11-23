@@ -1,0 +1,429 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ game.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Game Details{% endblock %}
+
+{% block page_subtitle %}
+Manage game information and monitor learner activity.
+{% endblock %}
+
+{% block breadcrumb %}
+<span>Play & Learn</span>
+<span>/</span>
+<a href="{% url 'admin_dashboard:play_games' %}">Games</a>
+<span>/</span>
+<span>{{ game.name }}</span>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">
+                    <span class="hero-icon">🎮</span>
+                    {{ game.name }}
+                </div>
+
+                <p>{{ game.description|default:"No game description provided." }}</p>
+
+                <div class="hero-meta">
+                    <span class="meta-badge">
+                        {{ game.get_category_display }}
+                    </span>
+
+                    <span class="meta-badge">
+                        {{ game.get_difficulty_display }}
+                    </span>
+
+                    {% if game.is_published %}
+                        <span class="meta-badge">Published</span>
+                    {% else %}
+                        <span class="meta-badge">Unpublished</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:play_game_edit' game.id %}"
+                   class="btn btn-light">
+                    Edit Game
+                </a>
+
+                <a href="{% url 'admin_dashboard:play_games' %}"
+                   class="btn btn-light">
+                    ← All Games
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .game-detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+        gap: 22px;
+        margin-bottom: 24px;
+    }
+
+    .game-thumbnail {
+        width: 100%;
+        max-height: 260px;
+        object-fit: cover;
+        border-radius: 14px;
+        display: block;
+    }
+
+    .game-thumbnail-placeholder {
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--surface, #f3f4f6);
+        border-radius: 14px;
+        font-size: 60px;
+    }
+
+    .detail-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border, #e5e7eb);
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .detail-label {
+        color: var(--text-muted, #6b7280);
+        font-size: 13px;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .attempt-progress {
+        width: 100%;
+        height: 7px;
+        background: var(--surface, #e5e7eb);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+
+    .attempt-progress span {
+        display: block;
+        height: 100%;
+        background: #2563eb;
+        border-radius: 20px;
+    }
+
+    .game-description {
+        line-height: 1.8;
+        color: var(--text-muted, #6b7280);
+    }
+
+    @media (max-width: 800px) {
+        .game-detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- =====================================================
+     ACTIVITY STATISTICS
+===================================================== -->
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">🎯</div>
+        <div class="stat-value">{{ total_attempts }}</div>
+        <div class="stat-label">Total Attempts</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">🏆</div>
+        <div class="stat-value">{{ completed_attempts }}</div>
+        <div class="stat-label">Completed Attempts</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">📅</div>
+        <div class="stat-value">{{ game.created_at|date:"M d, Y" }}</div>
+        <div class="stat-label">Date Created</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">👥</div>
+        <div class="stat-value">{{ game.min_age }}–{{ game.max_age }}</div>
+        <div class="stat-label">Target Age Range</div>
+    </div>
+
+</div>
+
+<!-- =====================================================
+     GAME INFORMATION
+===================================================== -->
+
+<div class="game-detail-grid">
+
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Game Information</h3>
+                <p class="section-description">
+                    Basic configuration and publication details.
+                </p>
+            </div>
+        </div>
+
+        <div class="section-card">
+
+            {% if game.thumbnail %}
+                <img src="{{ game.thumbnail.url }}"
+                     alt="{{ game.name }}"
+                     class="game-thumbnail">
+            {% else %}
+                <div class="game-thumbnail-placeholder">
+                    🎮
+                </div>
+            {% endif %}
+
+            <div style="margin-top:20px;" class="detail-list">
+
+                <div class="detail-item">
+                    <span class="detail-label">Game Name</span>
+                    <span class="detail-value">{{ game.name }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Slug</span>
+                    <span class="detail-value">{{ game.slug }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Category</span>
+                    <span class="detail-value">{{ game.get_category_display }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Difficulty</span>
+                    <span class="detail-value">{{ game.get_difficulty_display }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Minimum Age</span>
+                    <span class="detail-value">{{ game.min_age }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Maximum Age</span>
+                    <span class="detail-value">{{ game.max_age }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Display Order</span>
+                    <span class="detail-value">{{ game.order }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Publication</span>
+
+                    {% if game.is_published %}
+                        <span class="badge badge-green">Published</span>
+                    {% else %}
+                        <span class="badge badge-orange">Unpublished</span>
+                    {% endif %}
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Created</span>
+                    <span class="detail-value">{{ game.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated</span>
+                    <span class="detail-value">{{ game.updated_at|date:"M d, Y H:i" }}</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME DESCRIPTION -->
+
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h3 class="section-title">Description</h3>
+                <p class="section-description">
+                    Information about this learning game.
+                </p>
+            </div>
+        </div>
+
+        <div class="section-card">
+            {% if game.description %}
+                <p class="game-description">
+                    {{ game.description|linebreaksbr }}
+                </p>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>No Description</h3>
+                    <p>This game does not have a description yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="section-header" style="margin-top:20px;">
+            <div>
+                <h3 class="section-title">Management Actions</h3>
+                <p class="section-description">
+                    Update or remove this game.
+                </p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'admin_dashboard:play_game_edit' game.id %}"
+               class="btn btn-primary">
+                Edit Game
+            </a>
+
+            <form method="POST"
+                  action="{% url 'admin_dashboard:play_game_delete' game.id %}"
+                  class="delete-form"
+                  onsubmit="return confirm('Are you sure you want to delete this game? This action cannot be undone.');">
+
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger">
+                    Delete Game
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- =====================================================
+     GAME ATTEMPTS
+===================================================== -->
+
+<div class="section-card">
+
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Game Attempts</h3>
+            <p class="section-description">
+                Recent learner activity and performance for this game.
+            </p>
+        </div>
+    </div>
+
+    {% if attempts %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Score</th>
+                        <th>Performance</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Started</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for attempt in attempts %}
+                        <tr>
+                            <td>
+                                {% if attempt.user %}
+                                    <strong>{{ attempt.user }}</strong>
+                                    <br>
+                                    <small class="help-text">
+                                        {{ attempt.user.email|default:"Registered player" }}
+                                    </small>
+                                {% else %}
+                                    <strong>Guest Player</strong>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ attempt.score }}/{{ attempt.max_score }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                <strong>{{ attempt.percentage }}%</strong>
+
+                                <div class="attempt-progress">
+                                    <span style="width:{% if attempt.percentage > 100 %}100{% else %}{{ attempt.percentage }}{% endif %}%;"></span>
+                                </div>
+                            </td>
+
+                            <td>
+                                {{ attempt.duration_seconds }} sec
+                            </td>
+
+                            <td>
+                                {% if attempt.status == "completed" %}
+                                    <span class="badge badge-green">Completed</span>
+                                {% elif attempt.status == "started" %}
+                                    <span class="badge badge-blue">Started</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Abandoned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ attempt.started_at|date:"M d, Y H:i" }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="help-text" style="margin-top:15px;">
+            Showing the latest {{ attempts|length }} attempts.
+            Total recorded attempts: {{ total_attempts }}.
+        </p>
+
+    {% else %}
+
+        <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <h3>No Game Attempts Yet</h3>
+            <p>
+                Learner activity will appear here when someone plays this game.
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

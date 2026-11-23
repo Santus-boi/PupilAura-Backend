@@ -1,0 +1,380 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ exam.name }} Subjects | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Subjects{% endblock %}
+{% block page_subtitle %}{{ exam.name }} — manage subjects{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM SUBJECTS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    .subjects-table {
+        min-width: 720px;
+    }
+
+    .subject-name {
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .subject-code {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .subjects-filters {
+        display: grid;
+        grid-template-columns: minmax(200px, 1fr) minmax(150px, 220px);
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .subjects-no-results {
+        display: none;
+        padding: 28px 20px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .subjects-no-results.show {
+        display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .subjects-filters {
+            grid-template-columns: 1fr;
+            padding: 14px;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .subject-code {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Examinations</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}">
+        {{ exam.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Subjects</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div>
+                    <h1>Manage {{ exam.name }} Subjects</h1>
+                    <p>
+                        Manage the subjects candidates can prepare for under this
+                        examination. Add subjects, update their details, and control
+                        their publication status.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_subject_create' exam_id=exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-plus-lg"></i> Add New Subject
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-info-circle"></i> Examination Details
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_years' exam_id=exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-calendar3"></i> Manage Years
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_resources' exam_id=exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-collection"></i> Manage Resources
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Exam ID: {{ exam.id }}</span>
+            <span class="meta-badge">
+                {{ subject_count|default:0 }} subject{{ subject_count|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subject_count|default:0 }}</div>
+            <div class="stat-label">Total Subjects</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_subjects|default:0 }}</div>
+            <div class="stat-label">Published Subjects</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-lock-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ unpublished_subjects|default:0 }}</div>
+            <div class="stat-label">Unpublished Subjects</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- SUBJECTS PANEL -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Examination Subjects</div>
+            <div class="section-description">
+                Search, filter, view, edit, or delete subjects.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a
+                href="{% url 'admin_dashboard:exam_subject_create' exam_id=exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Create Subject
+            </a>
+        </div>
+    </div>
+
+    {% if subjects %}
+        <!-- FILTERS -->
+        <div class="subjects-filters">
+            <input
+                type="search"
+                id="subjectSearch"
+                class="form-control"
+                placeholder="Search by subject name or code..."
+                aria-label="Search subjects"
+            >
+            <select
+                id="subjectStatus"
+                class="form-select"
+                aria-label="Filter by publication status"
+            >
+                <option value="all">All publication statuses</option>
+                <option value="published">Published</option>
+                <option value="unpublished">Unpublished</option>
+            </select>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-wrapper">
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Code</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="subjectsTableBody">
+                    {% for subject in subjects %}
+                        <tr
+                            class="subject-row"
+                            data-name="{{ subject.name|default:''|lower }}"
+                            data-code="{{ subject.code|default:''|lower }}"
+                            data-status="{% if subject.published %}published{% else %}unpublished{% endif %}"
+                        >
+                            <td>
+                                <span class="subject-name">{{ subject.name }}</span>
+                            </td>
+                            <td>
+                                {% if subject.code %}
+                                    <span class="subject-code">{{ subject.code }}</span>
+                                {% else %}
+                                    <span>—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ subject.order|default:0 }}</td>
+                            <td>
+                                {% if subject.published %}
+                                    <span class="badge badge-green">Published</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_subject_detail' subject_id=subject.id %}"
+                                        class="action-btn"
+                                        title="View subject"
+                                        aria-label="View {{ subject.name }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_subject_edit' subject_id=subject.id %}"
+                                        class="action-btn"
+                                        title="Edit subject"
+                                        aria-label="Edit {{ subject.name }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_subject_delete' subject_id=subject.id %}"
+                                        class="action-btn danger"
+                                        title="Delete subject"
+                                        aria-label="Delete {{ subject.name }}"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="subjectsNoResults" class="subjects-no-results">
+            No subjects match your search or selected filter.
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h3>No subjects added yet</h3>
+            <p>Add the first subject for {{ exam.name }} to get started.</p>
+            <a
+                href="{% url 'admin_dashboard:exam_subject_create' exam_id=exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Add First Subject
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- FOOTER NAV -->
+    <div class="toolbar" style="padding: 18px 22px; border-top: 1px solid var(--border);">
+        <a href="{% url 'admin_dashboard:exams' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> All Examinations
+        </a>
+        <a href="{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}" class="btn btn-secondary">
+            Examination Details
+        </a>
+        <a href="{% url 'admin_dashboard:exam_years' exam_id=exam.id %}" class="btn btn-secondary">
+            Manage Years
+        </a>
+        <a href="{% url 'admin_dashboard:exam_resources' exam_id=exam.id %}" class="btn btn-secondary">
+            Manage Resources
+        </a>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+
+    const searchInput = document.getElementById("subjectSearch");
+    const statusFilter = document.getElementById("subjectStatus");
+    const rows = Array.from(document.querySelectorAll(".subject-row"));
+    const noResults = document.getElementById("subjectsNoResults");
+
+    if (!searchInput || !statusFilter) {
+        return;
+    }
+
+    function filterSubjects() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            const name = row.dataset.name || "";
+            const code = row.dataset.code || "";
+            const status = row.dataset.status || "";
+
+            const matchesSearch =
+                name.includes(searchTerm) || code.includes(searchTerm);
+
+            const matchesStatus =
+                selectedStatus === "all" || status === selectedStatus;
+
+            const isVisible = matchesSearch && matchesStatus;
+
+            row.style.display = isVisible ? "" : "none";
+
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        if (noResults) {
+            noResults.classList.toggle(
+                "show",
+                rows.length > 0 && visibleCount === 0
+            );
+        }
+    }
+
+    searchInput.addEventListener("input", filterSubjects);
+    statusFilter.addEventListener("change", filterSubjects);
+})();
+</script>
+{% endblock %}

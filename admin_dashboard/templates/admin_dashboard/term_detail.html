@@ -1,0 +1,536 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ term.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ term.name }}{% endblock %}
+{% block page_subtitle %}Manage the weeks and learning structure for this academic term{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TERM DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Week list */
+    .week-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .week-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .week-item:hover {
+        border-color: #bfdbfe;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .week-main {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        min-width: 0;
+    }
+
+    .week-number {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .week-info {
+        min-width: 0;
+    }
+
+    .week-info h3 {
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .week-info p {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .week-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    /* Week count badge */
+    .week-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Small view/edit pill buttons */
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 7px 10px;
+        border-radius: 7px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .view-btn:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    /* Term info list (sidebar) */
+    .term-info-list {
+        display: grid;
+        gap: 18px;
+    }
+
+    .term-info-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .term-info-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .term-info-label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .term-info-value {
+        font-size: 13px;
+        font-weight: 800;
+        text-align: right;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .term-info-value a {
+        color: var(--primary);
+    }
+
+    .term-info-value a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .week-item {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .week-meta {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+        .term-info-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+        .term-info-value {
+            text-align: left;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .week-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .week-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .view-btn {
+            background: var(--surface);
+            color: #93c5fd;
+        }
+        .view-btn:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #3b82f6;
+        }
+        .week-item:hover {
+            border-color: #3b82f6;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:school_classes' %}">School Classes</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+
+    {% if term.subject.school_class %}
+        <a href="{% url 'admin_dashboard:school_class_detail' term.subject.school_class.id %}">
+            {{ term.subject.school_class.name }}
+        </a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    {% endif %}
+
+    <a href="{% url 'admin_dashboard:subject_detail' term.subject.id %}">
+        {{ term.subject.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ term.name }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <h1>{{ term.name }}</h1>
+                    <p>
+                        Manage the weeks and learning structure
+                        for this academic term.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:subject_detail' term.subject.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Subject
+                </a>
+                <a href="{% url 'admin_dashboard:term_edit' term.id %}" class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Term
+                </a>
+                <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Week
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            {% if term.subject.school_class.education_level %}
+                <span class="meta-badge">
+                    <i class="bi bi-mortarboard" style="margin-right:6px;"></i>
+                    {{ term.subject.school_class.education_level.name }}
+                </span>
+            {% endif %}
+            {% if term.subject.school_class %}
+                <span class="meta-badge">
+                    <i class="bi bi-building" style="margin-right:6px;"></i>
+                    {{ term.subject.school_class.name }}
+                </span>
+            {% endif %}
+            <span class="meta-badge">
+                <i class="bi bi-book" style="margin-right:6px;"></i>
+                {{ term.subject.name }}
+            </span>
+            <span class="meta-badge">Term ID: {{ term.id }}</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ term.subject.name }}</div>
+            <div class="stat-label">Subject</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ term.get_term_type_display }}</div>
+            <div class="stat-label">Term Type</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-calendar-week"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ weeks|length }}</div>
+            <div class="stat-label">Total Weeks</div>
+        </div>
+    </div>
+
+</section>
+<!-- TERM STUDY MATERIAL -->
+<section class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <div>
+            <h2>Term Study Material</h2>
+            <p>One consolidated PDF covering the learning content for this term.</p>
+        </div>
+
+        <a href="{% url 'admin_dashboard:curriculum_material_manage' 'term' term.id %}"
+           class="btn btn-primary">
+            <i class="bi bi-file-earmark-pdf"></i>
+            {% if curriculum_material %}Manage PDF{% else %}Upload PDF{% endif %}
+        </a>
+    </div>
+
+    <div class="card-body">
+        {% if curriculum_material %}
+            <div class="week-info-list">
+                <div class="week-info-row">
+                    <span class="week-info-label">Title</span>
+                    <span class="week-info-value">{{ curriculum_material.title }}</span>
+                </div>
+
+                <div class="week-info-row">
+                    <span class="week-info-label">Status</span>
+                    <span class="week-info-value">
+                        {% if curriculum_material.published %}
+                            <span class="badge badge-green">Published</span>
+                        {% else %}
+                            <span class="badge badge-orange">Draft</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if curriculum_material.description %}
+                    <div class="week-info-row">
+                        <span class="week-info-label">Description</span>
+                        <span class="week-info-value">
+                            {{ curriculum_material.description }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                <div class="week-info-row">
+                    <span class="week-info-label">PDF</span>
+                    <span class="week-info-value">
+                        {% if curriculum_material.file %}
+                            <a href="{{ curriculum_material.file.url }}"
+                               target="_blank" rel="noopener">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                View PDF
+                            </a>
+                        {% else %}
+                            <span class="not-assigned">No file uploaded</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <form method="post"
+                  action="{% url 'admin_dashboard:curriculum_material_delete' 'term' term.id %}"
+                  onsubmit="return confirm('Delete this Term study material permanently?');"
+                  style="margin-top: 18px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete PDF
+                </button>
+            </form>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <h3>No Term PDF uploaded</h3>
+                <p>Upload a consolidated study material PDF for this term.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+<!-- CONTENT GRID -->
+<section class="content-grid">
+
+    <!-- WEEKS -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <h2>Weeks</h2>
+                <p>Weeks assigned to {{ term.name }}.</p>
+            </div>
+            <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add Week
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if weeks %}
+                <div class="week-list">
+                    {% for week in weeks %}
+                        <div class="week-item">
+                            <div class="week-main">
+                                <div class="week-number" aria-hidden="true">
+                                    {{ week.number }}
+                                </div>
+                                <div class="week-info">
+                                    <h3>{{ week.title }}</h3>
+                                    {% if week.overview %}
+                                        <p>{{ week.overview|truncatechars:180 }}</p>
+                                    {% else %}
+                                        <p>Learning week for {{ term.name }}.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="week-meta">
+                                <span class="week-badge">
+                                    <i class="bi bi-calendar-week"></i>
+                                    Week {{ week.number }}
+                                </span>
+                                <a href="{% url 'admin_dashboard:week_detail' week.id %}" class="view-btn">
+                                    View
+                                </a>
+                                <a href="{% url 'admin_dashboard:week_edit' week.id %}" class="view-btn">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon" aria-hidden="true">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+                    <h3>No Weeks Yet</h3>
+                    <p>This term does not have any weeks yet.</p>
+                    <a href="{% url 'admin_dashboard:week_create' %}?term={{ term.id }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add First Week
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- TERM INFORMATION -->
+    <aside class="card">
+        <div class="card-header">
+            <div>
+                <h2>Term Information</h2>
+                <p>Curriculum details.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="term-info-list">
+
+                <div class="term-info-item">
+                    <span class="term-info-label">Term</span>
+                    <span class="term-info-value">{{ term.name }}</span>
+                </div>
+
+                <div class="term-info-item">
+                    <span class="term-info-label">Term Type</span>
+                    <span class="term-info-value">{{ term.get_term_type_display }}</span>
+                </div>
+
+                <div class="term-info-item">
+                    <span class="term-info-label">Subject</span>
+                    <span class="term-info-value">
+                        <a href="{% url 'admin_dashboard:subject_detail' term.subject.id %}">
+                            {{ term.subject.name }}
+                        </a>
+                    </span>
+                </div>
+
+                {% if term.subject.school_class %}
+                    <div class="term-info-item">
+                        <span class="term-info-label">School Class</span>
+                        <span class="term-info-value">
+                            <a href="{% url 'admin_dashboard:school_class_detail' term.subject.school_class.id %}">
+                                {{ term.subject.school_class.name }}
+                            </a>
+                        </span>
+                    </div>
+
+                    {% if term.subject.school_class.education_level %}
+                        <div class="term-info-item">
+                            <span class="term-info-label">Education Level</span>
+                            <span class="term-info-value">
+                                <a href="{% url 'admin_dashboard:education_level_detail' term.subject.school_class.education_level.id %}">
+                                    {{ term.subject.school_class.education_level.name }}
+                                </a>
+                            </span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="term-info-item">
+                        <span class="term-info-label">School Class</span>
+                        <span class="term-info-value">Not assigned</span>
+                    </div>
+                {% endif %}
+
+                <div class="term-info-item">
+                    <span class="term-info-label">Term ID</span>
+                    <span class="term-info-value">{{ term.id }}</span>
+                </div>
+
+                <div class="term-info-item">
+                    <span class="term-info-label">Total Weeks</span>
+                    <span class="term-info-value">{{ weeks|length }}</span>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+
+</section>
+
+{% endblock %}

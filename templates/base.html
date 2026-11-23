@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PupilAura - Fun learning, games, and community for students.">
+    
+    <title>{% block title %}PupilAura{% endblock %}</title>
+
+    <!-- Google Fonts for kid-friendly look -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'bootstrap-5.3.8-dist/css/bootstrap.min.css' %}">
+
+    <!-- Base Internal CSS -->
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1; /* Pushes footer to the bottom */
+        }
+        /* Fun Navbar Styling */
+        .navbar-custom {
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: #4F46E5 !important;
+        }
+        .nav-link {
+            font-weight: 700;
+            color: #555 !important;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #4F46E5 !important;
+        }
+        /* Footer Styling */
+        .footer-custom {
+            background-color: #1e293b;
+            color: #94a3b8;
+            padding: 40px 0 20px;
+            margin-top: 50px;
+        }
+        .footer-custom a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-custom a:hover {
+            color: #ffffff;
+        }
+    </style>
+
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Main Content Block -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    
+    <!-- Bootstrap JavaScript -->
+    <script src="{% static 'bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

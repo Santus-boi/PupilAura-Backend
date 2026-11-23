@@ -1,0 +1,332 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Exam Resources | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Resources{% endblock %}
+{% block page_subtitle %}{{ exam.name }} — manage exam materials{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM RESOURCES LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Resource cell in table */
+    .resource-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 220px;
+    }
+
+    .resource-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .resource-name {
+        font-weight: 800;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .resource-name:hover {
+        color: var(--primary);
+    }
+
+    .resource-id {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .secondary-text {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    /* Table minimum width — horizontal scroll on smaller screens */
+    .resources-table {
+        min-width: 950px;
+    }
+
+    /* Dark-mode adjustments for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .resource-icon {
+            background: rgba(37, 99, 235, 0.15);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Examinations</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">{{ exam.name }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Resources</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div>
+                    <h1>{{ exam.name }} — Resources</h1>
+                    <p>
+                        Manage past questions, solutions, lessons, practical materials,
+                        mock exams, and revision resources for this examination.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_resource_create' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-plus-lg"></i> Add Resource
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_detail' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> Back to Exam
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Exam ID: {{ exam.id }}</span>
+            <span class="meta-badge">
+                {{ resource_count }} resource{{ resource_count|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ resource_count|default:0 }}</div>
+            <div class="stat-label">Total Resources</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-globe2"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_resources|default:0 }}</div>
+            <div class="stat-label">Published Resources</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-lock-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ unpublished_resources|default:0 }}</div>
+            <div class="stat-label">Unpublished Resources</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- RESOURCES TABLE -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Resources for {{ exam.name }}</div>
+            <div class="section-description">
+                View resource details, update content, or delete resources you no longer need.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a
+                href="{% url 'admin_dashboard:exam_resource_create' exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Create Resource
+            </a>
+        </div>
+    </div>
+
+    {% if resources %}
+        <div class="table-wrapper">
+            <table class="resources-table">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Year</th>
+                        <th>Publication</th>
+                        <th>Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource in resources %}
+                        <tr>
+                            <td>
+                                <div class="resource-info">
+                                    <div class="resource-icon" aria-hidden="true">
+                                        {% if resource.resource_type == "past_questions" %}
+                                            <i class="bi bi-journal-text"></i>
+                                        {% elif resource.resource_type == "solutions" %}
+                                            <i class="bi bi-check2-square"></i>
+                                        {% elif resource.resource_type == "lesson" %}
+                                            <i class="bi bi-book"></i>
+                                        {% elif resource.resource_type == "practical" %}
+                                            <i class="bi bi-bezier2"></i>
+                                        {% elif resource.resource_type == "mock_exam" %}
+                                            <i class="bi bi-bullseye"></i>
+                                        {% elif resource.resource_type == "revision" %}
+                                            <i class="bi bi-journal-richtext"></i>
+                                        {% else %}
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <a
+                                            href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}"
+                                            class="resource-name"
+                                        >
+                                            {{ resource.title }}
+                                        </a>
+                                        <div class="resource-id">ID: {{ resource.id }}</div>
+                                        {% if resource.file %}
+                                            <div class="secondary-text">
+                                                <i class="bi bi-paperclip"></i> File attached
+                                            </div>
+                                        {% elif resource.video_url %}
+                                            <div class="secondary-text">
+                                                <i class="bi bi-play-btn"></i> Video link available
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-purple">
+                                    {{ resource.get_resource_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div>{{ resource.subject.name }}</div>
+                                {% if resource.subject.code %}
+                                    <div class="secondary-text">{{ resource.subject.code }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-blue">{{ resource.year.year }}</span>
+                            </td>
+                            <td>
+                                {% if resource.published %}
+                                    <span class="badge badge-green">Published</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="order-number">{{ resource.order }}</span>
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}"
+                                        class="action-btn"
+                                        title="View resource"
+                                        aria-label="View {{ resource.title }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_resource_edit' resource.id %}"
+                                        class="action-btn"
+                                        title="Edit resource"
+                                        aria-label="Edit {{ resource.title }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'admin_dashboard:exam_resource_delete' resource.id %}"
+                                        class="delete-form"
+                                        onsubmit="return confirm('Delete resource {{ resource.title|escapejs }}? This action cannot be undone.');"
+                                    >
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="action-btn danger"
+                                            title="Delete resource"
+                                            aria-label="Delete {{ resource.title }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h3>No exam resources yet</h3>
+            <p>
+                No resources have been added for {{ exam.name }}. Create a resource
+                to start organizing past questions, solutions, lessons, mock exams,
+                and revision materials.
+            </p>
+            <a
+                href="{% url 'admin_dashboard:exam_resource_create' exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Create First Resource
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

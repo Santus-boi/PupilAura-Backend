@@ -1,0 +1,100 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Tech Module Generator | PupilAura{% endblock %}
+{% block page_title %}AI Tech Module Generator{% endblock %}
+{% block page_subtitle %}Generate modules inside an existing technology course{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:ai_index' %}">AI Studio</a>
+    <span>/</span>
+    <span class="breadcrumb-current">Tech Module Generator</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-title">
+            <div class="hero-icon"><i class="bi bi-collection"></i></div>
+            <div>
+                <h1>Generate Course Modules</h1>
+                <p>Create structured modules within an existing Technology Academy course.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="content-grid">
+    <section class="section-card">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Module Generation Details</div>
+                <div class="section-description">Configure the modules for this course.</div>
+            </div>
+            <span class="badge badge-green">Technology Academy</span>
+        </div>
+
+        <div class="card-body">
+            <div class="info-note" style="margin-bottom:20px;">
+                <strong>Selected course:</strong> {{ course }}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="topic">Module topic or focus <span class="required">*</span></label>
+                    <input type="text" name="topic" id="topic" class="form-control"
+                           value="{{ form_data.topic|default:'' }}"
+                           placeholder="Describe the module content" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="difficulty">Difficulty level <span class="required">*</span></label>
+                    <select name="difficulty" id="difficulty" class="form-select" required>
+                        <option value="beginner" {% if form_data.difficulty == "beginner" or not form_data.difficulty %}selected{% endif %}>Beginner</option>
+                        <option value="intermediate" {% if form_data.difficulty == "intermediate" %}selected{% endif %}>Intermediate</option>
+                        <option value="advanced" {% if form_data.difficulty == "advanced" %}selected{% endif %}>Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="lesson_count">Number of lessons <span class="required">*</span></label>
+                    <input type="number" name="lesson_count" id="lesson_count"
+                           class="form-control" min="1" max="50"
+                           value="{{ form_data.lesson_count|default:'5' }}" required>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:ai_index' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-stars"></i> Generate Modules
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <aside class="section-card">
+        <div class="section-header">
+            <div class="section-title">Selected Course</div>
+        </div>
+        <div class="card-body">
+            <div class="info-item">
+                <div class="info-label">Course</div>
+                <div class="info-value">{{ course }}</div>
+            </div>
+            <div class="info-note" style="margin-top:18px;">
+                Modules generated here will belong to this course. Choose a clear topic and appropriate difficulty.
+            </div>
+            <div class="warning-box" style="margin-top:15px;">
+                Generated modules are saved unpublished for administrator review.
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

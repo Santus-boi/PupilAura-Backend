@@ -1,0 +1,106 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}
+    {% if edit_mode %}Update{% else %}Upload{% endif %} Study Material | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if edit_mode %}Update Study Material{% else %}Upload Study Material{% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    Manage the consolidated PDF for {{ parent_label }}
+{% endblock %}
+
+{% block content %}
+<section class="content-grid">
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <h2>Study Material PDF</h2>
+                <p>{{ parent_label }}</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}">Material Title</label>
+                    {{ form.title }}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.file.id_for_label }}">PDF File</label>
+                    {{ form.file }}
+                    {% for error in form.file.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+
+                    {% if material and material.file %}
+                        <p class="mt-2">
+                            Current file:
+                            <a href="{{ material.file.url }}" target="_blank" rel="noopener">
+                                View current PDF
+                            </a>
+                        </p>
+                        <small>Choose another file only if you want to replace the current PDF.</small>
+                    {% else %}
+                        <small>Upload one consolidated PDF for this {{ parent_type }}.</small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    <label>
+                        {{ form.published }}
+                        Publish this material
+                    </label>
+                    {% for error in form.published.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                    <small>
+                        Published materials can be made available to students.
+                    </small>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        {% if edit_mode %}Save Changes{% else %}Upload PDF{% endif %}
+                    </button>
+
+                    {% if parent_type == "week" %}
+                        <a href="{% url 'admin_dashboard:week_detail' parent.id %}"
+                           class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    {% else %}
+                        <a href="{% url 'admin_dashboard:term_detail' parent.id %}"
+                           class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </article>
+</section>
+{% endblock %}

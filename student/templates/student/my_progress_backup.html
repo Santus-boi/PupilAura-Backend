@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Progress - PupilAura</title>
+
+    {% load static %}
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="{% static 'bootstrap-5.3.8-dist/css/bootstrap.min.css' %}"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <style>
+
+        body {
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+
+        /* =========================================
+           DASHBOARD LAYOUT
+        ========================================= */
+
+        .dashboard-wrapper {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            min-height: calc(100vh - 56px);
+        }
+
+
+        /* =========================================
+           SIDEBAR
+        ========================================= */
+
+        .dashboard-sidebar {
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            padding: 20px 15px;
+        }
+
+        .sidebar-inner {
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 12px 15px;
+            margin-bottom: 6px;
+
+            border-radius: 10px;
+
+            text-decoration: none;
+
+            color: #495057;
+            font-weight: 500;
+
+            transition: 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: #f1f3f5;
+            color: #0d6efd;
+        }
+
+        .sidebar-link.active {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+        .sidebar-link i {
+            font-size: 1.1rem;
+        }
+
+        .sidebar-divider {
+            margin: 20px 0;
+        }
+
+
+        /* =========================================
+           MAIN CONTENT
+        ========================================= */
+
+        .dashboard-content {
+            min-width: 0;
+            padding: 30px;
+        }
+
+
+        /* =========================================
+           PROGRESS CARD
+        ========================================= */
+
+        .progress-card {
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.08) !important;
+        }
+
+
+        /* =========================================
+           STAT CARD
+        ========================================= */
+
+        .stat-card {
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 6px 18px rgba(0, 0, 0, 0.07) !important;
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 991.98px) {
+
+            .dashboard-wrapper {
+                display: block;
+            }
+
+            .dashboard-sidebar {
+                display: none;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            }
+
+            .dashboard-sidebar.show {
+                display: block;
+            }
+
+            .sidebar-inner {
+                position: static;
+            }
+
+            .dashboard-content {
+                padding: 20px;
+            }
+
+        }
+
+
+        @media (max-width: 575.98px) {
+
+            .dashboard-content {
+                padding: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     TOP NAVBAR
+========================================= -->
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+
+    <div class="container-fluid px-3 px-lg-4">
+
+
+        <!-- Mobile Sidebar Button -->
+
+        <button
+            class="btn btn-outline-primary d-lg-none me-2"
+            type="button"
+            id="sidebarToggle"
+            aria-label="Open dashboard menu"
+        >
+
+            <i class="bi bi-list fs-5"></i>
+
+        </button>
+
+
+        <!-- Logo -->
+
+        <a
+            class="navbar-brand fw-bold"
+            href="{% url 'student_dashboard' %}"
+        >
+
+            <i class="bi bi-mortarboard-fill text-primary"></i>
+
+            PupilAura
+
+        </a>
+
+
+        <!-- Student Account -->
+
+        <div class="dropdown ms-auto">
+
+            <button
+                class="btn btn-light dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+
+                <i class="bi bi-person-circle"></i>
+
+                Student
+
+            </button>
+
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+                <li>
+
+                    <span class="dropdown-item-text">
+
+                        <strong>
+                            {{ request.user.email }}
+                        </strong>
+
+                    </span>
+
+                </li>
+
+                <li>
+
+                    <hr class="dropdown-divider">
+
+                </li>
+
+                <li>
+
+                    <a
+                        class="dropdown-item text-danger"
+                        href="{% url 'logout' %}"
+                    >
+
+                        <i class="bi bi-box-arrow-right"></i>
+
+                        Logout
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================
+     TWO COLUMN DASHBOARD
+========================================= -->
+
+<div class="dashboard-wrapper">
+
+
+    <!-- =====================================
+         SIDEBAR
+    ====================================== -->
+
+    <aside
+        class="dashboard-sidebar"
+        id="dashboardSidebar"
+    >
+
+        <div class="sidebar-inner">
+
+
+            <div class="mb-3">
+
+                <small class="text-uppercase text-muted fw-bold px-2">
+                    Student Menu
+                </small>
+
+            </div>
+
+
+            <!-- Dashboard -->
+
+            <a
+                href="{% url 'student_dashboard' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-grid-fill"></i>
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <!-- My Courses -->
+
+            <a
+                href="{% url 'my_courses' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-book-fill"></i>
+
+                <span>
+                    My Courses
+                </span>
+
+            </a>
+
+
+            <!-- My Progress -->
+
+            <a
+                href="{% url 'my_progress' %}"
+                class="sidebar-link active"
+            >
+
+                <i class="bi bi-bar-chart-fill"></i>
+
+                <span>
+                    My Progress
+                </span>
+
+            </a>
+
+
+            <!-- Assessments -->
+
+            <a
+                href="{% url 'student_assessments' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-clipboard-check-fill"></i>
+
+                <span>
+                    Assessments
+                </span>
+
+            </a>
+
+
+            <!-- Certificates -->
+
+            <a
+                href="{% url 'student_certificates' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-award-fill"></i>
+
+                <span>
+                    Certificates
+                </span>
+
+            </a>
+
+
+            <hr class="sidebar-divider">
+
+
+            <!-- Profile -->
+
+            <a
+                href="{% url 'student_profile' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-person-fill"></i>
+
+                <span>
+                    Profile
+                </span>
+
+            </a>
+
+
+            <!-- Settings -->
+
+            <a
+                href="{% url 'student_settings' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-gear-fill"></i>
+
+                <span>
+                    Settings
+                </span>
+
+            </a>
+
+
+            <hr class="sidebar-divider">
+
+
+            <!-- Logout -->
+
+            <a
+                href="{% url 'logout' %}"
+                class="sidebar-link text-danger"
+            >
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                <span>
+                    Logout
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================
+         MAIN CONTENT
+    ====================================== -->
+
+    <main class="dashboard-content">
+
+
+        <!-- =================================
+             PAGE HEADER
+        ================================== -->
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4 p-md-5">
+
+                <div class="row align-items-center">
+
+                    <div class="col-lg-8">
+
+                        <p class="text-primary fw-semibold mb-2">
+                            Student Learning
+                        </p>
+
+                        <h1 class="display-6 fw-bold mb-3">
+                            My Progress
+                        </h1>
+
+                        <p class="text-muted mb-0">
+                            Track your learning progress across all
+                            your enrolled courses.
+                        </p>
+
+                    </div>
+
+
+                    <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+
+                        <div
+                            class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center"
+                            style="width: 110px; height: 110px;"
+                        >
+
+                            <i
+                                class="bi bi-bar-chart-fill text-primary"
+                                style="font-size: 3.5rem;"
+                            ></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================
+             OVERALL STATISTICS
+        ================================== -->
+
+        <div class="row g-4 mb-4">
+
+
+            <!-- Total Lessons -->
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm h-100 stat-card">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-center">
+
+                            <div
+                                class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3"
+                            >
+
+                                <i class="bi bi-book-half fs-4"></i>
+
+                            </div>
+
+                            <div>
+
+                                <small class="text-muted">
+                                    Total Lessons
+                                </small>
+
+                                <h3 class="fw-bold mb-0">
+                                    {{ total_lessons }}
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Completed Lessons -->
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm h-100 stat-card">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-center">
+
+                            <div
+                                class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3"
+                            >
+
+                                <i class="bi bi-check-circle-fill fs-4"></i>
+
+                            </div>
+
+                            <div>
+
+                                <small class="text-muted">
+                                    Completed Lessons
+                                </small>
+
+                                <h3 class="fw-bold mb-0">
+                                    {{ completed_lessons }}
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Overall Progress -->
+
+            <div class="col-md-4">
+
+                <div class="card border-0 shadow-sm h-100 stat-card">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex align-items-center">
+
+                            <div
+                                class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3"
+                            >
+
+                                <i class="bi bi-graph-up-arrow fs-4"></i>
+
+                            </div>
+
+                            <div>
+
+                                <small class="text-muted">
+                                    Overall Progress
+                                </small>
+
+                                <h3 class="fw-bold mb-0">
+                                    {{ overall_progress }}%
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================
+             OVERALL PROGRESS BAR
+        ================================== -->
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                    <h2 class="h5 fw-bold mb-0">
+                        Overall Learning Progress
+                    </h2>
+
+                    <strong>
+                        {{ overall_progress }}%
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="progress"
+                    style="height: 14px;"
+                >
+
+                    <div
+                        class="progress-bar"
+                        role="progressbar"
+                        style="width: {{ overall_progress }}%;"
+                        aria-valuenow="{{ overall_progress }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================
+             COURSE PROGRESS HEADER
+        ================================== -->
+
+        <div class="mb-4">
+
+            <h2 class="h3 fw-bold mb-1">
+                Course Progress
+            </h2>
+
+            <p class="text-muted mb-0">
+                See how you are progressing through each course.
+            </p>
+
+        </div>
+
+
+        {% if enrollments %}
+
+
+            <div class="row g-4">
+
+
+                {% for enrollment in enrollments %}
+
+
+                    <div class="col-md-6 col-xl-4">
+
+
+                        <div
+                            class="card border-0 shadow-sm h-100 progress-card"
+                        >
+
+                            <div class="card-body p-4">
+
+
+                                <!-- Course Icon -->
+
+                                <div
+                                    class="bg-primary bg-opacity-10 text-primary rounded-3 d-inline-flex p-3 mb-3"
+                                >
+
+                                    <i class="bi bi-book-half fs-3"></i>
+
+                                </div>
+
+
+                                <!-- Course Title -->
+
+                                <h3 class="h5 fw-bold mb-3">
+
+                                    {{ enrollment.course.title }}
+
+                                </h3>
+
+
+                                <!-- Lesson Count -->
+
+                                <div class="d-flex justify-content-between mb-2">
+
+                                    <span class="text-muted">
+                                        Lessons Completed
+                                    </span>
+
+                                    <strong>
+
+                                        {{ enrollment.completed_lessons }}
+                                        /
+                                        {{ enrollment.total_lessons }}
+
+                                    </strong>
+
+                                </div>
+
+
+                                <!-- Progress -->
+
+                                <div
+                                    class="progress mb-2"
+                                    style="height: 10px;"
+                                >
+
+                                    <div
+                                        class="progress-bar"
+                                        role="progressbar"
+                                        style="width: {{ enrollment.progress }}%;"
+                                        aria-valuenow="{{ enrollment.progress }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                    ></div>
+
+                                </div>
+
+
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+
+                                    <small class="fw-semibold">
+
+                                        {{ enrollment.progress }}%
+
+                                    </small>
+
+                                    <small class="text-muted">
+
+                                        {{ enrollment.completed_lessons }}
+                                        of
+                                        {{ enrollment.total_lessons }}
+                                        lessons
+
+                                    </small>
+
+                                </div>
+
+
+                                <!-- Course Status -->
+
+                                {% if enrollment.progress == 100 %}
+
+                                    <div class="alert alert-success py-2 mb-3">
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
+                                        <strong>
+                                            Course Completed
+                                        </strong>
+
+                                    </div>
+
+                                {% elif enrollment.progress > 0 %}
+
+                                    <div class="alert alert-primary py-2 mb-3">
+
+                                        <i class="bi bi-play-circle-fill"></i>
+
+                                        <strong>
+                                            In Progress
+                                        </strong>
+
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="alert alert-secondary py-2 mb-3">
+
+                                        <i class="bi bi-hourglass-split"></i>
+
+                                        <strong>
+                                            Not Started
+                                        </strong>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- Course Button -->
+
+                                {% if enrollment.first_lesson %}
+
+                                    <a
+                                        href="{% url 'student_lesson_detail' enrollment.first_lesson.id %}"
+                                        class="btn btn-outline-primary w-100"
+                                    >
+
+                                        {% if enrollment.progress == 100 %}
+
+                                            <i class="bi bi-arrow-repeat"></i>
+
+                                            Review Course
+
+                                        {% else %}
+
+                                            <i class="bi bi-play-circle-fill"></i>
+
+                                            Continue Course
+
+                                        {% endif %}
+
+                                    </a>
+
+                                {% else %}
+
+                                    <button
+                                        class="btn btn-secondary w-100"
+                                        disabled
+                                    >
+
+                                        No Lessons Available
+
+                                    </button>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- =================================
+                 NO COURSES
+            ================================== -->
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body text-center py-5">
+
+                    <div
+                        class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-4 mb-3"
+                    >
+
+                        <i
+                            class="bi bi-bar-chart"
+                            style="font-size: 2.5rem;"
+                        ></i>
+
+                    </div>
+
+
+                    <h3 class="h4 fw-bold">
+                        No Progress Yet
+                    </h3>
+
+
+                    <p class="text-muted mb-4">
+
+                        Enroll in a course to start tracking your
+                        learning progress.
+
+                    </p>
+
+
+                    <a
+                        href="{% url 'my_courses' %}"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="bi bi-book"></i>
+
+                        View My Courses
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </main>
+
+</div>
+
+
+<!-- =========================================
+     FOOTER
+========================================= -->
+
+<footer class="bg-white border-top">
+
+    <div class="container-fluid py-4 px-4">
+
+        <div class="text-center text-muted">
+
+            <small>
+                © 2026 PupilAura. Learn. Grow. Succeed.
+            </small>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =========================================
+     BOOTSTRAP JS
+========================================= -->
+
+<script
+    src="{% static 'bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js' %}"
+></script>
+
+
+<!-- =========================================
+     SIDEBAR JS
+========================================= -->
+
+<script>
+
+    const sidebarToggle =
+        document.getElementById("sidebarToggle");
+
+    const dashboardSidebar =
+        document.getElementById("dashboardSidebar");
+
+
+    if (sidebarToggle) {
+
+        sidebarToggle.addEventListener(
+            "click",
+            function () {
+
+                dashboardSidebar.classList.toggle("show");
+
+            }
+        );
+
+    }
+
+
+    // Close mobile sidebar when clicking outside
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            if (window.innerWidth < 992) {
+
+                const clickedInsideSidebar =
+                    dashboardSidebar.contains(event.target);
+
+                const clickedToggle =
+                    sidebarToggle &&
+                    sidebarToggle.contains(event.target);
+
+
+                if (
+                    !clickedInsideSidebar &&
+                    !clickedToggle
+                ) {
+
+                    dashboardSidebar.classList.remove("show");
+
+                }
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

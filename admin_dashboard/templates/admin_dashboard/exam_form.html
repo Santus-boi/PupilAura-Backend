@@ -1,0 +1,468 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}{{ page_subtitle }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ---------- HERO ---------- */
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 28px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+        color: #ffffff;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        right: -80px;
+        top: -100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+    }
+
+    .hero-content h1 {
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.25;
+        margin-bottom: 8px;
+        color: white;
+    }
+
+    .hero-content p {
+        max-width: 650px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* ---------- LAYOUT ---------- */
+
+    .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .card-header h2 {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+
+    .card-header p {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .card-body { padding: 22px; }
+
+    /* ---------- FORM ---------- */
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .required { color: var(--danger); }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 11px 12px;
+        outline: none;
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+    .form-group textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .help-text {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .field-error {
+        font-size: 11px;
+        color: var(--danger);
+        line-height: 1.5;
+    }
+
+    .checkbox-field {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 11px 12px;
+        min-height: 42px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+    }
+
+    .checkbox-field input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        margin-top: 1px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .checkbox-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .checkbox-content label {
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        color: var(--text);
+    }
+
+    /* ---------- ACTIONS ---------- */
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 20px;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 9px 15px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface-soft); }
+
+    /* ---------- SIDE INFO ---------- */
+
+    .side-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .side-item {
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .side-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .side-label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 5px;
+    }
+
+    .side-value {
+        font-size: 13px;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .info-note {
+        padding: 13px;
+        border-radius: 10px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 1000px) {
+        .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+        .hero { padding: 22px; }
+        .hero-content h1 { font-size: 22px; }
+        .form-grid { grid-template-columns: 1fr; }
+        .form-group.full { grid-column: auto; }
+        .card-body, .card-header { padding: 18px; }
+        .actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+        .actions .btn { width: 100%; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .info-note {
+            background: #172554;
+            border-color: #1e40af;
+            color: #bfdbfe;
+        }
+
+        .checkbox-field {
+            background: var(--surface-soft);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: #0f172a;
+            color: var(--text);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ page_title }}</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>{{ page_title }}</h1>
+        <p>{{ page_subtitle }}</p>
+    </div>
+</section>
+
+<!-- FORM -->
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="card" style="margin-bottom: 20px; border-color: rgba(220, 38, 38, 0.3); background: rgba(220, 38, 38, 0.04);">
+            <div class="card-body">
+                <div class="field-error" style="font-size: 13px;">{{ form.non_field_errors }}</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="layout">
+
+        <!-- MAIN FORM -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Examination Information</h2>
+                <p>Enter the settings for this examination.</p>
+            </div>
+
+            <div class="card-body">
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">
+                            Examination Name
+                            {% if form.name.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="field-error">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.order.id_for_label }}">
+                            Display Order
+                            {% if form.order.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                            <div class="field-error">{{ form.order.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="{{ form.slug.id_for_label }}">
+                            Slug
+                            {% if form.slug.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.slug }}
+                        <span class="help-text">Example: waec, jamb, neco</span>
+                        {% if form.slug.errors %}
+                            <div class="field-error">{{ form.slug.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="{{ form.description.id_for_label }}">
+                            Description
+                            {% if form.description.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="field-error">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Publishing</label>
+                        <div class="checkbox-field">
+                            {{ form.published }}
+                            <div class="checkbox-content">
+                                <label for="{{ form.published.id_for_label }}">
+                                    Publish this examination
+                                </label>
+                            </div>
+                        </div>
+                        {% if form.published.errors %}
+                            <div class="field-error">{{ form.published.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="actions">
+                    <a href="{% if is_edit %}{% url 'admin_dashboard:exam_detail' exam_id=exam.id %}{% else %}{% url 'admin_dashboard:exams' %}{% endif %}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        {{ form_action }}
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIDE INFO -->
+        <aside class="card">
+            <div class="card-header">
+                <h2>About Examinations</h2>
+                <p>How this fits into PupilAura.</p>
+            </div>
+            <div class="card-body">
+                <div class="side-list">
+                    <div class="side-item">
+                        <span class="side-label">Structure</span>
+                        <span class="side-value">Exam → Subjects + Years → Resources</span>
+                    </div>
+                    <div class="side-item">
+                        <span class="side-label">Content</span>
+                        <span class="side-value">Past questions, lessons, solutions</span>
+                    </div>
+                    <div class="side-item">
+                        <span class="side-label">Access</span>
+                        <span class="side-value">Per-exam or per-resource purchase</span>
+                    </div>
+                </div>
+
+                <div class="info-note" style="margin-top: 16px;">
+                    Create the exam first. Then add subjects and years.
+                    Then create resources that connect subject and year.
+                    Questions are managed inside each resource.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</form>
+
+{% endblock %}

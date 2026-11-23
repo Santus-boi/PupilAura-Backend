@@ -1,0 +1,4 @@
+exam,subject,year,resource_type,resource_title,question_number,question_type,question_text,option_a,option_b,option_c,option_d,correct_answer,explanation,marks,published
+WAEC,Computer Studies,2024,past_questions,WAEC Computer Studies 2024,1,mcq,Which language is commonly used to structure web pages?,Python,HTML,SQL,Java,B,HTML is the standard markup language used to structure web pages.,1,true
+WAEC,Computer Studies,2024,past_questions,WAEC Computer Studies 2024,2,mcq,Which technology is primarily used to style a web page?,HTML,CSS,Python,SQL,B,CSS is used to style and control the presentation of web pages.,1,true
+WAEC,Computer Studies,2024,past_questions,WAEC Computer Studies 2024,3,mcq,Which language is commonly used to add interactivity to web pages?,HTML,CSS,JavaScript,SQL,C,JavaScript is commonly used to add interactive behaviour to web pages.,1,true

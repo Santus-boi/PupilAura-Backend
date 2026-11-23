@@ -1,0 +1,491 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ form_title }} | PupilAura{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}Manage a written story and its publishing details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .story-form-container {
+        max-width: 1050px;
+        margin: 0 auto;
+    }
+
+    .form-intro {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+        margin-bottom: 22px;
+    }
+
+    .form-intro h3 {
+        font-size: 17px;
+        font-weight: 750;
+        margin: 0 0 7px;
+    }
+
+    .form-intro p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .form-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .form-section-header {
+        margin-bottom: 22px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section-header h3 {
+        font-size: 16px;
+        font-weight: 750;
+        margin: 0 0 5px;
+    }
+
+    .form-section-header p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        min-width: 0;
+        margin-bottom: 18px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .required-mark {
+        color: #dc2626;
+    }
+
+    .form-control {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 11px 13px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    textarea.form-control {
+        min-height: 145px;
+        resize: vertical;
+        line-height: 1.7;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    .field-help {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 6px;
+        line-height: 1.6;
+    }
+
+    .field-errors {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .field-errors ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .checkbox-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-soft);
+    }
+
+    .checkbox-card input {
+        width: 17px;
+        height: 17px;
+        margin-top: 2px;
+        accent-color: var(--primary);
+    }
+
+    .checkbox-card label {
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .checkbox-card small {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+        font-weight: 400;
+    }
+
+    .cover-preview {
+        display: none;
+        margin-top: 12px;
+        max-width: 180px;
+        max-height: 180px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid var(--border);
+    }
+
+    .current-cover {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 20px 0 35px;
+    }
+
+    .action-right {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .non-field-errors {
+        padding: 14px 16px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 700px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-section {
+            padding: 17px;
+        }
+
+        .form-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .action-right {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .action-right .btn,
+        .form-actions > .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:stories' %}">Story Library</a>
+    <span>/</span>
+    <span>{{ form_title }}</span>
+</div>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">
+                    <div class="hero-icon">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <div>
+                        <h1>{{ form_title }}</h1>
+                        <p>
+                            {% if story %}
+                                Update the story information and publishing settings.
+                            {% else %}
+                                Add a new written story to the PupilAura Story Library.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:stories' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Stories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="story-form-container">
+
+    <div class="form-intro">
+        <h3>📚 Story Library</h3>
+        <p>
+            This form creates a written story organised into chapters.
+            Interactive Cartoon Stories are managed separately and are not created here.
+        </p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="non-field-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <section class="form-section">
+            <div class="form-section-header">
+                <h3>Story Information</h3>
+                <p>Enter the basic details readers will see in the Story Library.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Story Title <span class="required-mark">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="field-errors">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        Story Description <span class="required-mark">*</span>
+                    </label>
+                    {{ form.description }}
+                    <span class="field-help">Write a short summary introducing the story.</span>
+                    {% if form.description.errors %}
+                        <div class="field-errors">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.author_name.id_for_label }}">
+                        Author Name
+                    </label>
+                    {{ form.author_name }}
+                    {% if form.author_name.errors %}
+                        <div class="field-errors">{{ form.author_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.genre.id_for_label }}">
+                        Genre <span class="required-mark">*</span>
+                    </label>
+                    {{ form.genre }}
+                    {% if form.genre.errors %}
+                        <div class="field-errors">{{ form.genre.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.audience.id_for_label }}">
+                        Target Audience <span class="required-mark">*</span>
+                    </label>
+                    {{ form.audience }}
+                    {% if form.audience.errors %}
+                        <div class="field-errors">{{ form.audience.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.content_rating.id_for_label }}">
+                        Content Rating <span class="required-mark">*</span>
+                    </label>
+                    {{ form.content_rating }}
+                    {% if form.content_rating.errors %}
+                        <div class="field-errors">{{ form.content_rating.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="form-section-header">
+                <h3>Story Cover</h3>
+                <p>Upload an image to represent this story.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ form.cover.id_for_label }}">
+                    Cover Image
+                </label>
+
+                {{ form.cover }}
+
+                <span class="field-help">
+                    Use a clear image that represents the story. Supported formats depend on your Django image configuration.
+                </span>
+
+                {% if form.cover.errors %}
+                    <div class="field-errors">{{ form.cover.errors }}</div>
+                {% endif %}
+
+                {% if story and story.cover %}
+                    <div style="margin-top: 14px;">
+                        <span class="field-help">Current cover image:</span>
+                        <img
+                            src="{{ story.cover.url }}"
+                            alt="{{ story.title }} cover"
+                            class="current-cover"
+                        >
+                    </div>
+                {% endif %}
+
+                <img id="coverPreview" class="cover-preview" alt="Selected cover preview">
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="form-section-header">
+                <h3>Publishing Settings</h3>
+                <p>Control how this story is displayed in the Story Library.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.status.id_for_label }}">
+                        Publication Status
+                    </label>
+                    {{ form.status }}
+                    <span class="field-help">
+                        A story should have at least one complete chapter before publishing.
+                    </span>
+                    {% if form.status.errors %}
+                        <div class="field-errors">{{ form.status.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-card">
+                        {{ form.is_featured }}
+                        <div>
+                            <label for="{{ form.is_featured.id_for_label }}">Featured Story</label>
+                            <small>Highlight this story in featured Story Library sections.</small>
+                            {% if form.is_featured.errors %}
+                                <div class="field-errors">{{ form.is_featured.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field }}
+        {% endfor %}
+
+        <div class="form-actions">
+            <a href="{% url 'admin_dashboard:stories' %}" class="btn btn-secondary">
+                <i class="bi bi-x-lg"></i>
+                Cancel
+            </a>
+
+            <div class="action-right">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    {{ submit_label }}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const coverInput = document.getElementById("id_cover");
+    const preview = document.getElementById("coverPreview");
+
+    if (!coverInput || !preview) {
+        return;
+    }
+
+    let previewUrl = null;
+
+    coverInput.addEventListener("change", function () {
+        const file = this.files && this.files[0];
+
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+
+        if (!file || !file.type.startsWith("image/")) {
+            preview.style.display = "none";
+            preview.removeAttribute("src");
+            return;
+        }
+
+        previewUrl = URL.createObjectURL(file);
+        preview.src = previewUrl;
+        preview.style.display = "block";
+    });
+});
+</script>
+{% endblock %}

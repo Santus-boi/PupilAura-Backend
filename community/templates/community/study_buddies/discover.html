@@ -1,0 +1,468 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}Find Study Buddies | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+<span class="text-muted">Community</span>
+<i class="bi bi-chevron-right small mx-2"></i>
+<span class="fw-semibold">Find Study Buddies</span>
+{% endblock %}
+
+{% block community_content %}
+
+<style>
+    .sb-page {
+        --sb-primary: #2563eb;
+        --sb-dark: #172554;
+        --sb-muted: #64748b;
+        color: #1e293b;
+    }
+
+    .sb-hero {
+        background: linear-gradient(120deg, #eff6ff, #f8fafc);
+        border: 1px solid #dbeafe;
+        border-radius: 22px;
+        padding: 28px;
+    }
+
+    .sb-hero-icon {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 18px;
+        background: #dbeafe;
+        color: #2563eb;
+        font-size: 25px;
+    }
+
+    .sb-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 22px 0;
+    }
+
+    .sb-nav a {
+        text-decoration: none;
+        padding: 9px 15px;
+        border-radius: 30px;
+        color: #475569;
+        background: #f1f5f9;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sb-nav a:hover,
+    .sb-nav a.active {
+        background: #2563eb;
+        color: white;
+    }
+
+    .sb-filter {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, .035);
+    }
+
+    .sb-filter .form-control,
+    .sb-filter .form-select {
+        min-height: 46px;
+        border-radius: 11px;
+        border-color: #e2e8f0;
+        font-size: 14px;
+    }
+
+    .sb-filter .form-control:focus,
+    .sb-filter .form-select:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+    }
+
+    .sb-card {
+        height: 100%;
+        background: white;
+        border: 1px solid #e8edf4;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .sb-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 35px rgba(15, 23, 42, .09);
+    }
+
+    .sb-card-top {
+        height: 7px;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+    }
+
+    .sb-avatar {
+        width: 58px;
+        height: 58px;
+        flex-shrink: 0;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .sb-name {
+        font-size: 16px;
+        color: #172554;
+        font-weight: 750;
+        margin-bottom: 5px;
+    }
+
+    .sb-mode {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sb-section-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+        margin-bottom: 6px;
+    }
+
+    .sb-info {
+        font-size: 13px;
+        line-height: 1.7;
+        color: #64748b;
+        overflow-wrap: anywhere;
+    }
+
+    .sb-divider {
+        border-top: 1px solid #f1f5f9;
+        margin: 16px 0;
+    }
+
+    .sb-request-btn {
+        border-radius: 12px;
+        padding: 11px 15px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .sb-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 9px;
+        border-radius: 30px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .sb-empty {
+        border: 1px dashed #cbd5e1;
+        border-radius: 20px;
+        background: #f8fafc;
+        padding: 55px 20px;
+    }
+
+    .sb-empty-icon {
+        width: 75px;
+        height: 75px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 24px;
+        font-size: 32px;
+    }
+
+    @media(max-width: 576px) {
+        .sb-hero {
+            padding: 20px;
+        }
+
+        .sb-hero .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="sb-page container-fluid py-3">
+
+    <!-- Hero -->
+    <section class="sb-hero mb-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="sb-hero-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-1">Find Your Study Circle</h3>
+                    <p class="text-muted small mb-0">
+                        Connect, collaborate and grow with students who share your goals.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'community:study_buddy_profile' %}"
+               class="btn btn-primary rounded-pill px-4 py-2">
+                <i class="bi bi-person-gear me-2"></i>
+                My Study Profile
+            </a>
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <nav class="sb-nav">
+        <a href="{% url 'community:dashboard' %}">
+            <i class="bi bi-grid me-1"></i> Community
+        </a>
+
+        <a href="{% url 'community:study_buddy_discover' %}" class="active">
+            <i class="bi bi-search me-1"></i> Discover
+        </a>
+
+        <a href="{% url 'community:study_buddy_profile' %}">
+            <i class="bi bi-person me-1"></i> My Profile
+        </a>
+
+        <a href="{% url 'community:study_buddy_requests' %}">
+            <i class="bi bi-person-plus me-1"></i> Requests
+        </a>
+
+        <a href="{% url 'community:study_buddy_partners' %}">
+            <i class="bi bi-people me-1"></i> Partners
+        </a>
+
+        <a href="{% url 'community:private_message_inbox' %}">
+            <i class="bi bi-chat-dots me-1"></i> Messages
+        </a>
+    </nav>
+
+    <!-- Search -->
+    <section class="sb-filter p-3 p-md-4 mb-4">
+        <div class="mb-3">
+            <h5 class="fw-bold mb-1">
+                <i class="bi bi-funnel text-primary me-2"></i>
+                Find the right study partner
+            </h5>
+            <p class="text-muted small mb-0">
+                Search by name, subjects, interests or preferred study style.
+            </p>
+        </div>
+
+        <form method="GET" class="row g-3 align-items-end">
+
+            <div class="col-12 col-md-6">
+                <label class="form-label small fw-bold">Search students</label>
+                <input
+                    type="text"
+                    name="q"
+                    class="form-control"
+                    placeholder="Name, subjects or interests..."
+                    value="{{ search_query }}"
+                >
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label small fw-bold">Study preference</label>
+                <select name="mode" class="form-select">
+                    <option value="">All study preferences</option>
+
+                    {% for value, label in study_modes %}
+                        <option value="{{ value }}"
+                            {% if selected_mode == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-search me-1"></i>
+                    Search
+                </button>
+
+                <a href="{% url 'community:study_buddy_discover' %}"
+                   class="btn btn-light border"
+                   title="Clear filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <!-- Results heading -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h5 class="fw-bold mb-1">Discover students</h5>
+            <p class="text-muted small mb-0">
+                Students available to connect with.
+            </p>
+        </div>
+
+        <span class="sb-count">
+            {{ profiles|length }} found
+        </span>
+    </div>
+
+    <!-- Student cards -->
+    <div class="row g-3">
+
+        {% for profile in profiles %}
+            <div class="col-12 col-md-6 col-xl-4">
+
+                <article class="sb-card">
+                    <div class="sb-card-top"></div>
+
+                    <div class="p-3 p-lg-4">
+
+                        <!-- Student identity -->
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="sb-avatar">
+                                {{ profile.user.first_name|default:profile.user.username|first|upper }}
+                            </div>
+
+                            <div class="min-w-0">
+                                <h6 class="sb-name text-truncate">
+                                    {{ profile.user.get_full_name|default:profile.user.username }}
+                                </h6>
+
+                                <span class="sb-mode">
+                                    <i class="bi bi-laptop"></i>
+                                    {{ profile.get_study_mode_display }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Bio -->
+                        <p class="sb-info mb-3">
+                            {% if profile.bio %}
+                                {{ profile.bio|truncatewords:25 }}
+                            {% else %}
+                                This student hasn't added a bio yet.
+                            {% endif %}
+                        </p>
+
+                        <div class="sb-divider"></div>
+
+                        <!-- Subjects -->
+                        <div class="mb-3">
+                            <div class="sb-section-label">
+                                <i class="bi bi-book text-primary me-1"></i>
+                                Subjects
+                            </div>
+
+                            <div class="sb-info">
+                                {{ profile.subjects|default:"Not specified"|truncatewords:15 }}
+                            </div>
+                        </div>
+
+                        <!-- Interests -->
+                        <div class="mb-3">
+                            <div class="sb-section-label">
+                                <i class="bi bi-lightbulb text-primary me-1"></i>
+                                Interests
+                            </div>
+
+                            <div class="sb-info">
+                                {{ profile.interests|default:"Not specified"|truncatewords:15 }}
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        {% if profile.availability %}
+                            <div class="mb-3">
+                                <div class="sb-section-label">
+                                    <i class="bi bi-clock text-primary me-1"></i>
+                                    Availability
+                                </div>
+
+                                <div class="sb-info">
+                                    {{ profile.availability }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="sb-divider"></div>
+
+                        <!-- Request action -->
+                        <form method="POST"
+                              action="{% url 'community:send_study_buddy_request' profile.user.id %}">
+                            {% csrf_token %}
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100 sb-request-btn">
+                                <i class="bi bi-person-plus-fill me-2"></i>
+                                Send Study Request
+                            </button>
+                        </form>
+
+                    </div>
+                </article>
+
+            </div>
+
+        {% empty %}
+
+            <div class="col-12">
+                <div class="sb-empty text-center">
+                    <div class="sb-empty-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <h5 class="fw-bold mt-4 mb-2">
+                        No study buddies found
+                    </h5>
+
+                    <p class="text-muted small mb-4">
+                        We couldn't find students matching your search.
+                        Try another keyword or change your study preference.
+                    </p>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="{% url 'community:study_buddy_discover' %}"
+                           class="btn btn-outline-primary rounded-pill px-4">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Clear search
+                        </a>
+
+                        <a href="{% url 'community:study_buddy_profile' %}"
+                           class="btn btn-primary rounded-pill px-4">
+                            Complete your profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

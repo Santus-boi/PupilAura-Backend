@@ -1,0 +1,124 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Tech Course Generator | PupilAura{% endblock %}
+{% block page_title %}AI Tech Course Generator{% endblock %}
+{% block page_subtitle %}Create technology and digital skills courses{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:ai_index' %}">AI Studio</a>
+    <span>/</span>
+    <span class="breadcrumb-current">Tech Course Generator</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-title">
+            <div class="hero-icon"><i class="bi bi-code-square"></i></div>
+            <div>
+                <h1>Generate a Tech Course</h1>
+                <p>Build structured digital skills courses for learners in the PupilAura Technology Academy.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="content-grid">
+    <section class="section-card">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Course Generation Details</div>
+                <div class="section-description">Define the course you want the AI to create.</div>
+            </div>
+            <span class="badge badge-green">Technology Academy</span>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="category">Course category <span class="required">*</span></label>
+                    <select name="category" id="category" class="form-select" required>
+                        <option value="">Select category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.pk }}"
+                                {% if form_data.category|stringformat:"s" == category.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="topic">Course topic <span class="required">*</span></label>
+                    <input type="text" name="topic" id="topic" class="form-control"
+                           value="{{ form_data.topic|default:'' }}"
+                           placeholder="e.g. Full Stack Web Development" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="audience">Target audience <span class="required">*</span></label>
+                    <input type="text" name="audience" id="audience" class="form-control"
+                           value="{{ form_data.audience|default:'' }}"
+                           placeholder="e.g. Beginners, secondary school students" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="difficulty">Difficulty level <span class="required">*</span></label>
+                    <select name="difficulty" id="difficulty" class="form-select" required>
+                        <option value="beginner" {% if form_data.difficulty == "beginner" or not form_data.difficulty %}selected{% endif %}>Beginner</option>
+                        <option value="intermediate" {% if form_data.difficulty == "intermediate" %}selected{% endif %}>Intermediate</option>
+                        <option value="advanced" {% if form_data.difficulty == "advanced" %}selected{% endif %}>Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="length">Course length <span class="required">*</span></label>
+                    <input type="number" name="length" id="length" class="form-control"
+                           min="1" max="100"
+                           value="{{ form_data.length|default:'8' }}" required>
+                    <div class="help-text">Number of modules or learning units requested.</div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:ai_index' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-stars"></i> Generate Course
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <aside class="section-card">
+        <div class="section-header">
+            <div class="section-title">Course Structure</div>
+        </div>
+        <div class="card-body">
+            <div class="info-list">
+                <div class="info-item">
+                    <div class="info-label">Step 1</div>
+                    <div class="info-value">Define the course topic and audience.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Step 2</div>
+                    <div class="info-value">Choose the difficulty and requested length.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Step 3</div>
+                    <div class="info-value">Review the generated course before publishing.</div>
+                </div>
+            </div>
+            <div class="warning-box" style="margin-top:18px;">
+                Generated courses are saved as unpublished content.
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,768 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Course Details{% endblock %}
+{% block page_subtitle %}Manage technology course modules and content{% endblock %}
+
+{% block extra_css %}
+<style>
+    .course-hero {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        display: grid;
+        grid-template-columns: 5fr 7fr;
+    }
+
+    .course-hero-image {
+        min-height: 300px;
+        background: #dbeafe;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .course-hero-image img {
+        width: 100%;
+        height: 100%;
+        min-height: 300px;
+        object-fit: cover;
+    }
+
+    .image-placeholder {
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 70px;
+    }
+
+    .course-hero-content {
+        padding: 28px;
+    }
+
+    .category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #dbeafe;
+        color: var(--primary);
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .course-hero-content h1 {
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .course-description {
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .course-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .course-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .course-price {
+        color: var(--primary);
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 22px;
+    }
+
+    .module-item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 12px;
+        background: var(--surface);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .module-item:hover {
+        border-color: #bfdbfe;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .module-layout {
+        display: flex;
+        gap: 12px;
+    }
+
+    .module-number {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .module-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .module-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .module-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 3px;
+    }
+
+    .module-description {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .module-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+    .module-actions .btn {
+        font-size: 12px;
+        padding: 6px 11px;
+        min-height: 32px;
+    }
+
+    .course-info-rows {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .course-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .course-info-label {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .course-info-value {
+        font-size: 13px;
+        font-weight: 700;
+        text-align: right;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .delete-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .delete-box h4 {
+        color: #991b1b;
+        font-weight: 800;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .delete-box p {
+        color: #7f1d1d;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+
+    .course-stat {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    /* AI generator button */
+    .btn-ai {
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        color: #fff !important;
+        border: 1px solid transparent;
+    }
+
+    .btn-ai:hover {
+        background: linear-gradient(135deg, #6d28d9, #4338ca);
+        color: #fff !important;
+    }
+
+    @media (max-width: 991px) {
+        .course-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .course-hero-image,
+        .course-hero-image img,
+        .image-placeholder {
+            min-height: 220px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .course-hero-content {
+            padding: 20px;
+        }
+
+        .course-hero-content h1 {
+            font-size: 24px;
+        }
+
+        .hero-actions {
+            flex-direction: column;
+        }
+
+        .hero-actions .btn {
+            width: 100%;
+        }
+
+        .module-actions .btn {
+            flex: 1;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .course-hero-image {
+            background: var(--surface-soft);
+        }
+
+        .category-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+
+        .module-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+
+        .delete-box {
+            background: #450a0a;
+            border-color: #7f1d1d;
+        }
+
+        .delete-box h4,
+        .delete-box p {
+            color: #fecaca;
+        }
+
+        .module-item:hover {
+            border-color: #3b82f6;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_courses' %}">Tech Courses</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ course.title }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+{% if delete_confirmation %}
+    <div class="non-field-errors" style="margin-bottom:20px;">
+        <strong>
+            <i class="bi bi-exclamation-triangle-fill" style="margin-right:4px;"></i>
+            Delete this Tech course?
+        </strong>
+
+        <p style="margin-top:8px; margin-bottom:12px;">
+            This action will delete the course and its modules, lessons,
+            media, and quizzes through the database relationships.
+        </p>
+
+        <form method="post"
+              action="{% url 'admin_dashboard:tech_course_delete' course.id %}"
+              style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Yes, Delete Course
+            </button>
+
+            <a href="{% url 'admin_dashboard:tech_course_detail' course.id %}"
+               class="btn btn-secondary">
+                Cancel
+            </a>
+        </form>
+    </div>
+{% endif %}
+
+<!-- COURSE HERO -->
+<section class="course-hero">
+
+    <div class="course-hero-image">
+        {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+        {% else %}
+            <div class="image-placeholder" aria-hidden="true">
+                <i class="bi bi-code-square"></i>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="course-hero-content">
+
+        <div class="category-badge">
+            <i class="bi bi-folder-fill"></i>
+            {% if course.category %}
+                {{ course.category.name }}
+            {% else %}
+                Uncategorized
+            {% endif %}
+        </div>
+
+        <h1>{{ course.title }}</h1>
+
+        <div class="course-description">
+            {% if course.description %}
+                {{ course.description|linebreaksbr }}
+            {% else %}
+                No description has been added for this course yet.
+            {% endif %}
+        </div>
+
+        <div class="course-meta">
+            <span>
+                <i class="bi bi-layers-fill"></i>
+                {{ modules|length }} module{{ modules|length|pluralize }}
+            </span>
+
+            <span>
+                <i class="bi bi-calendar3"></i>
+                Created {{ course.created_at|date:"M d, Y" }}
+            </span>
+
+            <span class="course-price">
+                {% if course.price > 0 %}
+                    ₦{{ course.price|floatformat:2 }}
+                {% else %}
+                    Free
+                {% endif %}
+            </span>
+
+            {% if course.published %}
+                <span class="badge badge-green">
+                    <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                    Published
+                </span>
+            {% else %}
+                <span class="badge badge-orange">
+                    <i class="bi bi-clock-fill" style="margin-right:4px;"></i>
+                    Draft
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="hero-actions">
+
+            <a href="{% url 'admin_dashboard:tech_course_edit' course.id %}"
+               class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Edit Course
+            </a>
+
+            <!-- AI MODULE GENERATOR -->
+            <a href="{% url 'admin_dashboard:ai_tech_module_generator' course.id %}"
+               class="btn btn-ai">
+                <i class="bi bi-stars"></i> Generate AI Modules
+            </a>
+
+            <a href="{% url 'admin_dashboard:tech_courses' %}"
+               class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> All Courses
+            </a>
+
+            {% if course.category %}
+                <a href="{% url 'admin_dashboard:tech_category_detail' course.category.id %}"
+                   class="btn btn-secondary">
+                    <i class="bi bi-folder"></i> Category
+                </a>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+<!-- COURSE STATS -->
+<section class="stats-grid" style="margin-bottom:24px;">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-layers-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ modules|length }}</div>
+            <div class="stat-label">Modules</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-journal-text"></i>
+        </div>
+        <div>
+            <div class="stat-value">—</div>
+            <div class="stat-label">Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">—</div>
+            <div class="stat-label">Enrollments</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-question-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">—</div>
+            <div class="stat-label">Quizzes</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- MAIN GRID -->
+<section class="content-grid">
+
+    <!-- LEFT: MODULES -->
+    <div class="details-main">
+
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Course Modules</h2>
+                    <p>Organize this course into structured learning modules.</p>
+                </div>
+
+                <a href="{% url 'admin_dashboard:tech_module_create' %}?course={{ course.id }}"
+                   class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Module
+                </a>
+            </div>
+
+            <div class="card-body">
+
+                {% if modules %}
+
+                    {% for module in modules %}
+
+                        <div class="module-item">
+
+                            <div class="module-layout">
+
+                                <div class="module-number">
+                                    {{ forloop.counter }}
+                                </div>
+
+                                <div class="module-content">
+
+                                    <div class="module-top">
+
+                                        <div>
+                                            <div class="module-title">
+                                                {{ module.title }}
+                                            </div>
+
+                                            <div class="module-description">
+                                                {% if module.description %}
+                                                    {{ module.description|truncatechars:140 }}
+                                                {% else %}
+                                                    No module description.
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            {% if module.published %}
+                                                <span class="badge badge-green">
+                                                    <i class="bi bi-check-circle"
+                                                       style="margin-right:4px;"></i>
+                                                    Published
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-orange">
+                                                    <i class="bi bi-clock"
+                                                       style="margin-right:4px;"></i>
+                                                    Draft
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+
+                                    <div class="module-actions">
+
+                                        <a href="{% url 'admin_dashboard:tech_module_detail' module.id %}"
+                                           class="btn btn-secondary">
+                                            <i class="bi bi-eye"></i> View Module
+                                        </a>
+
+                                        <a href="{% url 'admin_dashboard:tech_module_edit' module.id %}"
+                                           class="btn btn-secondary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+
+                                        <a href="{% url 'admin_dashboard:tech_module_delete' module.id %}"
+                                           class="btn btn-secondary">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon" aria-hidden="true">
+                            <i class="bi bi-layers"></i>
+                        </div>
+
+                        <h3>No Modules Yet</h3>
+
+                        <p>
+                            This course does not have any modules.
+                            Create the first module to start building
+                            the course structure.
+                        </p>
+
+                        <a href="{% url 'admin_dashboard:tech_module_create' %}?course={{ course.id }}"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Create First Module
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </article>
+    </div>
+
+    <!-- RIGHT: INFO + ACTIONS + DANGER -->
+    <aside class="details-sidebar">
+
+        <!-- COURSE INFORMATION -->
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Course Information</h2>
+                    <p>Key details about this course.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="course-info-rows">
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Category</span>
+                        <span class="course-info-value">
+                            {% if course.category %}
+                                {{ course.category.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Price</span>
+                        <span class="course-info-value">
+                            {% if course.price > 0 %}
+                                ₦{{ course.price|floatformat:2 }}
+                            {% else %}
+                                Free
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Status</span>
+                        <span class="course-info-value">
+                            {% if course.published %}
+                                <span style="color: var(--success);">Published</span>
+                            {% else %}
+                                <span style="color: var(--warning);">Draft</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Modules</span>
+                        <span class="course-info-value">
+                            {{ modules|length }}
+                        </span>
+                    </div>
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Created</span>
+                        <span class="course-info-value">
+                            {{ course.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <div class="course-info-row">
+                        <span class="course-info-label">Last Updated</span>
+                        <span class="course-info-value">
+                            {{ course.updated_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- QUICK ACTIONS -->
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Quick Actions</h2>
+                    <p>Manage this course.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="resource-actions">
+
+                    <a href="{% url 'admin_dashboard:tech_course_edit' course.id %}"
+                       class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i> Edit Course
+                    </a>
+
+                    <!-- AI MODULE GENERATOR -->
+                    <a href="{% url 'admin_dashboard:ai_tech_module_generator' course.id %}"
+                       class="btn btn-ai">
+                        <i class="bi bi-stars"></i> Generate AI Modules
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:tech_module_create' %}?course={{ course.id }}"
+                       class="btn btn-secondary">
+                        <i class="bi bi-plus-circle"></i> Add Module
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:tech_courses' %}"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Courses
+                    </a>
+
+                </div>
+            </div>
+        </article>
+
+        <!-- DANGER ZONE -->
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Danger Zone</h2>
+                    <p>Destructive actions.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="delete-box">
+
+                    <h4>
+                        <i class="bi bi-exclamation-triangle-fill"
+                           style="margin-right:4px;"></i>
+                        Delete Course
+                    </h4>
+
+                    <p>
+                        Deleting this course will also remove its modules,
+                        lessons, media, and quizzes because those records
+                        depend on the course.
+                    </p>
+
+                    <a href="{% url 'admin_dashboard:tech_course_delete' course.id %}"
+                       class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Course
+                    </a>
+
+                </div>
+            </div>
+        </article>
+
+    </aside>
+
+</section>
+
+{% endblock %}

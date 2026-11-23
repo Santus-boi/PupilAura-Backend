@@ -1,0 +1,1044 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Memory Match | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+
+<style>
+    .memory-page {
+        min-height: 100vh;
+        padding: 35px 0 70px;
+        background:
+            radial-gradient(circle at 5% 5%, #ffe3ef, transparent 25%),
+            radial-gradient(circle at 95% 10%, #dff5ff, transparent 25%),
+            #f6f5ff;
+        color: #29233f;
+    }
+
+    .memory-container {
+        width: min(1100px, 94%);
+        margin: auto;
+    }
+
+    .memory-heading {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .memory-heading .eyebrow {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 30px;
+        background: #e9e2ff;
+        color: #6842dc;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+
+    .memory-heading h1 {
+        font-size: clamp(30px, 5vw, 45px);
+        font-weight: 1000;
+        margin: 14px 0 7px;
+    }
+
+    .memory-heading p {
+        color: #817a96;
+    }
+
+    .memory-section {
+        background: white;
+        border-radius: 24px;
+        padding: 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 12px 35px #39236d0d;
+    }
+
+    .section-title {
+        font-size: 19px;
+        font-weight: 1000;
+        margin-bottom: 17px;
+    }
+
+    .age-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+        gap: 13px;
+    }
+
+    .age-card {
+        border: 2px solid #eee9f8;
+        border-radius: 17px;
+        padding: 17px 10px;
+        background: #fff;
+        text-align: center;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .age-card:hover {
+        transform: translateY(-4px);
+        border-color: #b9a4ff;
+    }
+
+    .age-card.active {
+        border-color: #7047e8;
+        background: #f3efff;
+        box-shadow: 0 0 0 3px #7047e81a;
+    }
+
+    .age-card .age-emoji {
+        font-size: 32px;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .age-card strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .age-card small {
+        color: #8c849f;
+        font-size: 11px;
+    }
+
+    .level-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 13px;
+    }
+
+    .level-card {
+        padding: 17px 10px;
+        border: 2px solid #eee9f8;
+        border-radius: 16px;
+        background: white;
+        cursor: pointer;
+        text-align: center;
+        transition: .2s;
+    }
+
+    .level-card.active {
+        background: #f3efff;
+        border-color: #7047e8;
+    }
+
+    .level-card strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .level-card small {
+        color: #8c849f;
+        font-size: 11px;
+    }
+
+    .start-game-btn {
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        border: 0;
+        border-radius: 15px;
+        color: white;
+        background: #7047e8;
+        font-weight: 1000;
+        font-size: 15px;
+        transition: .2s;
+    }
+
+    .start-game-btn:hover {
+        background: #512cbd;
+        transform: translateY(-2px);
+    }
+
+    .start-game-btn:disabled {
+        opacity: .65;
+        cursor: wait;
+        transform: none;
+    }
+
+    .game-area {
+        display: none;
+        background: white;
+        border-radius: 25px;
+        padding: 23px;
+        box-shadow: 0 15px 45px #39236d12;
+    }
+
+    .game-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .game-top h2 {
+        font-size: 20px;
+        font-weight: 1000;
+        margin: 0;
+    }
+
+    .game-top button {
+        border: 0;
+        border-radius: 12px;
+        background: #f0ebff;
+        color: #6842dc;
+        padding: 9px 14px;
+        font-weight: 900;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .stat-box {
+        padding: 13px 8px;
+        border-radius: 15px;
+        background: #f7f4ff;
+        text-align: center;
+    }
+
+    .stat-box span {
+        display: block;
+        font-size: 11px;
+        color: #817a96;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .stat-box strong {
+        display: block;
+        font-size: 22px;
+        font-weight: 1000;
+        color: #6842dc;
+        margin-top: 4px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .game-instruction {
+        text-align: center;
+        color: #817a96;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    .memory-card {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        perspective: 700px;
+        cursor: pointer;
+        min-width: 0;
+    }
+
+    .card-inner {
+        position: absolute;
+        inset: 0;
+        border-radius: 17px;
+        transition: transform .45s ease;
+        transform-style: preserve-3d;
+    }
+
+    .memory-card.flipped .card-inner,
+    .memory-card.matched .card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 17px;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    .card-front {
+        background: linear-gradient(135deg, #7651eb, #a77aff);
+        border: 3px solid white;
+        box-shadow: 0 5px 12px #5030a52c;
+        color: white;
+        font-size: clamp(25px, 5vw, 40px);
+        font-weight: 1000;
+    }
+
+    .card-back {
+        transform: rotateY(180deg);
+        background: linear-gradient(135deg, #fff1d1, #ffe0ed);
+        border: 3px solid #f1d5f0;
+        font-size: clamp(35px, 7vw, 55px);
+    }
+
+    .memory-card.matched .card-back {
+        background: #dcffed;
+        border-color: #52ce93;
+    }
+
+    .memory-card:disabled {
+        cursor: default;
+    }
+
+    .game-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+    }
+
+    .game-actions button {
+        border: 0;
+        border-radius: 13px;
+        padding: 11px 17px;
+        font-weight: 900;
+    }
+
+    .restart-btn {
+        background: #7047e8;
+        color: white;
+    }
+
+    .quit-btn {
+        background: #f0ebff;
+        color: #6842dc;
+    }
+
+    .result-panel {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        border-radius: 25px;
+        background: linear-gradient(135deg, #fff0d2, #eee7ff);
+        box-shadow: 0 15px 45px #39236d12;
+    }
+
+    .result-emoji {
+        font-size: 65px;
+    }
+
+    .result-panel h2 {
+        font-size: 29px;
+        font-weight: 1000;
+        margin: 12px 0;
+    }
+
+    .result-panel p {
+        color: #817a96;
+    }
+
+    .result-score {
+        font-size: 43px;
+        color: #7047e8;
+        font-weight: 1000;
+        margin: 15px;
+    }
+
+    .result-details {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+    .result-detail {
+        min-width: 110px;
+        padding: 13px;
+        border-radius: 14px;
+        background: white;
+    }
+
+    .result-detail strong {
+        display: block;
+        color: #7047e8;
+        font-size: 20px;
+    }
+
+    .result-detail small {
+        color: #817a96;
+    }
+
+    .result-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .result-actions button {
+        border: 0;
+        border-radius: 13px;
+        padding: 13px 18px;
+        font-weight: 900;
+    }
+
+    @media(max-width: 600px) {
+        .memory-section,
+        .game-area {
+            padding: 17px;
+        }
+
+        .age-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cards-grid {
+            gap: 8px;
+        }
+
+        .card-front,
+        .card-back {
+            border-radius: 12px;
+        }
+
+        .game-top h2 {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<div class="memory-page">
+<div class="memory-container">
+
+    <header class="memory-heading">
+        <span class="eyebrow">🎮 PUPILAURA ARCADE</span>
+        <h1>Memory Match 🧠</h1>
+        <p>Flip the cards, find matching pictures and train your memory!</p>
+    </header>
+
+    <section class="memory-section" id="gameSetup">
+
+        <h3 class="section-title">👶 Choose Your Age Group</h3>
+
+        <div class="age-grid">
+            {% for age in age_groups %}
+            <button class="age-card {% if forloop.first %}active{% endif %}"
+                    type="button"
+                    data-min-age="{{ age.min_age }}"
+                    data-max-age="{{ age.max_age }}"
+                    onclick="selectAge(this)">
+
+                <span class="age-emoji">
+                    {% if age.min_age == 3 %}🧸
+                    {% elif age.min_age == 6 %}🎨
+                    {% elif age.min_age == 9 %}🚀
+                    {% elif age.min_age == 13 %}🎯
+                    {% else %}🧩{% endif %}
+                </span>
+
+                <strong>{{ age.name }}</strong>
+                <small>
+                    {% if age.max_age == 100 %}18+{% else %}{{ age.min_age }}–{{ age.max_age }} years{% endif %}
+                </small>
+            </button>
+            {% endfor %}
+        </div>
+
+        <hr style="border-color:#eee9f8; margin:25px 0;">
+
+        <h3 class="section-title">⭐ Choose Difficulty</h3>
+
+        <div class="level-grid">
+            <button class="level-card active" type="button"
+                    data-level="easy" onclick="selectLevel(this)">
+                <strong>🌱 Easy</strong>
+                <small>6 pairs</small>
+            </button>
+
+            <button class="level-card" type="button"
+                    data-level="medium" onclick="selectLevel(this)">
+                <strong>🔥 Medium</strong>
+                <small>8 pairs</small>
+            </button>
+
+            <button class="level-card" type="button"
+                    data-level="hard" onclick="selectLevel(this)">
+                <strong>🏆 Hard</strong>
+                <small>10 pairs</small>
+            </button>
+        </div>
+
+        <button class="start-game-btn" id="startGameButton"
+                type="button" onclick="startGame()">
+            🚀 Start Memory Match
+        </button>
+    </section>
+
+    <section class="game-area" id="gameArea">
+
+        <div class="game-top">
+            <h2 id="gameTitle">Memory Challenge</h2>
+            <button type="button" onclick="quitGame()">✕ Exit Game</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <span>⭐ Score</span>
+                <strong id="score">0</strong>
+            </div>
+
+            <div class="stat-box">
+                <span>🎯 Matches</span>
+                <strong id="matches">0</strong>
+            </div>
+
+            <div class="stat-box">
+                <span>🔄 Attempts</span>
+                <strong id="attempts">0</strong>
+            </div>
+
+            <div class="stat-box">
+                <span>⏱ Time</span>
+                <strong id="timer">00:00</strong>
+            </div>
+        </div>
+
+        <p class="game-instruction">
+            Tap two cards. Find two identical pictures to make a match!
+        </p>
+
+        <div class="cards-grid" id="cardsGrid"></div>
+
+        <div class="game-actions">
+            <button class="restart-btn" type="button" onclick="restartGame()">
+                🔁 Restart
+            </button>
+
+            <button class="quit-btn" type="button" onclick="quitGame()">
+                Change Settings
+            </button>
+        </div>
+    </section>
+
+    <section class="result-panel" id="resultPanel">
+        <div class="result-emoji" id="resultEmoji">🏆</div>
+        <h2 id="resultTitle">Amazing Work!</h2>
+        <p id="resultMessage"></p>
+
+        <div class="result-score" id="resultScore">120</div>
+        <p>Total Points</p>
+
+        <div class="result-details">
+            <div class="result-detail">
+                <strong id="resultMatches">6</strong>
+                <small>Matches</small>
+            </div>
+
+            <div class="result-detail">
+                <strong id="resultAttempts">8</strong>
+                <small>Attempts</small>
+            </div>
+
+            <div class="result-detail">
+                <strong id="resultTime">00:30</strong>
+                <small>Time Taken</small>
+            </div>
+        </div>
+
+        <div class="result-actions">
+            <button class="restart-btn" type="button" onclick="restartGame()">
+                🔁 Play Again
+            </button>
+
+            <button class="quit-btn" type="button" onclick="quitGame()">
+                🎮 Change Settings
+            </button>
+        </div>
+    </section>
+
+</div>
+</div>
+
+<form id="csrfForm" hidden>
+    {% csrf_token %}
+</form>
+
+<script>
+const START_ATTEMPT_URL = "{% url 'play_learn:attempt_start' %}";
+const FINISH_ATTEMPT_URL_TEMPLATE = "{% url 'play_learn:attempt_finish' 0 %}";
+
+const cardSymbols = [
+    "🦁", "🐘", "🐵", "🦒", "🐼",
+    "🦊", "🐸", "🐯", "🐰", "🐻",
+    "🍎", "🍌", "🍇", "🍓", "🍉",
+    "🚗", "🚀", "⚽", "🎈", "⭐"
+];
+
+const ageSettings = {
+    "3": {
+        title: "Little Explorer",
+        gridColumns: 3
+    },
+    "6": {
+        title: "Young Learner",
+        gridColumns: 4
+    },
+    "9": {
+        title: "Junior Explorer",
+        gridColumns: 4
+    },
+    "13": {
+        title: "Teen Innovator",
+        gridColumns: 5
+    },
+    "18": {
+        title: "Adult Zone",
+        gridColumns: 5
+    }
+};
+
+const levelSettings = {
+    easy: 6,
+    medium: 8,
+    hard: 10
+};
+
+let selectedAge = "3";
+let selectedLevel = "easy";
+let deck = [];
+let firstCard = null;
+let secondCard = null;
+let locked = false;
+let matches = 0;
+let attempts = 0;
+let score = 0;
+let elapsedSeconds = 0;
+let timerInterval = null;
+let gameStarted = false;
+
+let activeAttemptId = null;
+let attemptFinishing = false;
+let gameFinishing = false;
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+function getCsrfToken() {
+    const csrfInput = document.querySelector(
+        '#csrfForm input[name="csrfmiddlewaretoken"]'
+    );
+
+    return csrfInput ? csrfInput.value : "";
+}
+
+function getFinishAttemptUrl(attemptId) {
+    return FINISH_ATTEMPT_URL_TEMPLATE.replace(
+        "/0/",
+        `/${attemptId}/`
+    );
+}
+
+async function sendTrackingRequest(url, payload = {}) {
+    const response = await fetch(url, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(),
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    let result;
+
+    try {
+        result = await response.json();
+    } catch (error) {
+        throw new Error("The server returned an invalid response.");
+    }
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.error || "The tracking request failed."
+        );
+    }
+
+    return result;
+}
+
+function selectAge(button) {
+    document.querySelectorAll(".age-card").forEach(card => {
+        card.classList.remove("active");
+    });
+
+    button.classList.add("active");
+    selectedAge = button.dataset.minAge;
+}
+
+function selectLevel(button) {
+    document.querySelectorAll(".level-card").forEach(card => {
+        card.classList.remove("active");
+    });
+
+    button.classList.add("active");
+    selectedLevel = button.dataset.level;
+}
+
+function shuffle(array) {
+    const shuffled = [...array];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+}
+
+async function startGame() {
+    const startButton = $("startGameButton");
+
+    if (startButton.disabled) return;
+
+    startButton.disabled = true;
+    startButton.textContent = "Starting game...";
+
+    try {
+        // Do not leave an earlier attempt open when restarting.
+        if (activeAttemptId !== null) {
+            await finishAttempt("abandoned");
+        }
+
+        // Create a new database attempt.
+        const result = await sendTrackingRequest(
+            START_ATTEMPT_URL
+        );
+
+        activeAttemptId = result.attempt_id;
+
+        const settings = ageSettings[selectedAge];
+        const pairCount = levelSettings[selectedLevel];
+
+        resetGameState();
+
+        const selectedSymbols = shuffle(cardSymbols).slice(
+            0,
+            pairCount
+        );
+
+        deck = shuffle(
+            selectedSymbols.flatMap((symbol, index) => [
+                {
+                    id: `${index}-a`,
+                    symbol,
+                    pair: index
+                },
+                {
+                    id: `${index}-b`,
+                    symbol,
+                    pair: index
+                }
+            ])
+        );
+
+        $("gameSetup").style.display = "none";
+        $("resultPanel").style.display = "none";
+        $("gameArea").style.display = "block";
+
+        $("gameTitle").textContent =
+            `${settings.title} – ${selectedLevel.toUpperCase()} Challenge`;
+
+        $("cardsGrid").style.gridTemplateColumns =
+            `repeat(${settings.gridColumns}, minmax(0, 1fr))`;
+
+        renderCards();
+        updateStats();
+
+        // Start timing from the same point as the database attempt.
+        startTimer();
+
+    } catch (error) {
+        console.error("Could not start game attempt:", error);
+
+        alert(
+            "The game could not be started because your attempt could not be recorded. Please try again."
+        );
+
+    } finally {
+        startButton.disabled = false;
+        startButton.textContent = "🚀 Start Memory Match";
+    }
+}
+
+function resetGameState() {
+    clearInterval(timerInterval);
+
+    firstCard = null;
+    secondCard = null;
+    locked = false;
+    matches = 0;
+    attempts = 0;
+    score = 0;
+    elapsedSeconds = 0;
+    gameStarted = false;
+    gameFinishing = false;
+
+    $("timer").textContent = "00:00";
+}
+
+function renderCards() {
+    const grid = $("cardsGrid");
+    grid.innerHTML = "";
+
+    deck.forEach(card => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "memory-card";
+        button.dataset.id = card.id;
+        button.dataset.pair = card.pair;
+        button.setAttribute("aria-label", "Hidden memory card");
+
+        button.innerHTML = `
+            <div class="card-inner">
+                <div class="card-front">?</div>
+                <div class="card-back">${card.symbol}</div>
+            </div>
+        `;
+
+        button.addEventListener("click", () => flipCard(button));
+
+        grid.appendChild(button);
+    });
+}
+
+function startTimer() {
+    if (gameStarted) return;
+
+    gameStarted = true;
+
+    timerInterval = setInterval(() => {
+        elapsedSeconds++;
+
+        $("timer").textContent = formatTime(elapsedSeconds);
+    }, 1000);
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remaining = seconds % 60;
+
+    return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
+}
+
+function flipCard(button) {
+    if (
+        locked ||
+        gameFinishing ||
+        button.classList.contains("flipped") ||
+        button.classList.contains("matched")
+    ) {
+        return;
+    }
+
+    button.classList.add("flipped");
+    button.setAttribute("aria-label", "Revealed memory card");
+
+    if (!firstCard) {
+        firstCard = button;
+        return;
+    }
+
+    secondCard = button;
+    attempts++;
+
+    const firstPair = firstCard.dataset.pair;
+    const secondPair = secondCard.dataset.pair;
+
+    if (firstPair === secondPair) {
+        handleMatch();
+    } else {
+        handleMismatch();
+    }
+
+    updateStats();
+}
+
+function handleMatch() {
+    firstCard.classList.add("matched");
+    secondCard.classList.add("matched");
+
+    firstCard.disabled = true;
+    secondCard.disabled = true;
+
+    matches++;
+    score += 20;
+
+    firstCard = null;
+    secondCard = null;
+
+    updateStats();
+
+    if (matches === levelSettings[selectedLevel]) {
+        gameFinishing = true;
+        setTimeout(endGame, 500);
+    }
+}
+
+function handleMismatch() {
+    locked = true;
+
+    setTimeout(() => {
+        if (!firstCard || !secondCard) return;
+
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+
+        firstCard.setAttribute("aria-label", "Hidden memory card");
+        secondCard.setAttribute("aria-label", "Hidden memory card");
+
+        firstCard = null;
+        secondCard = null;
+        locked = false;
+    }, 850);
+}
+
+function updateStats() {
+    $("score").textContent = score;
+    $("matches").textContent = matches;
+    $("attempts").textContent = attempts;
+}
+
+async function finishAttempt(status) {
+    if (activeAttemptId === null || attemptFinishing) {
+        return null;
+    }
+
+    attemptFinishing = true;
+
+    const attemptId = activeAttemptId;
+
+    try {
+        const result = await sendTrackingRequest(
+            getFinishAttemptUrl(attemptId),
+            {
+                status: status,
+                level: selectedLevel,
+                matches: matches,
+                attempts: attempts
+            }
+        );
+
+        if (activeAttemptId === attemptId) {
+            activeAttemptId = null;
+        }
+
+        return result;
+
+    } finally {
+        attemptFinishing = false;
+    }
+}
+
+async function endGame() {
+    if (activeAttemptId === null || !gameFinishing) return;
+
+    clearInterval(timerInterval);
+
+    const totalPairs = levelSettings[selectedLevel];
+    const accuracy = attempts
+        ? Math.round((matches / attempts) * 100)
+        : 0;
+
+    try {
+        const result = await finishAttempt("completed");
+
+        $("gameArea").style.display = "none";
+        $("resultPanel").style.display = "block";
+
+        $("resultScore").textContent = result.score;
+        $("resultMatches").textContent = matches;
+        $("resultAttempts").textContent = attempts;
+        $("resultTime").textContent = formatTime(
+            result.duration_seconds
+        );
+
+        $("resultEmoji").textContent =
+            accuracy >= 80 ? "🏆🌟🎉" : "👏⭐";
+
+        $("resultTitle").textContent =
+            accuracy >= 80 ? "Memory Master!" : "Well Done!";
+
+        $("resultMessage").textContent =
+            `You found all ${totalPairs} matching pairs with ${accuracy}% matching efficiency!`;
+
+    } catch (error) {
+        console.error("Could not save completed attempt:", error);
+
+        alert(
+            "Your game is complete, but the result could not be saved. Please check your connection and try again."
+        );
+
+        gameFinishing = false;
+    }
+}
+
+async function restartGame() {
+    await startGame();
+}
+
+async function quitGame() {
+    clearInterval(timerInterval);
+
+    if (activeAttemptId !== null) {
+        try {
+            await finishAttempt("abandoned");
+        } catch (error) {
+            console.error("Could not save abandoned attempt:", error);
+
+            alert(
+                "We could not record that you exited the game. Please check your connection and try again."
+            );
+
+            return;
+        }
+    }
+
+    stopGameDisplay();
+
+    $("gameSetup").style.display = "block";
+    $("gameArea").style.display = "none";
+    $("resultPanel").style.display = "none";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function stopGameDisplay() {
+    deck = [];
+    resetGameState();
+}
+</script>
+
+{% endblock %}

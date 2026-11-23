@@ -1,0 +1,1633 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Technology Academy | PupilAura{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'bootstrap-5.3.8-dist/css/bootstrap.min.css' %}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'bootstrap-icons-1.13.1/font/bootstrap-icons.min.css' %}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{% static 'assets/css/style.css' %}"
+    >
+
+    <style>
+        :root {
+            --tech-primary: #2563eb;
+            --tech-primary-dark: #1d4ed8;
+            --tech-primary-soft: #eff6ff;
+            --tech-dark: #111827;
+            --tech-text: #374151;
+            --tech-muted: #6b7280;
+            --tech-background: #f5f7fb;
+            --tech-white: #ffffff;
+            --tech-border: #e5e7eb;
+            --tech-radius: 16px;
+            --tech-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 90px;
+        }
+
+        body.tech-academy {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--tech-background);
+            color: var(--tech-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .tech-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.97);
+            border-bottom: 1px solid var(--tech-border);
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-inner {
+            width: min(1200px, calc(100% - 40px));
+            min-height: 76px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            flex-shrink: 0;
+            color: var(--tech-dark);
+        }
+
+        .brand:hover {
+            color: var(--tech-primary);
+        }
+
+        .brand-mark {
+            width: 43px;
+            height: 43px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 13px;
+            background: var(--tech-primary);
+            color: #fff;
+            font-size: 22px;
+        }
+
+        .brand-name {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+        }
+
+        .brand-name small {
+            margin-top: 4px;
+            color: var(--tech-muted);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .nav-link-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            color: var(--tech-text);
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-link-custom:hover,
+        .nav-link-custom:focus {
+            background: var(--tech-primary-soft);
+            color: var(--tech-primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .dashboard-btn,
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 10px 15px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .dashboard-btn {
+            background: var(--tech-primary);
+            color: #fff;
+        }
+
+        .dashboard-btn:hover,
+        .dashboard-btn:focus {
+            background: var(--tech-primary-dark);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn {
+            border-color: var(--tech-border);
+            background: #fff;
+            color: var(--tech-text);
+        }
+
+        .logout-btn:hover,
+        .logout-btn:focus {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .tech-main {
+            min-height: 55vh;
+        }
+
+        .tech-messages {
+            width: min(1200px, calc(100% - 40px));
+            margin: 20px auto 0;
+        }
+
+        .tech-footer {
+            margin-top: 64px;
+            border-top: 1px solid var(--tech-border);
+            background: #fff;
+        }
+
+        .tech-footer-inner {
+            width: min(1200px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tech-footer-brand {
+            color: var(--tech-dark);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .tech-footer-copy {
+            color: var(--tech-muted);
+            font-size: 13px;
+        }
+
+        .tech-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .tech-footer-links a {
+            color: var(--tech-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .tech-footer-links a:hover {
+            color: var(--tech-primary);
+        }
+
+        /* ==========================================
+           PUPILAURA AI TUTOR
+           ========================================== */
+
+        .ai-tutor-widget {
+            --ai-primary: #4f46e5;
+            --ai-primary-dark: #4338ca;
+            --ai-ink: #172033;
+            --ai-muted: #64748b;
+            --ai-border: #e2e8f0;
+
+            position: relative;
+            z-index: 2000;
+        }
+
+        .ai-tutor-launcher {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            z-index: 2001;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 11px;
+            min-height: 58px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #4f46e5, #2563eb);
+            color: #fff;
+            box-shadow: 0 12px 35px rgba(79, 70, 229, .32);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 750;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .ai-tutor-launcher:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 40px rgba(79, 70, 229, .4);
+            color: #fff;
+        }
+
+        .ai-tutor-launcher:focus-visible,
+        .ai-selection-button:focus-visible,
+        .ai-send-button:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+        }
+
+        .ai-launcher-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .18);
+            font-size: 20px;
+        }
+
+        .ai-launcher-copy {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.25;
+        }
+
+        .ai-launcher-copy small {
+            margin-top: 4px;
+            color: #e0e7ff;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .ai-tutor-panel {
+            position: fixed;
+            right: 25px;
+            bottom: 98px;
+            z-index: 2002;
+            display: flex;
+            flex-direction: column;
+            width: min(410px, calc(100vw - 30px));
+            height: min(620px, calc(100dvh - 130px));
+            min-height: 360px;
+            overflow: hidden;
+            border: 1px solid #e0e7ff;
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 24px 80px rgba(15, 23, 42, .2);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Arial, sans-serif;
+        }
+
+        .ai-tutor-panel[hidden],
+        .ai-selection-button[hidden] {
+            display: none !important;
+        }
+
+        .ai-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 17px;
+            background: linear-gradient(135deg, #4338ca, #2563eb);
+            color: #fff;
+        }
+
+        .ai-header-identity {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            min-width: 0;
+        }
+
+        .ai-header-avatar {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .16);
+            font-size: 22px;
+        }
+
+        .ai-header-text {
+            min-width: 0;
+        }
+
+        .ai-header-text h2 {
+            margin: 0;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .ai-header-text p {
+            margin: 4px 0 0;
+            color: #e0e7ff;
+            font-size: 11px;
+        }
+
+        .ai-panel-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ai-header-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            border: 0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .ai-header-button:hover {
+            background: rgba(255, 255, 255, .23);
+        }
+
+        .ai-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            padding: 12px 13px;
+            border-bottom: 1px solid #eef2f7;
+            background: #fff;
+        }
+
+        .ai-suggestion {
+            padding: 7px 10px;
+            border: 1px solid #dbe3ff;
+            border-radius: 20px;
+            background: #f5f7ff;
+            color: #4338ca;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .ai-suggestion:hover {
+            border-color: #a5b4fc;
+            background: #eef2ff;
+        }
+
+        .ai-chat-messages {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 13px;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 17px 14px;
+            background: #f8faff;
+            overscroll-behavior: contain;
+        }
+
+        .ai-welcome {
+            padding: 16px;
+            border: 1px solid #e0e7ff;
+            border-radius: 15px 15px 15px 5px;
+            background: #fff;
+            color: #334155;
+            font-size: 13px;
+            line-height: 1.75;
+        }
+
+        .ai-welcome strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #312e81;
+            font-size: 14px;
+        }
+
+        .ai-message {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            gap: 5px;
+        }
+
+        .ai-message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .ai-message.assistant {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .ai-message-bubble {
+            padding: 11px 13px;
+            border-radius: 15px;
+            font-size: 13px;
+            line-height: 1.75;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .ai-message.user .ai-message-bubble {
+            border-bottom-right-radius: 5px;
+            background: #4f46e5;
+            color: #fff;
+        }
+
+        .ai-message.assistant .ai-message-bubble {
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 5px;
+            background: #fff;
+            color: #334155;
+        }
+
+        .ai-message-time {
+            padding: 0 4px;
+            color: #94a3b8;
+            font-size: 10px;
+        }
+
+        .ai-typing {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 13px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px 15px 15px 5px;
+            background: #fff;
+        }
+
+        .ai-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #818cf8;
+            animation: ai-typing-pulse 1s infinite ease-in-out;
+        }
+
+        .ai-typing span:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .ai-typing span:nth-child(3) {
+            animation-delay: .3s;
+        }
+
+        @keyframes ai-typing-pulse {
+            0%, 60%, 100% {
+                opacity: .4;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        .ai-chat-error {
+            padding: 10px 12px;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            background: #fef2f2;
+            color: #991b1b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .ai-composer {
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        .ai-composer-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 9px;
+            padding: 7px;
+            border: 1px solid #dbe3ef;
+            border-radius: 15px;
+            background: #fff;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .ai-composer-form:focus-within {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .1);
+        }
+
+        .ai-chat-input {
+            flex: 1;
+            width: 100%;
+            min-width: 0;
+            max-height: 105px;
+            min-height: 40px;
+            resize: none;
+            padding: 10px 8px;
+            border: 0;
+            outline: none;
+            background: transparent;
+            color: #172033;
+            font: inherit;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .ai-chat-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .ai-send-button {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 41px;
+            height: 41px;
+            border: 0;
+            border-radius: 12px;
+            background: #4f46e5;
+            color: #fff;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        .ai-send-button:hover {
+            background: #4338ca;
+        }
+
+        .ai-send-button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .ai-composer-note {
+            margin: 8px 3px 0;
+            color: #94a3b8;
+            font-size: 10px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        /* Ask AI control for selected text */
+
+        .ai-selection-button {
+            position: fixed;
+            z-index: 2100;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: calc(100vw - 24px);
+            padding: 10px 14px;
+            border: 1px solid #c7d2fe;
+            border-radius: 12px;
+            background: #fff;
+            color: #4338ca;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, .18);
+            font: inherit;
+            font-size: 12px;
+            font-weight: 750;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .ai-selection-button:hover {
+            border-color: #818cf8;
+            background: #eef2ff;
+        }
+
+        .ai-selection-button i {
+            font-size: 15px;
+        }
+
+        .ai-tutor-launcher:focus-visible,
+        .ai-header-button:focus-visible,
+        .ai-suggestion:focus-visible {
+            outline: 3px solid #c7d2fe;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 1000px) {
+            .navbar-inner {
+                width: min(100% - 30px, 1200px);
+                gap: 14px;
+                flex-wrap: wrap;
+                padding: 12px 0;
+            }
+
+            .main-nav {
+                order: 3;
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                border-top: 1px solid var(--tech-border);
+                padding-top: 10px;
+            }
+
+            .nav-link-custom {
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar-inner {
+                width: calc(100% - 24px);
+            }
+
+            .brand-mark {
+                width: 38px;
+                height: 38px;
+                font-size: 19px;
+            }
+
+            .brand-name {
+                font-size: 16px;
+            }
+
+            .nav-actions {
+                gap: 6px;
+            }
+
+            .dashboard-btn,
+            .logout-btn {
+                min-height: 38px;
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .nav-link-custom {
+                font-size: 12px;
+            }
+
+            .tech-messages,
+            .tech-footer-inner {
+                width: calc(100% - 24px);
+            }
+
+            .tech-footer-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ai-tutor-launcher {
+                right: 14px;
+                bottom: 14px;
+                min-height: 53px;
+                padding: 9px 13px;
+                border-radius: 16px;
+            }
+
+            .ai-launcher-icon {
+                width: 34px;
+                height: 34px;
+            }
+
+            .ai-tutor-panel {
+                right: 8px;
+                bottom: 78px;
+                width: calc(100vw - 16px);
+                height: min(650px, calc(100dvh - 95px));
+                min-height: 320px;
+                border-radius: 19px;
+            }
+
+            .ai-panel-header {
+                padding: 13px;
+            }
+
+            .ai-chat-messages {
+                padding: 13px 11px;
+            }
+
+            .ai-selection-button {
+                padding: 9px 11px;
+                font-size: 11px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ai-tutor-widget *,
+            .ai-tutor-widget *::before,
+            .ai-tutor-widget *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="tech-academy">
+
+    <header class="tech-navbar">
+        <div class="navbar-inner">
+
+            <a class="brand" href="{% url 'tech:tech_home' %}">
+                <span class="brand-mark">
+                    <i class="bi bi-code-slash" aria-hidden="true"></i>
+                </span>
+
+                <span class="brand-name">
+                    PupilAura
+                    <small>Technology Academy</small>
+                </span>
+            </a>
+
+            <nav class="main-nav" aria-label="Main navigation">
+                <a
+                    class="nav-link-custom"
+                    href="{% url 'tech:tech_home' %}"
+                >
+                    <i class="bi bi-house" aria-hidden="true"></i>
+                    Home
+                </a>
+
+                <a
+                    class="nav-link-custom"
+                    href="{% url 'student_classes' %}"
+                >
+                    <i class="bi bi-collection" aria-hidden="true"></i>
+                    My Classes
+                </a>
+
+                <a
+                    class="nav-link-custom"
+                    href="{% url 'exam_prep:home' %}"
+                >
+                    <i class="bi bi-journal-check" aria-hidden="true"></i>
+                    Exam Prep
+                </a>
+            </nav>
+
+            <div class="nav-actions">
+                <a
+                    class="dashboard-btn"
+                    href="{% url 'student_dashboard' %}"
+                >
+                    <i class="bi bi-grid" aria-hidden="true"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    class="logout-btn"
+                    href="{% url 'accounts:user_logout' %}"
+                >
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    {% if messages %}
+        <div class="tech-messages">
+            {% for message in messages %}
+                <div
+                    class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                    role="alert"
+                >
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"
+                    ></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="tech-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="tech-footer">
+        <div class="tech-footer-inner">
+
+            <div>
+                <div class="tech-footer-brand">
+                    <i class="bi bi-code-slash" aria-hidden="true"></i>
+                    PupilAura Technology Academy
+                </div>
+
+                <div class="tech-footer-copy">
+                    &copy; {% now "Y" %} PupilAura. All rights reserved.
+                </div>
+            </div>
+
+            <nav class="tech-footer-links" aria-label="Footer navigation">
+                <a href="{% url 'tech:tech_home' %}">Home</a>
+                <a href="{% url 'student_dashboard' %}">Dashboard</a>
+                <a href="{% url 'student_classes' %}">My Classes</a>
+                <a href="{% url 'exam_prep:home' %}">Exam Prep</a>
+            </nav>
+
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         PUPILAURA AI TUTOR INTERFACE
+         Configure ai_tutor_endpoint in the Django
+         template context when the backend is ready.
+         ========================================== -->
+
+    <section
+        class="ai-tutor-widget"
+        id="pupilAuraAiTutor"
+        data-ai-endpoint="{{ ai_tutor_endpoint|default:'' }}"
+        aria-label="PupilAura AI Tutor"
+    >
+        <button
+            type="button"
+            class="ai-tutor-launcher"
+            id="aiTutorLauncher"
+            aria-controls="aiTutorPanel"
+            aria-expanded="false"
+        >
+            <span class="ai-launcher-icon">
+                <i class="bi bi-stars" aria-hidden="true"></i>
+            </span>
+
+            <span class="ai-launcher-copy">
+                AI Tutor
+                <small>Ask, learn, understand</small>
+            </span>
+        </button>
+
+        <section
+            class="ai-tutor-panel"
+            id="aiTutorPanel"
+            role="dialog"
+            aria-label="Chat with AI Tutor"
+            aria-modal="false"
+            hidden>
+            <header class="ai-panel-header">
+                <div class="ai-header-identity">
+                    <div class="ai-header-avatar">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="ai-header-text">
+                        <h2>PupilAura AI Tutor</h2>
+                        <p>Learning assistant · Technology Academy</p>
+                    </div>
+                </div>
+
+                <div class="ai-panel-header-actions">
+                    <button
+                        type="button"
+                        class="ai-header-button"
+                        id="aiTutorNewChat"
+                        aria-label="Start a new chat"
+                        title="New chat"
+                    >
+                        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="ai-header-button"
+                        id="aiTutorClose"
+                        aria-label="Close AI Tutor"
+                        title="Close"
+                    >
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="ai-suggestions" aria-label="Suggested questions">
+                <button type="button" class="ai-suggestion" data-ai-prompt="Explain the current lesson in simple terms.">
+                    Explain simply
+                </button>
+
+                <button type="button" class="ai-suggestion" data-ai-prompt="Give me a practical example related to the current lesson.">
+                    Give an example
+                </button>
+
+                <button type="button" class="ai-suggestion" data-ai-prompt="Summarize the main points of the current lesson.">
+                    Summarize lesson
+                </button>
+            </div>
+
+            <div
+                class="ai-chat-messages"
+                id="aiTutorMessages"
+                role="log"
+                aria-live="polite"
+                aria-relevant="additions text"
+                aria-label="Conversation"
+            >
+                <div class="ai-welcome" id="aiTutorWelcome">
+                    <strong>
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        Let's understand it together.
+                    </strong>
+
+                    Ask a question about your lesson, request an example,
+                    or highlight any text on the page and choose
+                    <strong>Ask AI to explain</strong>.
+                </div>
+            </div>
+
+            <div class="ai-composer">
+                <form class="ai-composer-form" id="aiTutorForm">
+                    {% csrf_token %}
+
+                    <textarea
+                        class="ai-chat-input"
+                        id="aiTutorInput"
+                        rows="1"
+                        maxlength="12000"
+                        placeholder="Ask your learning question..."
+                        aria-label="Type your question"
+                        required
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        class="ai-send-button"
+                        id="aiTutorSend"
+                        aria-label="Send message"
+                        title="Send message"
+                    >
+                        <i class="bi bi-send-fill" aria-hidden="true"></i>
+                    </button>
+                </form>
+
+                <p class="ai-composer-note">
+                    AI-generated answers may contain mistakes. Verify important information.
+                </p>
+            </div>
+        </section>
+
+        <button
+            type="button"
+            class="ai-selection-button"
+            id="aiAskSelectedText"
+            aria-label="Ask AI to explain the selected text"
+            hidden
+        >
+            <i class="bi bi-stars" aria-hidden="true"></i>
+            Ask AI to explain
+        </button>
+    </section>
+
+    <script src="{% static 'bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const widget = document.getElementById("pupilAuraAiTutor");
+
+            if (!widget || widget.dataset.initialized === "true") {
+                return;
+            }
+
+            widget.dataset.initialized = "true";
+
+            const endpoint = widget.dataset.aiEndpoint.trim();
+
+            const launcher = document.getElementById("aiTutorLauncher");
+            const panel = document.getElementById("aiTutorPanel");
+            const closeButton = document.getElementById("aiTutorClose");
+            const newChatButton = document.getElementById("aiTutorNewChat");
+            const form = document.getElementById("aiTutorForm");
+            const input = document.getElementById("aiTutorInput");
+            const sendButton = document.getElementById("aiTutorSend");
+            const messages = document.getElementById("aiTutorMessages");
+            const selectionButton = document.getElementById("aiAskSelectedText");
+            const welcome = document.getElementById("aiTutorWelcome");
+
+            let selectedText = "";
+            let isSending = false;
+            let requestController = null;
+            let requestNumber = 0;
+            let conversationHistory = [];
+
+            const maxHistoryMessages = 20;
+            const maxSelectedTextLength = 6000;
+
+            function getCsrfToken() {
+                const field = form.querySelector(
+                    'input[name="csrfmiddlewaretoken"]'
+                );
+
+                if (field && field.value) {
+                    return field.value;
+                }
+
+                const cookie = document.cookie
+                    .split("; ")
+                    .find((item) => item.startsWith("csrftoken="));
+
+                return cookie
+                    ? decodeURIComponent(cookie.substring("csrftoken=".length))
+                    : "";
+            }
+
+            function openTutor() {
+                panel.hidden = false;
+                launcher.setAttribute("aria-expanded", "true");
+                input.focus();
+                scrollMessagesToBottom();
+            }
+
+            function closeTutor() {
+                panel.hidden = true;
+                launcher.setAttribute("aria-expanded", "false");
+                launcher.focus();
+                hideSelectionButton();
+            }
+
+            function scrollMessagesToBottom() {
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function hideWelcome() {
+                if (welcome && welcome.isConnected) {
+                    welcome.remove();
+                }
+            }
+
+            function showError(message) {
+                const error = document.createElement("div");
+                error.className = "ai-chat-error";
+                error.setAttribute("role", "alert");
+                error.textContent = message;
+                messages.appendChild(error);
+                scrollMessagesToBottom();
+            }
+
+            function addMessage(role, text) {
+                hideWelcome();
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "ai-message " + role;
+
+                const bubble = document.createElement("div");
+                bubble.className = "ai-message-bubble";
+
+                // Use textContent rather than HTML insertion so that
+                // AI output and user input are not interpreted as HTML.
+                bubble.textContent = text;
+
+                const time = document.createElement("span");
+                time.className = "ai-message-time";
+
+                time.textContent = new Intl.DateTimeFormat([], {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }).format(new Date());
+
+                wrapper.appendChild(bubble);
+                wrapper.appendChild(time);
+                messages.appendChild(wrapper);
+
+                scrollMessagesToBottom();
+
+                return wrapper;
+            }
+
+            function showTypingIndicator() {
+                const wrapper = document.createElement("div");
+                wrapper.className = "ai-message assistant";
+                wrapper.id = "aiTutorTyping";
+
+                const indicator = document.createElement("div");
+                indicator.className = "ai-typing";
+                indicator.setAttribute("aria-label", "AI Tutor is responding");
+
+                for (let index = 0; index < 3; index += 1) {
+                    indicator.appendChild(document.createElement("span"));
+                }
+
+                wrapper.appendChild(indicator);
+                messages.appendChild(wrapper);
+                scrollMessagesToBottom();
+
+                return wrapper;
+            }
+
+            function getPageContext() {
+                const titleElement = document.querySelector("main h1");
+                const pageTitle = titleElement
+                    ? titleElement.innerText.trim()
+                    : document.title;
+
+                const contentElement =
+                    document.querySelector(".lesson-body") ||
+                    document.querySelector(".module-hero") ||
+                    document.querySelector(".lesson-heading") ||
+                    document.querySelector(".course-detail") ||
+                    document.querySelector("main");
+
+                const pageText = contentElement
+                    ? contentElement.innerText.trim().slice(0, 12000)
+                    : "";
+
+                return {
+                    page_title: pageTitle,
+                    page_url: window.location.pathname,
+                    page_content: pageText
+                };
+            }
+
+            function getPageDescription() {
+                const context = getPageContext();
+
+                return context.page_title
+                    ? "Current page: " + context.page_title
+                    : "Current Technology Academy page";
+            }
+
+            function focusComposer() {
+                openTutor();
+                input.focus();
+            }
+
+            function setInputValue(value) {
+                input.value = value;
+                input.style.height = "auto";
+                input.style.height = Math.min(input.scrollHeight, 105) + "px";
+                input.focus();
+            }
+
+            function resetConversation() {
+                if (requestController) {
+                    requestController.abort();
+                    requestController = null;
+                }
+
+                requestNumber += 1;
+                isSending = false;
+                sendButton.disabled = false;
+                conversationHistory = [];
+
+                messages.replaceChildren();
+
+                const welcomeMessage = document.createElement("div");
+                welcomeMessage.className = "ai-welcome";
+
+                const welcomeHeading = document.createElement("strong");
+                welcomeHeading.textContent = "Let's understand it together.";
+
+                const welcomeText = document.createElement("div");
+                welcomeText.textContent =
+                    "Ask a question about your lesson, request an example, " +
+                    "or highlight text and choose Ask AI to explain.";
+
+                welcomeMessage.appendChild(welcomeHeading);
+                welcomeMessage.appendChild(welcomeText);
+                messages.appendChild(welcomeMessage);
+
+                setInputValue("");
+            }
+
+            async function sendMessage(message) {
+                const prompt = message.trim();
+
+                if (!prompt || isSending) {
+                    return;
+                }
+
+                if (!endpoint) {
+                    addMessage("user", prompt);
+
+                    showError(
+                        "The AI Tutor interface is ready, but its Django " +
+                        "AI endpoint has not been connected yet. Once the " +
+                        "backend endpoint is configured, this chat can " +
+                        "return real AI-generated explanations."
+                    );
+
+                    setInputValue("");
+                    return;
+                }
+
+                isSending = true;
+                sendButton.disabled = true;
+
+                addMessage("user", prompt);
+                setInputValue("");
+
+                const typingIndicator = showTypingIndicator();
+                const currentRequest = ++requestNumber;
+
+                requestController = new AbortController();
+
+                const previousHistory = conversationHistory.slice(-maxHistoryMessages);
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: "POST",
+                        credentials: "same-origin",
+                        signal: requestController.signal,
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                            "X-CSRFToken": getCsrfToken(),
+                            "X-Requested-With": "XMLHttpRequest"
+                        },
+                        body: JSON.stringify({
+                            message: prompt,
+                            history: previousHistory,
+                            context: getPageContext()
+                        })
+                    });
+
+                    const contentType = response.headers.get("content-type") || "";
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            throw new Error(
+                                "Access was denied. Check your login status " +
+                                "and the AI Tutor endpoint permissions."
+                            );
+                        }
+
+                        if (response.status === 404) {
+                            throw new Error(
+                                "The configured AI Tutor endpoint was not found. " +
+                                "Check the Django URL configuration."
+                            );
+                        }
+
+                        throw new Error(
+                            "The AI Tutor request failed (HTTP " +
+                            response.status + "). Please try again."
+                        );
+                    }
+
+                    if (!contentType.includes("application/json")) {
+                        throw new Error(
+                            "The AI Tutor endpoint must return a JSON response."
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (currentRequest !== requestNumber) {
+                        return;
+                    }
+
+                    const reply =
+                        data.reply ??
+                        data.response ??
+                        data.answer ??
+                        data.message;
+
+                    if (typeof reply !== "string" || !reply.trim()) {
+                        throw new Error(
+                            "The AI Tutor endpoint returned no usable answer."
+                        );
+                    }
+
+                    typingIndicator.remove();
+                    addMessage("assistant", reply.trim());
+
+                    conversationHistory.push(
+                        { role: "user", content: prompt },
+                        { role: "assistant", content: reply.trim() }
+                    );
+
+                    conversationHistory =
+                        conversationHistory.slice(-maxHistoryMessages);
+
+                } catch (error) {
+                    if (typingIndicator.isConnected) {
+                        typingIndicator.remove();
+                    }
+
+                    if (error.name === "AbortError") {
+                        return;
+                    }
+
+                    showError(
+                        error.message ||
+                        "The AI Tutor could not respond. Please try again."
+                    );
+                } finally {
+                    if (currentRequest === requestNumber) {
+                        isSending = false;
+                        sendButton.disabled = false;
+                        requestController = null;
+                        input.focus();
+                    }
+                }
+            }
+
+            function hideSelectionButton() {
+                selectionButton.hidden = true;
+                selectedText = "";
+            }
+
+            function isInsideTutor(element) {
+                return Boolean(element && widget.contains(element));
+            }
+
+            function updateSelectionButton() {
+                const selection = window.getSelection();
+
+                if (!selection || selection.isCollapsed) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                const text = selection.toString().trim();
+
+                if (!text || text.length < 3) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                const anchorNode = selection.anchorNode;
+                const focusNode = selection.focusNode;
+
+                const anchorElement = anchorNode
+                    ? (anchorNode.nodeType === Node.ELEMENT_NODE
+                        ? anchorNode
+                        : anchorNode.parentElement)
+                    : null;
+
+                const focusElement = focusNode
+                    ? (focusNode.nodeType === Node.ELEMENT_NODE
+                        ? focusNode
+                        : focusNode.parentElement)
+                    : null;
+
+                if (
+                    isInsideTutor(anchorElement) ||
+                    isInsideTutor(focusElement)
+                ) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                if (
+                    anchorElement &&
+                    anchorElement.closest(
+                        "input, textarea, select, button, script, style, " +
+                        "[contenteditable='true']"
+                    )
+                ) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                if (
+                    focusElement &&
+                    focusElement.closest(
+                        "input, textarea, select, button, script, style, " +
+                        "[contenteditable='true']"
+                    )
+                ) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                if (!rect.width && !rect.height) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                selectedText = text.slice(0, maxSelectedTextLength);
+
+                selectionButton.hidden = false;
+
+                const buttonWidth = selectionButton.offsetWidth || 170;
+                const buttonHeight = selectionButton.offsetHeight || 40;
+
+                let left = rect.left + (rect.width / 2) - (buttonWidth / 2);
+                let top = rect.top - buttonHeight - 10;
+
+                left = Math.max(
+                    12,
+                    Math.min(left, window.innerWidth - buttonWidth - 12)
+                );
+
+                if (top < 8) {
+                    top = rect.bottom + 10;
+                }
+
+                top = Math.max(
+                    8,
+                    Math.min(top, window.innerHeight - buttonHeight - 8)
+                );
+
+                selectionButton.style.left = left + "px";
+                selectionButton.style.top = top + "px";
+            }
+
+            launcher.addEventListener("click", () => {
+                if (panel.hidden) {
+                    openTutor();
+                } else {
+                    closeTutor();
+                }
+            });
+
+            closeButton.addEventListener("click", closeTutor);
+
+            newChatButton.addEventListener("click", () => {
+                resetConversation();
+                openTutor();
+            });
+
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                sendMessage(input.value);
+            });
+
+            input.addEventListener("input", () => {
+                input.style.height = "auto";
+                input.style.height = Math.min(input.scrollHeight, 105) + "px";
+            });
+
+            input.addEventListener("keydown", (event) => {
+                if (
+                    event.key === "Enter" &&
+                    !event.shiftKey &&
+                    !event.isComposing
+                ) {
+                    event.preventDefault();
+                    form.requestSubmit();
+                }
+            });
+
+            widget.querySelectorAll("[data-ai-prompt]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const pageDescription = getPageDescription();
+                    const prompt = button.dataset.aiPrompt +
+                        "\n\n" + pageDescription;
+
+                    openTutor();
+                    setInputValue(prompt);
+                });
+            });
+
+            selectionButton.addEventListener("mousedown", (event) => {
+                // Preserve the browser selection until the click is handled.
+                event.preventDefault();
+            });
+
+            selectionButton.addEventListener("click", () => {
+                const text = selectedText;
+
+                if (!text) {
+                    hideSelectionButton();
+                    return;
+                }
+
+                const prompt =
+                    "Explain the following selected text in simple terms. " +
+                    "Define important concepts and give a relevant example " +
+                    "for a student learning technology.\n\n" +
+                    "Selected text:\n" + text +
+                    "\n\n" + getPageDescription();
+
+                hideSelectionButton();
+                openTutor();
+                setInputValue(prompt);
+            });
+
+            document.addEventListener("mouseup", (event) => {
+                if (isInsideTutor(event.target)) {
+                    return;
+                }
+
+                window.setTimeout(updateSelectionButton, 20);
+            });
+
+            document.addEventListener("keyup", (event) => {
+                if (
+                    event.key.startsWith("Arrow") ||
+                    event.key === "Shift" ||
+                    event.key === "Control" ||
+                    event.key === "Meta"
+                ) {
+                    updateSelectionButton();
+                }
+            });
+
+            document.addEventListener("selectionchange", () => {
+                if (window.getSelection()?.isCollapsed) {
+                    hideSelectionButton();
+                }
+            });
+
+            document.addEventListener("mousedown", (event) => {
+                if (
+                    !selectionButton.hidden &&
+                    !selectionButton.contains(event.target)
+                ) {
+                    const selection = window.getSelection();
+
+                    if (!selection || selection.isCollapsed) {
+                        hideSelectionButton();
+                    }
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    if (!panel.hidden) {
+                        closeTutor();
+                    } else {
+                        hideSelectionButton();
+                    }
+                }
+            });
+
+            window.addEventListener("resize", hideSelectionButton);
+            window.addEventListener("scroll", hideSelectionButton, true);
+        })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,516 @@
+
+{% extends "base.html" %}
+
+{% block title %}My Reading Library | PupilAura{% endblock %}
+
+{% block content %}
+
+<style>
+.my-library {
+    --primary: #6366f1;
+    --ink: #172033;
+    --muted: #7b879b;
+    background: #f5f6fb;
+    min-height: 100vh;
+    padding-bottom: 75px;
+}
+
+.library-hero {
+    background: linear-gradient(125deg, #111827, #252d52 65%, #4338ca);
+    color: white;
+    padding: 65px 20px 75px;
+}
+
+.library-hero-inner {
+    max-width: 1150px;
+    margin: auto;
+}
+
+.library-eyebrow {
+    color: #c4b5fd;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.library-hero h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+}
+
+.library-hero p {
+    color: #d1d5e5;
+    font-size: 15px;
+    line-height: 1.8;
+    max-width: 550px;
+    margin: 0;
+}
+
+.library-content {
+    max-width: 1150px;
+    margin: -30px auto 0;
+    padding: 0 20px;
+    position: relative;
+}
+
+.library-summary {
+    background: white;
+    border-radius: 18px;
+    padding: 23px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, .07);
+    margin-bottom: 32px;
+}
+
+.library-summary-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.library-summary-count {
+    color: var(--ink);
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.library-summary-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+    background: #eef2ff;
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+}
+
+.library-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.library-heading h2 {
+    font-size: 23px;
+    color: var(--ink);
+    font-weight: 900;
+    margin: 0;
+}
+
+.library-heading a {
+    text-decoration: none;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.library-card {
+    background: white;
+    border: 1px solid #e9ebf2;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: .25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.library-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(15, 23, 42, .08);
+}
+
+.library-cover {
+    height: 190px;
+    background: linear-gradient(135deg, #312e81, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 55px;
+    overflow: hidden;
+}
+
+.library-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.library-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.library-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 12px;
+}
+
+.library-tag {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.library-tag.rating {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.library-card h3 {
+    font-size: 18px;
+    color: var(--ink);
+    font-weight: 900;
+    line-height: 1.4;
+    margin-bottom: 9px;
+}
+
+.library-author {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 17px;
+}
+
+.library-reading-status {
+    background: #f8f9fc;
+    border-radius: 11px;
+    padding: 13px;
+    margin-bottom: 18px;
+}
+
+.library-status-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    margin-bottom: 5px;
+}
+
+.library-status-value {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.library-chapter-count {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 6px;
+}
+
+.library-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: auto;
+}
+
+.library-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.library-btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.library-btn-primary:hover {
+    background: #4f46e5;
+    color: white;
+}
+
+.library-btn-outline {
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.library-btn-outline:hover {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #be123c;
+}
+
+.library-empty {
+    background: white;
+    border-radius: 20px;
+    padding: 65px 25px;
+    text-align: center;
+    border: 1px solid #e9ebf2;
+}
+
+.library-empty-icon {
+    width: 85px;
+    height: 85px;
+    margin: 0 auto 20px;
+    border-radius: 25px;
+    display: grid;
+    place-items: center;
+    background: #eef2ff;
+    color: var(--primary);
+    font-size: 38px;
+}
+
+.library-empty h3 {
+    color: var(--ink);
+    font-size: 23px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.library-empty p {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 420px;
+    line-height: 1.8;
+    margin: 0 auto 22px;
+}
+
+@media (max-width: 900px) {
+    .library-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 580px) {
+    .library-hero {
+        padding: 48px 18px 65px;
+    }
+
+    .library-content {
+        padding: 0 13px;
+    }
+
+    .library-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .library-summary {
+        padding: 18px;
+    }
+
+    .library-heading h2 {
+        font-size: 19px;
+    }
+
+    .library-cover {
+        height: 210px;
+    }
+}
+</style>
+
+<div class="my-library">
+
+    <section class="library-hero">
+        <div class="library-hero-inner">
+
+            <div class="library-eyebrow">
+                Your Personal Reading Space
+            </div>
+
+            <h1>My Reading Library.</h1>
+
+            <p>
+                Your favourite stories, saved in one place.
+                Pick up where you stopped and continue exploring
+                the worlds waiting inside your books.
+            </p>
+
+        </div>
+    </section>
+
+    <div class="library-content">
+
+        <div class="library-summary">
+
+            <div>
+                <div class="library-summary-label">
+                    STORIES SAVED
+                </div>
+
+                <div class="library-summary-count">
+                    {{ bookmarks|length }}
+                </div>
+            </div>
+
+            <div class="library-summary-icon">
+                <i class="bi bi-bookmarks-fill"></i>
+            </div>
+
+        </div>
+
+        <div class="library-heading">
+
+            <h2>Your Saved Stories</h2>
+
+            <a href="{% url 'play_learn:story_library' %}">
+                Discover Stories →
+            </a>
+
+        </div>
+
+        {% if bookmarks %}
+
+            <div class="library-grid">
+
+                {% for bookmark in bookmarks %}
+
+                    <article class="library-card">
+
+                        <div class="library-cover">
+
+                            {% if bookmark.story.cover %}
+                                <img src="{{ bookmark.story.cover.url }}"
+                                     alt="{{ bookmark.story.title }}">
+                            {% else %}
+                                <i class="bi bi-book-half"></i>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="library-card-body">
+
+                            <div class="library-tags">
+
+                                <span class="library-tag">
+                                    {{ bookmark.story.get_genre_display }}
+                                </span>
+
+                                <span class="library-tag rating">
+                                    {{ bookmark.story.get_content_rating_display }}
+                                </span>
+
+                            </div>
+
+                            <h3>{{ bookmark.story.title }}</h3>
+
+                            <div class="library-author">
+                                By {{ bookmark.story.author_name|default:"PupilAura Editorial Team" }}
+                            </div>
+
+                            <div class="library-reading-status">
+
+                                <div class="library-status-label">
+                                    Your Reading Progress
+                                </div>
+
+                                {% if bookmark.chapter %}
+                                    <div class="library-status-value">
+                                        Last read: Chapter {{ bookmark.chapter.chapter_number }}
+                                    </div>
+                                {% else %}
+                                    <div class="library-status-value">
+                                        Not started yet
+                                    </div>
+                                {% endif %}
+
+                                <div class="library-chapter-count">
+                                    {{ bookmark.story.chapter_count }} published chapter{{ bookmark.story.chapter_count|pluralize }}
+                                </div>
+
+                            </div>
+
+                            <div class="library-card-actions">
+
+                                {% if bookmark.chapter %}
+                                    <a href="{% url 'play_learn:read_story_chapter' bookmark.story.slug bookmark.chapter.chapter_number %}"
+                                       class="library-btn library-btn-primary">
+                                        <i class="bi bi-book-half"></i>
+                                        Continue Reading
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'play_learn:story_detail' bookmark.story.slug %}"
+                                       class="library-btn library-btn-primary">
+                                        <i class="bi bi-book"></i>
+                                        Start Reading
+                                    </a>
+                                {% endif %}
+
+                                <form method="POST"
+                                      action="{% url 'play_learn:toggle_story_bookmark' bookmark.story.slug %}">
+                                    {% csrf_token %}
+
+                                    <button type="submit"
+                                            class="library-btn library-btn-outline">
+                                        <i class="bi bi-bookmark-x"></i>
+                                        Remove from Library
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="library-empty">
+
+                <div class="library-empty-icon">
+                    <i class="bi bi-journal-bookmark"></i>
+                </div>
+
+                <h3>Your library is waiting.</h3>
+
+                <p>
+                    You haven't saved any stories yet.
+                    Explore the reading collection and add stories
+                    you want to enjoy later.
+                </p>
+
+                <a href="{% url 'play_learn:story_library' %}"
+                   class="library-btn library-btn-primary"
+                   style="max-width: 220px; margin: auto;">
+                    <i class="bi bi-compass"></i>
+                    Explore Stories
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

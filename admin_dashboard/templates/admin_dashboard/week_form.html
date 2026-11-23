@@ -1,0 +1,171 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if week %}Edit Week{% else %}Add Week{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if week %}Edit Week{% else %}Add Week{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if week %}
+        Update the weekly curriculum information
+    {% else %}
+        Create a new week within the selected term
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       WEEK FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .week-form-card {
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .week-field {
+        margin-bottom: 21px;
+    }
+
+    .week-field:last-of-type {
+        margin-bottom: 10px;
+    }
+
+    .week-field label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .week-field textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .week-field input::placeholder,
+    .week-field textarea::placeholder {
+        color: var(--muted);
+    }
+
+    .week-field input[type="checkbox"] {
+        width: auto;
+        margin-right: 8px;
+        accent-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if week %}Edit Week{% else %}Add Week{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if week %}Edit Week{% else %}Add New Week{% endif %}
+                    </h1>
+                    <p>
+                        {% if week %}
+                            Update the weekly curriculum information.
+                        {% else %}
+                            Create a new week within the selected term.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card week-form-card">
+    <div class="card-header">
+        <h2>Week Information</h2>
+        <p>Enter the details for this curriculum week.</p>
+    </div>
+
+    <div class="card-body">
+
+        {% if form.non_field_errors %}
+            <div class="non-field-errors">
+                <ul class="error-list">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="week-field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <span class="help-text">{{ field.help_text }}</span>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <ul class="error-list">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                {% if week %}
+                    <a href="{% url 'admin_dashboard:week_detail' week.id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                {% else %}
+                    <a href="{% url 'admin_dashboard:curriculum' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2"></i>
+                    {% if week %}Save Changes{% else %}Create Week{% endif %}
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

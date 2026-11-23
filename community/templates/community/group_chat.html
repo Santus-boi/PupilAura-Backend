@@ -1,0 +1,1064 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}{{ group.name }} Chat | PupilAura{% endblock %}
+
+{% block community_breadcrumb %}
+<a href="{% url 'community:home' %}">Community</a>
+<span class="mx-2">/</span>
+<a href="{% url 'community:group_detail' group.slug %}">{{ group.name }}</a>
+<span class="mx-2">/</span>
+<strong>Group Chat</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.group-chat-page {
+    --gc-primary: #dc2626;
+    --gc-dark: #172033;
+    --gc-muted: #8993a5;
+    --gc-border: #e9edf4;
+    width: 100%;
+    max-width: 1450px;
+    margin: 0 auto;
+    padding-bottom: 25px;
+    color: var(--gc-dark);
+}
+
+.gc-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.gc-back:hover {
+    color: var(--gc-primary);
+    transform: translateX(-3px);
+}
+
+.gc-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    height: min(780px, calc(100dvh - 225px));
+    min-height: 540px;
+}
+
+/* Main chat panel */
+.gc-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--gc-border);
+    border-radius: 21px;
+    background: #fff;
+    box-shadow: 0 8px 30px rgba(15,23,42,.045);
+}
+
+.gc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gc-border);
+    background: #fff;
+}
+
+.gc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.gc-group-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 47px;
+    height: 47px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #fee2e2, #fecaca);
+    color: #dc2626;
+    font-size: 21px;
+}
+
+.gc-header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+}
+
+.gc-header p {
+    margin: 4px 0 0;
+    color: #8993a5;
+    font-size: 11px;
+}
+
+.gc-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.gc-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--gc-border);
+    border-radius: 11px;
+    background: #fff;
+    color: #64748b;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.gc-icon-btn:hover {
+    border-color: #fecaca;
+    background: #fff5f5;
+    color: #dc2626;
+}
+
+/* Messages */
+.gc-messages {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(220,38,38,.025), transparent 30%),
+        #f9fafc;
+    scrollbar-width: thin;
+    scrollbar-color: #d5dbe5 transparent;
+}
+
+.gc-date-divider {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.gc-date-divider span {
+    padding: 7px 13px;
+    border: 1px solid #e9edf4;
+    border-radius: 20px;
+    background: #fff;
+    color: #8993a5;
+    font-size: 10px;
+    font-weight: 750;
+    box-shadow: 0 2px 8px rgba(15,23,42,.035);
+}
+
+.gc-message {
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+    max-width: 85%;
+    margin-bottom: 19px;
+}
+
+.gc-message.mine {
+    flex-direction: row-reverse;
+    margin-left: auto;
+}
+
+.gc-message-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.gc-message.mine .gc-message-avatar {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.gc-message-content {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.gc-sender {
+    margin: 0 0 5px 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.gc-message.mine .gc-sender {
+    text-align: right;
+}
+
+.gc-bubble {
+    padding: 12px 15px;
+    border: 1px solid #e9edf4;
+    border-radius: 5px 16px 16px 16px;
+    background: #fff;
+    color: #38465c;
+    font-size: 13px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    box-shadow: 0 3px 9px rgba(15,23,42,.025);
+}
+
+.gc-message.mine .gc-bubble {
+    border-color: #fee2e2;
+    border-radius: 16px 5px 16px 16px;
+    background: #fff0f0;
+}
+
+.gc-message-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+    margin-top: 5px;
+    color: #a0a9b8;
+    font-size: 9px;
+}
+
+/* Reply preview */
+.gc-reply-preview {
+    margin-bottom: 8px;
+    padding: 8px 11px;
+    border-left: 3px solid #dc6262;
+    border-radius: 8px;
+    background: #f3f5f9;
+    color: #64748b;
+    font-size: 10px;
+}
+
+.gc-message.mine .gc-reply-preview {
+    background: #ffe3e3;
+}
+
+.gc-reply-preview strong,
+.gc-reply-preview span {
+    display: block;
+}
+
+.gc-reply-preview strong {
+    margin-bottom: 3px;
+    color: #475569;
+}
+
+.gc-reply-preview span {
+    overflow-wrap: anywhere;
+}
+
+/* Reactions and actions */
+.gc-reactions,
+.gc-message-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 7px;
+}
+
+.gc-reaction-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.gc-reaction-btn,
+.gc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border: 1px solid #e5eaf1;
+    border-radius: 20px;
+    background: #fff;
+    color: #64748b;
+    font-size: 10px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.gc-reaction-btn:hover,
+.gc-action-btn:hover {
+    border-color: #fecaca;
+    background: #fff5f5;
+    color: #dc2626;
+}
+
+.gc-action-btn {
+    border-radius: 8px;
+}
+
+/* Empty state */
+.gc-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    padding: 25px;
+    text-align: center;
+}
+
+.gc-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 75px;
+    height: 75px;
+    margin-bottom: 17px;
+    border-radius: 24px;
+    background: #fff0f0;
+    color: #dc6262;
+    font-size: 30px;
+}
+
+.gc-empty h3 {
+    color: #263449;
+    font-size: 17px;
+    font-weight: 850;
+}
+
+.gc-empty p {
+    max-width: 320px;
+    color: #8993a5;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Reply indicator */
+.gc-replying {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 17px;
+    border-top: 1px solid #edf0f5;
+    background: #fff9f9;
+}
+
+.gc-replying.active {
+    display: flex;
+}
+
+.gc-replying-info {
+    min-width: 0;
+}
+
+.gc-replying-info strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #dc2626;
+    font-size: 10px;
+}
+
+.gc-replying-info span {
+    display: block;
+    overflow: hidden;
+    color: #64748b;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gc-reply-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 9px;
+    background: #fee2e2;
+    color: #dc2626;
+    cursor: pointer;
+}
+
+/* Composer */
+.gc-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 14px 18px 10px;
+    border-top: 1px solid var(--gc-border);
+    background: #fff;
+}
+
+.gc-composer textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 45px;
+    max-height: 130px;
+    resize: none;
+    padding: 12px 15px;
+    border: 1px solid #e4e9f1;
+    border-radius: 14px;
+    outline: none;
+    background: #f9fafc;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.6;
+    transition: .2s ease;
+}
+
+.gc-composer textarea:focus {
+    border-color: #f87171;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(220,38,38,.06);
+}
+
+.gc-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-size: 17px;
+    box-shadow: 0 5px 13px rgba(220,38,38,.2);
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.gc-send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(220,38,38,.25);
+}
+
+.gc-composer-hint {
+    padding: 0 18px 11px;
+    background: #fff;
+    color: #a0a9b8;
+    font-size: 9px;
+}
+
+/* Sidebar */
+.gc-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 0;
+}
+
+.gc-sidebar-card {
+    padding: 19px;
+    border: 1px solid var(--gc-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 7px 25px rgba(15,23,42,.035);
+}
+
+.gc-sidebar-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.gc-sidebar-heading h3 {
+    margin: 0;
+    color: #263449;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.gc-member-count {
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: #fff0f0;
+    color: #dc2626;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.gc-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    max-height: 410px;
+    overflow-y: auto;
+}
+
+.gc-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.gc-member-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.gc-member-info {
+    min-width: 0;
+}
+
+.gc-member-name {
+    overflow: hidden;
+    color: #344054;
+    font-size: 11px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gc-member-role {
+    margin-top: 3px;
+    color: #a0a9b8;
+    font-size: 9px;
+}
+
+.gc-about-card {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(220,38,38,.08), transparent 40%),
+        #fff;
+}
+
+.gc-about-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 13px;
+    border-radius: 13px;
+    background: #fff0f0;
+    color: #dc2626;
+    font-size: 18px;
+}
+
+.gc-about-card h4 {
+    margin-bottom: 7px;
+    color: #263449;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.gc-about-card p {
+    margin-bottom: 14px;
+    color: #8993a5;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.gc-about-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #dc2626;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.gc-about-link:hover {
+    color: #b91c1c;
+}
+
+/* Responsive */
+@media (max-width: 1050px) {
+    .gc-layout {
+        grid-template-columns: minmax(0, 1fr) 240px;
+    }
+}
+
+@media (max-width: 800px) {
+    .gc-layout {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+    }
+
+    .gc-main {
+        height: min(720px, 72dvh);
+        min-height: 480px;
+    }
+
+    .gc-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .gc-main {
+        height: min(680px, calc(100dvh - 205px));
+        min-height: 440px;
+        border-radius: 16px;
+    }
+
+    .gc-header {
+        padding: 12px;
+    }
+
+    .gc-group-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+    }
+
+    .gc-header h2 {
+        font-size: 13px;
+    }
+
+    .gc-header p {
+        font-size: 10px;
+    }
+
+    .gc-icon-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .gc-messages {
+        padding: 17px 11px;
+    }
+
+    .gc-message {
+        max-width: 95%;
+        gap: 6px;
+    }
+
+    .gc-message-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+    }
+
+    .gc-bubble {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .gc-composer {
+        gap: 8px;
+        padding: 11px 10px 8px;
+    }
+
+    .gc-composer textarea {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .gc-send-btn {
+        width: 42px;
+        height: 42px;
+    }
+
+    .gc-composer-hint {
+        padding: 0 11px 9px;
+    }
+
+    .gc-sidebar {
+        display: flex;
+    }
+
+    .gc-sidebar-card {
+        padding: 16px;
+    }
+
+    .gc-member-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .group-chat-page *,
+    .group-chat-page *::before,
+    .group-chat-page *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block community_content %}
+<div class="group-chat-page">
+
+    <a href="{% url 'community:group_detail' group.slug %}" class="gc-back">
+        <i class="bi bi-arrow-left"></i>
+        Back to Group
+    </a>
+
+    <div class="gc-layout">
+
+        <!-- Main chat -->
+        <section class="gc-main">
+
+            <header class="gc-header">
+                <div class="gc-header-left">
+                    <div class="gc-group-avatar">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <div>
+                        <h2>{{ group.name }}</h2>
+                        <p>
+                            {{ member_count }} active member{{ member_count|pluralize }}
+                            · Group conversation
+                        </p>
+                    </div>
+                </div>
+
+                <div class="gc-header-actions">
+                    <a href="{% url 'community:group_detail' group.slug %}"
+                       class="gc-icon-btn"
+                       title="Group information"
+                       aria-label="Group information">
+                        <i class="bi bi-info-lg"></i>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            <div class="gc-messages" id="chatMessages">
+
+                {% if chat_messages %}
+
+                    <div class="gc-date-divider">
+                        <span>Conversation messages</span>
+                    </div>
+
+                    {% for message in chat_messages %}
+                        <article class="gc-message {% if message.sender_id == request.user.id %}mine{% endif %}"
+                                 id="message-{{ message.id }}">
+
+                            <div class="gc-message-avatar">
+                                {{ message.sender.first_name|default:message.sender.email|first|upper }}
+                            </div>
+
+                            <div class="gc-message-content">
+
+                                {% if message.sender_id != request.user.id %}
+                                    <div class="gc-sender">
+                                        {{ message.sender.first_name|default:message.sender.email }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="gc-bubble">
+
+                                    {% if message.reply_to %}
+                                        <div class="gc-reply-preview">
+                                            <strong>
+                                                {{ message.reply_to.sender.first_name|default:message.reply_to.sender.email }}
+                                            </strong>
+                                            <span>
+                                                {{ message.reply_to.content|truncatechars:100 }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+
+                                    {{ message.content }}
+                                </div>
+
+                                <div class="gc-message-meta">
+                                    <span>{{ message.created_at|date:"g:i A" }}</span>
+
+                                    {% if message.is_edited %}
+                                        <span>Edited</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Existing reactions -->
+                                {% if message.reactions.all %}
+                                    <div class="gc-reactions">
+                                        {% for reaction in message.reactions.all %}
+                                            <form method="POST"
+                                                  action="{% url 'community:toggle_chat_reaction' group.slug message.id %}"
+                                                  class="gc-reaction-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="emoji" value="{{ reaction.emoji }}">
+
+                                                <button type="submit"
+                                                        class="gc-reaction-btn"
+                                                        title="Toggle reaction">
+                                                    {{ reaction.emoji }}
+                                                </button>
+                                            </form>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Message actions -->
+                                <div class="gc-message-actions">
+
+                                    <button type="button"
+                                            class="gc-action-btn"
+                                            onclick="setReply('{{ message.id }}', '{{ message.sender.first_name|default:message.sender.email|escapejs }}', '{{ message.content|truncatechars:100|escapejs }}')">
+                                        <i class="bi bi-reply"></i>
+                                        Reply
+                                    </button>
+
+                                    <form method="POST"
+                                          action="{% url 'community:toggle_chat_reaction' group.slug message.id %}"
+                                          class="gc-reaction-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="emoji" value="👍">
+                                        <button type="submit" class="gc-action-btn" title="Like">👍</button>
+                                    </form>
+
+                                    <form method="POST"
+                                          action="{% url 'community:toggle_chat_reaction' group.slug message.id %}"
+                                          class="gc-reaction-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="emoji" value="❤️">
+                                        <button type="submit" class="gc-action-btn" title="Love">❤️</button>
+                                    </form>
+
+                                    <form method="POST"
+                                          action="{% url 'community:toggle_chat_reaction' group.slug message.id %}"
+                                          class="gc-reaction-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="emoji" value="😂">
+                                        <button type="submit" class="gc-action-btn" title="Laugh">😂</button>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+
+                {% else %}
+                    <div class="gc-empty">
+                        <div class="gc-empty-icon">
+                            <i class="bi bi-chat-heart"></i>
+                        </div>
+
+                        <h3>Start the conversation</h3>
+
+                        <p>
+                            There are no messages in this group yet.
+                            Send the first message and get the conversation started.
+                        </p>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Reply indicator -->
+            <div class="gc-replying" id="replyingTo">
+                <div class="gc-replying-info">
+                    <strong>Replying to <span id="replySender"></span></strong>
+                    <span id="replyContent"></span>
+                </div>
+
+                <button type="button"
+                        class="gc-reply-cancel"
+                        onclick="clearReply()"
+                        aria-label="Cancel reply">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Composer -->
+            <form method="POST"
+                  action="{% url 'community:send_chat_message' group.slug %}"
+                  class="gc-composer"
+                  id="chatComposer">
+                {% csrf_token %}
+
+                <input type="hidden" name="reply_to" id="replyToInput" value="">
+
+                <textarea name="content"
+                          id="chatInput"
+                          placeholder="Write a message..."
+                          maxlength="5000"
+                          required
+                          rows="1"
+                          aria-label="Write a group message"></textarea>
+
+                <button type="submit"
+                        class="gc-send-btn"
+                        aria-label="Send message">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+
+            <div class="gc-composer-hint">
+                Press Enter to send · Shift + Enter for a new line
+            </div>
+
+        </section>
+
+        <!-- Members sidebar -->
+        <aside class="gc-sidebar">
+
+            <section class="gc-sidebar-card">
+                <div class="gc-sidebar-heading">
+                    <h3>Group Members</h3>
+                    <span class="gc-member-count">{{ member_count }}</span>
+                </div>
+
+                <div class="gc-member-list">
+                    {% for member in members %}
+                        <div class="gc-member">
+
+                            <div class="gc-member-avatar">
+                                {{ member.user.first_name|default:member.user.email|first|upper }}
+                            </div>
+
+                            <div class="gc-member-info">
+                                <div class="gc-member-name">
+                                    {{ member.user.first_name|default:member.user.email }}
+                                    {% if member.user_id == request.user.id %}
+                                        (You)
+                                    {% endif %}
+                                </div>
+
+                                <div class="gc-member-role">
+                                    {% if member.role == "caretaker" %}
+                                        Group Caretaker
+                                    {% elif member.user_id == group.created_by_id %}
+                                        Group Creator
+                                    {% else %}
+                                        Member
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    {% empty %}
+                        <p class="text-muted small mb-0">
+                            No active members found.
+                        </p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="gc-sidebar-card gc-about-card">
+                <div class="gc-about-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <h4>Community Guidelines</h4>
+
+                <p>
+                    Keep conversations respectful, educational and useful.
+                    Avoid sharing private information or inappropriate content.
+                </p>
+
+                <a href="{% url 'community:group_detail' group.slug %}"
+                   class="gc-about-link">
+                    View Group Details
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const chatComposer = document.getElementById("chatComposer");
+
+    const replyContainer = document.getElementById("replyingTo");
+    const replyToInput = document.getElementById("replyToInput");
+    const replySender = document.getElementById("replySender");
+    const replyContent = document.getElementById("replyContent");
+
+    function scrollChatToBottom() {
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    window.addEventListener("load", scrollChatToBottom);
+
+    window.setReply = function (messageId, sender, content) {
+        if (!replyToInput || !replyContainer) return;
+
+        replyToInput.value = messageId;
+        replySender.textContent = sender;
+        replyContent.textContent = content;
+
+        replyContainer.classList.add("active");
+
+        if (chatInput) {
+            chatInput.focus();
+        }
+    };
+
+    window.clearReply = function () {
+        if (!replyToInput || !replyContainer) return;
+
+        replyToInput.value = "";
+        replyContainer.classList.remove("active");
+
+        replySender.textContent = "";
+        replyContent.textContent = "";
+
+        if (chatInput) {
+            chatInput.focus();
+        }
+    };
+
+    if (chatInput) {
+        chatInput.addEventListener("input", function () {
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 130) + "px";
+        });
+
+        chatInput.addEventListener("keydown", function (event) {
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.isComposing
+            ) {
+                event.preventDefault();
+
+                if (this.value.trim() && chatComposer) {
+                    chatComposer.requestSubmit();
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

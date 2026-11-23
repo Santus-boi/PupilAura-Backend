@@ -1,0 +1,446 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ exam.name }} Years | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Years{% endblock %}
+{% block page_subtitle %}{{ exam.name }} — manage exam years{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM YEARS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Section navigation bar */
+    .section-navigation {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 16px;
+        margin-bottom: 25px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        transition: 0.2s ease;
+    }
+
+    .section-nav-link:hover,
+    .section-nav-link.active {
+        color: var(--primary);
+        border-color: #bfdbfe;
+        background: #eff6ff;
+    }
+
+    /* Filter bar (search + status) */
+    .filter-bar {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px);
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* Year cell */
+    .year-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 190px;
+    }
+
+    .year-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .year-name {
+        font-weight: 800;
+        color: var(--text);
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    .year-id {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    /* Table min width */
+    .years-table {
+        min-width: 760px;
+    }
+
+    /* No results */
+    .no-results {
+        display: none;
+        padding: 28px 20px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .no-results.show {
+        display: block;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+        .section-navigation {
+            flex-direction: column;
+        }
+        .section-nav-link {
+            width: 100%;
+        }
+        .filter-bar {
+            grid-template-columns: 1fr;
+            padding: 15px;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .year-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .section-nav-link:hover,
+        .section-nav-link.active {
+            background: rgba(37, 99, 235, 0.12);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Examinations</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">{{ exam.name }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Exam Years</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <h1>{{ exam.name }} — Years</h1>
+                    <p>
+                        Manage the years available for {{ exam.name }}.
+                        Each year groups the past questions, solutions, and
+                        study materials published for that academic year.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_year_create' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-plus-lg"></i> Add Year
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_detail' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> Back to Exam
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">Exam ID: {{ exam.id }}</span>
+            <span class="meta-badge">
+                {{ year_count|default:0 }} year{{ year_count|default:0|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- SECTION NAVIGATION -->
+<nav class="section-navigation" aria-label="Exam management navigation">
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}" class="section-nav-link">
+        <i class="bi bi-clipboard-data"></i> Exam Details
+    </a>
+    <a href="{% url 'admin_dashboard:exam_subjects' exam.id %}" class="section-nav-link">
+        <i class="bi bi-journal-bookmark-fill"></i> Manage Subjects
+    </a>
+    <a
+        href="{% url 'admin_dashboard:exam_years' exam.id %}"
+        class="section-nav-link active"
+        aria-current="page"
+    >
+        <i class="bi bi-calendar3"></i> Manage Years
+    </a>
+    <a href="{% url 'admin_dashboard:exam_resources' exam.id %}" class="section-nav-link">
+        <i class="bi bi-collection"></i> Manage Resources
+    </a>
+    <a href="{% url 'admin_dashboard:exam_resource_create' exam.id %}" class="section-nav-link">
+        <i class="bi bi-plus-lg"></i> Add Resource
+    </a>
+</nav>
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ year_count|default:0 }}</div>
+            <div class="stat-label">Total Years</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-globe2"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_years|default:0 }}</div>
+            <div class="stat-label">Published Years</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-lock-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ unpublished_years|default:0 }}</div>
+            <div class="stat-label">Unpublished Years</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- YEARS PANEL -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Years for {{ exam.name }}</div>
+            <div class="section-description">
+                View, edit, or remove exam years and manage their publication status.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a
+                href="{% url 'admin_dashboard:exam_year_create' exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Create Year
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <input
+            type="search"
+            id="yearSearch"
+            class="form-control"
+            placeholder="Search by year (e.g. 2024)..."
+            aria-label="Search exam years"
+        >
+        <select
+            id="yearStatus"
+            class="form-select"
+            aria-label="Filter years by publication status"
+        >
+            <option value="all">All publication statuses</option>
+            <option value="published">Published</option>
+            <option value="unpublished">Unpublished</option>
+        </select>
+    </div>
+
+    {% if years %}
+        <div class="table-wrapper">
+            <table class="years-table">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Publication</th>
+                        <th>Order</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="yearsTableBody">
+                    {% for year in years %}
+                        <tr
+                            class="year-row"
+                            data-year="{{ year.year|default:''|lower }}"
+                            data-status="{% if year.published %}published{% else %}unpublished{% endif %}"
+                        >
+                            <td>
+                                <div class="year-info">
+                                    <div class="year-icon" aria-hidden="true">
+                                        {{ year.year }}
+                                    </div>
+                                    <div>
+                                        <div class="year-name">{{ year.year }}</div>
+                                        <div class="year-id">ID: {{ year.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if year.published %}
+                                    <span class="badge badge-green">Published</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="order-number">{{ year.order|default:0 }}</span>
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_year_detail' year.id %}"
+                                        class="action-btn"
+                                        title="View year"
+                                        aria-label="View {{ year.year }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_year_edit' year.id %}"
+                                        class="action-btn"
+                                        title="Edit year"
+                                        aria-label="Edit {{ year.year }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:exam_year_delete' year.id %}"
+                                        class="action-btn danger"
+                                        title="Delete year"
+                                        aria-label="Delete {{ year.year }}"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="yearsNoResults" class="no-results">
+            No years match your search or selected publication status.
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <h3>No exam years yet</h3>
+            <p>
+                No years have been added for {{ exam.name }}.
+                Create a year to start organizing past questions,
+                solutions, and study materials for that academic year.
+            </p>
+            <a
+                href="{% url 'admin_dashboard:exam_year_create' exam.id %}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Create First Year
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    "use strict";
+
+    const searchInput = document.getElementById("yearSearch");
+    const statusFilter = document.getElementById("yearStatus");
+    const yearRows = Array.from(document.querySelectorAll(".year-row"));
+    const noResults = document.getElementById("yearsNoResults");
+
+    function filterYears() {
+        if (!searchInput || !statusFilter) return;
+
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
+        let visibleCount = 0;
+
+        yearRows.forEach(function (row) {
+            const yearText = row.dataset.year || "";
+            const status = row.dataset.status || "";
+
+            const matchesSearch = yearText.includes(searchTerm);
+            const matchesStatus =
+                selectedStatus === "all" || status === selectedStatus;
+
+            const visible = matchesSearch && matchesStatus;
+            row.style.display = visible ? "" : "none";
+
+            if (visible) visibleCount++;
+        });
+
+        if (noResults) {
+            noResults.classList.toggle(
+                "show",
+                yearRows.length > 0 && visibleCount === 0
+            );
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", filterYears);
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener("change", filterYears);
+    }
+})();
+</script>
+{% endblock %}

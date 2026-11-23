@@ -1,0 +1,415 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Terms | PupilAura Admin{% endblock %}
+
+{% block page_title %}Terms{% endblock %}
+{% block page_subtitle %}Manage academic terms within your subjects{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TERMS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Search input */
+    .terms-search {
+        position: relative;
+        max-width: 430px;
+        flex: 1;
+    }
+
+    .terms-search input {
+        width: 100%;
+        height: 40px;
+        padding: 0 13px 0 38px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        outline: none;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .terms-search input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .terms-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+    }
+
+    /* Search toolbar row */
+    .terms-toolbar {
+        padding: 15px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Table min width */
+    .terms-table {
+        min-width: 1000px;
+    }
+
+    /* Term name cell */
+    .term-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .term-meta {
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+    /* Lesson count cell */
+    .count {
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    /* Small inline action buttons */
+    .terms-action {
+        padding: 7px 10px;
+        border-radius: 7px;
+        font-size: 10px;
+        font-weight: 700;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition: background 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .terms-action:hover {
+        background: var(--surface-soft);
+    }
+
+    .terms-action-view {
+        color: var(--primary);
+    }
+
+    .terms-action-edit {
+        color: var(--warning);
+    }
+
+    .terms-action-delete {
+        color: var(--danger);
+    }
+
+    /* Search empty state */
+    .search-empty {
+        display: none;
+        padding: 45px 25px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .search-empty.show {
+        display: block;
+    }
+
+    .search-empty strong {
+        display: block;
+        color: var(--text);
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .terms-toolbar {
+            padding: 14px 17px;
+        }
+        .terms-search {
+            max-width: none;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .terms-search input {
+            background: var(--surface);
+            color: var(--text);
+        }
+        .terms-action {
+            background: var(--surface);
+        }
+        .terms-action:hover {
+            background: var(--surface-soft);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Terms</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <div>
+                    <h1>Terms</h1>
+                    <p>Manage academic terms within your subjects.</p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:curriculum' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Curriculum
+                </a>
+                <a href="{% url 'admin_dashboard:term_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Term
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ terms|length }} term{{ terms|length|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ total_weeks|default:0 }} week{{ total_weeks|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ total_lessons|default:0 }} lesson{{ total_lessons|default:0|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ terms|length }}</div>
+            <div class="stat-label">Total Terms</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-calendar-week"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_weeks|default:0 }}</div>
+            <div class="stat-label">Total Weeks</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-journal-bookmark"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_lessons|default:0 }}</div>
+            <div class="stat-label">Total Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-book"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_subjects|default:0 }}</div>
+            <div class="stat-label">Subjects</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- TERMS TABLE -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All Terms</div>
+            <div class="section-description">
+                View and manage academic terms across subjects.
+            </div>
+        </div>
+    </div>
+
+    <div class="terms-toolbar">
+        <div class="terms-search">
+            <i class="bi bi-search terms-search-icon" aria-hidden="true"></i>
+            <input
+                type="search"
+                id="termSearch"
+                placeholder="Search terms, subjects, classes..."
+                aria-label="Search terms, subjects and school classes"
+                autocomplete="off"
+                oninput="filterTerms()"
+            >
+        </div>
+    </div>
+
+    {% if terms %}
+        <div class="table-wrapper">
+            <table class="terms-table">
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>School Class</th>
+                        <th>Weeks</th>
+                        <th>Lessons</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="termsTable">
+                    {% for term in terms %}
+                        <tr class="term-row">
+                            <td>
+                                <div class="term-name">{{ term.name }}</div>
+                                <div class="term-meta">Term ID: {{ term.id }}</div>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-purple">
+                                    {{ term.get_term_type_display }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if term.subject %}
+                                    {{ term.subject.name }}
+                                {% else %}
+                                    <span style="color: var(--muted);">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if term.subject and term.subject.school_class %}
+                                    {{ term.subject.school_class.name }}
+                                {% else %}
+                                    <span style="color: var(--muted);">Not assigned</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="count">{{ term.week_count|default:0 }}</span>
+                            </td>
+
+                            <td>
+                                <span class="count">{{ term.lesson_count|default:0 }}</span>
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:term_detail' term.id %}"
+                                        class="terms-action terms-action-view"
+                                    >
+                                        View
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:term_edit' term.id %}"
+                                        class="terms-action terms-action-edit"
+                                    >
+                                        Edit
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:term_delete' term.id %}"
+                                        class="terms-action terms-action-delete"
+                                        onclick="return confirmDelete('{{ term.name|escapejs }}');"
+                                    >
+                                        Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="search-empty" id="searchEmpty" aria-live="polite">
+            <strong>No matching terms</strong>
+            No terms match your current search.
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <h3>No Terms Yet</h3>
+            <p>
+                No academic terms have been created yet.
+                Create a term under a subject to continue
+                building the curriculum.
+            </p>
+            <a href="{% url 'admin_dashboard:term_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Add Term
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterTerms() {
+        const input = document.getElementById("termSearch");
+        const rows = document.querySelectorAll(".term-row");
+        const searchEmpty = document.getElementById("searchEmpty");
+
+        if (!input || !rows.length) {
+            return;
+        }
+
+        const searchTerm = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        rows.forEach(function (row) {
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(searchTerm);
+            row.style.display = matches ? "" : "none";
+            if (matches) visibleCount++;
+        });
+
+        if (searchEmpty) {
+            searchEmpty.classList.toggle("show", visibleCount === 0);
+        }
+    }
+
+    function confirmDelete(termName) {
+        return window.confirm(
+            'Delete "' + termName + '"?\n\n' +
+            "This may also remove the weeks and lessons belonging to this term."
+        );
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,2419 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}PupilAura | Learn. Connect. Grow.{% endblock %}
+
+{% block extra_css %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+/* =========================================================
+   PUPILAURA — PREMIUM HOMEPAGE
+========================================================= */
+
+:root {
+    --pa-ink: #14243a;
+    --pa-muted: #65758a;
+    --pa-primary: #3158d8;
+    --pa-primary-dark: #2445b5;
+    --pa-cyan: #22a6a1;
+    --pa-orange: #e99a48;
+    --pa-violet: #8066d9;
+    --pa-bg: #f5f7fb;
+    --pa-white: #ffffff;
+    --pa-line: #e7ebf2;
+    --pa-shadow: 0 18px 45px rgba(24, 42, 74, .08);
+    --pa-shadow-hover: 0 26px 60px rgba(24, 42, 74, .15);
+    --pa-radius: 24px;
+    --pa-radius-lg: 32px;
+}
+
+.pa-home {
+    overflow: hidden;
+    background: var(--pa-bg);
+    color: var(--pa-ink);
+    font-family: "Inter", sans-serif;
+}
+
+.pa-home * {
+    box-sizing: border-box;
+}
+
+.pa-home a {
+    text-decoration: none;
+}
+
+.pa-container {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.pa-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--pa-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+}
+
+.pa-eyebrow::before {
+    content: "";
+    width: 23px;
+    height: 2px;
+    border-radius: 5px;
+    background: currentColor;
+}
+
+.pa-section-heading {
+    max-width: 650px;
+    margin-bottom: 42px;
+}
+
+.pa-section-heading h2 {
+    margin: 13px 0 12px;
+    color: var(--pa-ink);
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(29px, 3.3vw, 42px);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.2;
+}
+
+.pa-section-heading p {
+    max-width: 560px;
+    margin: 0;
+    color: var(--pa-muted);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+/* NAVIGATION */
+
+.pa-navbar {
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+    width: 100%;
+    background: rgba(255,255,255,.96);
+    border-bottom: 1px solid rgba(226,232,240,.8);
+    backdrop-filter: blur(18px);
+    transition: box-shadow .25s ease;
+}
+
+.pa-navbar.scrolled {
+    box-shadow: 0 8px 30px rgba(20,36,58,.08);
+}
+
+.pa-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 82px;
+    gap: 28px;
+}
+
+.pa-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 11px;
+    color: var(--pa-ink);
+}
+
+.pa-brand-mark {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 13px;
+    background: linear-gradient(145deg, #3158d8, #6b7ff0);
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 7px 18px rgba(49,88,216,.25);
+}
+
+.pa-brand-name {
+    font-family: "Poppins", sans-serif;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -.8px;
+}
+
+.pa-brand-name span {
+    color: var(--pa-primary);
+}
+
+.pa-nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin: 0 auto;
+}
+
+.pa-nav-item {
+    position: relative;
+}
+
+.pa-nav-link,
+.pa-nav-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #46566b;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+}
+
+.pa-nav-link:hover,
+.pa-nav-dropdown-toggle:hover,
+.pa-nav-item.open > .pa-nav-dropdown-toggle {
+    background: #f0f4ff;
+    color: var(--pa-primary);
+}
+
+.pa-nav-dropdown-toggle i {
+    font-size: 10px;
+    transition: transform .2s ease;
+}
+
+.pa-nav-item.open .pa-nav-dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+.pa-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    display: none;
+    width: 245px;
+    padding: 10px;
+    border: 1px solid var(--pa-line);
+    border-radius: 17px;
+    background: white;
+    box-shadow: 0 20px 45px rgba(20,36,58,.14);
+}
+
+.pa-nav-item.open .pa-dropdown {
+    display: block;
+    animation: paDropIn .18s ease both;
+}
+
+@keyframes paDropIn {
+    from { opacity: 0; transform: translateY(7px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pa-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    color: #4d5c70;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.pa-dropdown a i {
+    width: 18px;
+    color: var(--pa-primary);
+    font-size: 15px;
+}
+
+.pa-dropdown a:hover {
+    background: #f2f5ff;
+    color: var(--pa-primary);
+}
+
+.pa-dropdown-label {
+    padding: 8px 12px 5px;
+    color: #9aa5b4;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+}
+
+.pa-nav-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 9px;
+}
+
+.pa-icon-button {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid var(--pa-line);
+    border-radius: 12px;
+    background: white;
+    color: #506078;
+    font-size: 16px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.pa-icon-button:hover {
+    border-color: #cbd6fa;
+    background: #f3f6ff;
+    color: var(--pa-primary);
+}
+
+.pa-profile-link {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid #dce4f3;
+    border-radius: 50%;
+    background: #edf2ff;
+    color: var(--pa-primary);
+    font-size: 19px;
+}
+
+.pa-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 45px;
+    padding: 0 19px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 750;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.pa-button:hover {
+    transform: translateY(-2px);
+}
+
+.pa-button-primary {
+    background: var(--pa-primary);
+    color: white;
+    box-shadow: 0 8px 18px rgba(49,88,216,.2);
+}
+
+.pa-button-primary:hover {
+    background: var(--pa-primary-dark);
+    color: white;
+    box-shadow: 0 12px 25px rgba(49,88,216,.28);
+}
+
+.pa-button-outline {
+    border-color: #dfe5ef;
+    background: white;
+    color: var(--pa-ink);
+}
+
+.pa-button-outline:hover {
+    border-color: #cbd6fa;
+    color: var(--pa-primary);
+}
+
+.pa-mobile-toggle {
+    display: none;
+}
+
+/* SEARCH PANEL */
+
+.pa-search-panel {
+    position: absolute;
+    top: calc(100% + 9px);
+    right: max(24px, calc((100% - 1180px) / 2));
+    display: none;
+    width: min(390px, calc(100vw - 32px));
+    padding: 17px;
+    border: 1px solid var(--pa-line);
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 20px 45px rgba(20,36,58,.14);
+}
+
+.pa-search-panel.open {
+    display: block;
+}
+
+.pa-search-panel label {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--pa-ink);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.pa-search-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 13px;
+    border: 1px solid #dfe5ef;
+    border-radius: 11px;
+}
+
+.pa-search-input i {
+    color: #8795a8;
+}
+
+.pa-search-input input {
+    width: 100%;
+    height: 43px;
+    border: 0;
+    outline: 0;
+    color: var(--pa-ink);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+/* HERO */
+
+.pa-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 570px;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, rgba(12,25,47,.91) 0%, rgba(17,34,59,.79) 46%, rgba(17,34,59,.25) 100%),
+        linear-gradient(0deg, rgba(10,22,41,.28), transparent 65%),
+        url("{% static 'assets/images/pupilaura-hero.jpg' %}") center 42% / cover no-repeat;
+}
+
+.pa-hero::after {
+    position: absolute;
+    right: -130px;
+    bottom: -230px;
+    width: 520px;
+    height: 520px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+    content: "";
+    box-shadow: 0 0 0 55px rgba(255,255,255,.025),
+                0 0 0 110px rgba(255,255,255,.02);
+}
+
+.pa-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 650px;
+    padding: 92px 0 105px;
+}
+
+.pa-hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 23px;
+    padding: 9px 14px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 50px;
+    background: rgba(255,255,255,.1);
+    color: #e1eaff;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+}
+
+.pa-hero-kicker i {
+    color: #82d9d2;
+}
+
+.pa-hero h1 {
+    max-width: 620px;
+    margin: 0 0 20px;
+    color: white;
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(35px, 4.1vw, 51px);
+    font-weight: 700;
+    letter-spacing: -1.8px;
+    line-height: 1.19;
+}
+
+.pa-hero h1 span {
+    color: #a9c1ff;
+}
+
+.pa-hero-copy {
+    max-width: 520px;
+    margin: 0 0 30px;
+    color: rgba(255,255,255,.78);
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+.pa-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.pa-hero .pa-button {
+    min-height: 51px;
+    padding: 0 23px;
+}
+
+.pa-hero .pa-button-outline {
+    border-color: rgba(255,255,255,.35);
+    background: rgba(255,255,255,.1);
+    color: white;
+    backdrop-filter: blur(8px);
+}
+
+.pa-hero .pa-button-outline:hover {
+    background: rgba(255,255,255,.2);
+}
+
+.pa-hero-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 31px;
+    color: rgba(255,255,255,.72);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pa-hero-note i {
+    color: #8ee0d3;
+    font-size: 15px;
+}
+
+/* TRUST STRIP */
+
+.pa-trust-strip {
+    position: relative;
+    z-index: 3;
+    margin-top: -1px;
+    border-bottom: 1px solid var(--pa-line);
+    background: white;
+}
+
+.pa-trust-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 88px;
+    gap: 25px;
+}
+
+.pa-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pa-trust-icon {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 12px;
+    background: #f0f4ff;
+    color: var(--pa-primary);
+    font-size: 16px;
+}
+
+.pa-trust-item strong {
+    display: block;
+    color: var(--pa-ink);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.pa-trust-item span {
+    display: block;
+    margin-top: 3px;
+    color: #8a96a7;
+    font-size: 10px;
+}
+
+/* LEARNING AREAS */
+
+.pa-learning-section {
+    padding: 105px 0 110px;
+    background: var(--pa-bg);
+}
+
+.pa-learning-grid {
+    display: grid;
+    grid-template-columns: 1.12fr .88fr;
+    gap: 23px;
+}
+
+.pa-learning-stack {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 23px;
+}
+
+.pa-area-card {
+    position: relative;
+    display: flex;
+    min-height: 300px;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 31px;
+    border: 1px solid rgba(222,229,240,.9);
+    border-radius: var(--pa-radius);
+    background: white;
+    box-shadow: var(--pa-shadow);
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.pa-area-card:hover {
+    transform: translateY(-7px);
+    border-color: #d4def9;
+    box-shadow: var(--pa-shadow-hover);
+}
+
+.pa-area-card::before {
+    position: absolute;
+    top: -90px;
+    right: -85px;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: var(--card-glow, #edf2ff);
+    content: "";
+    opacity: .85;
+}
+
+.pa-area-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.pa-area-card.school {
+    min-height: 625px;
+    --card-glow: #e9efff;
+    background: linear-gradient(145deg, #fff 0%, #fff 58%, #f0f4ff 100%);
+}
+
+.pa-area-card.tech {
+    --card-glow: #dff5f1;
+    background: linear-gradient(145deg, #fff 0%, #fff 58%, #eaf8f5 100%);
+}
+
+.pa-area-card.exam {
+    --card-glow: #fff0df;
+    background: linear-gradient(145deg, #fff 0%, #fff 58%, #fff6eb 100%);
+}
+
+.pa-area-card.play {
+    --card-glow: #eee8ff;
+    background: linear-gradient(145deg, #fff 0%, #fff 58%, #f4f0ff 100%);
+}
+
+.pa-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.pa-card-icon {
+    display: grid;
+    width: 51px;
+    height: 51px;
+    place-items: center;
+    border-radius: 15px;
+    background: var(--icon-bg, #eaf0ff);
+    color: var(--icon-color, var(--pa-primary));
+    font-size: 21px;
+}
+
+.school .pa-card-icon {
+    --icon-bg: #e7edff;
+    --icon-color: #3158d8;
+}
+
+.tech .pa-card-icon {
+    --icon-bg: #e1f5ef;
+    --icon-color: #208c79;
+}
+
+.exam .pa-card-icon {
+    --icon-bg: #fff0df;
+    --icon-color: #d88936;
+}
+
+.play .pa-card-icon {
+    --icon-bg: #eee8ff;
+    --icon-color: #8066d9;
+}
+
+.pa-card-number {
+    color: #a7b1bf;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pa-card-content {
+    max-width: 440px;
+    margin-top: 35px;
+}
+
+.pa-card-content h3 {
+    margin: 0 0 13px;
+    color: var(--pa-ink);
+    font-family: "Poppins", sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -.8px;
+}
+
+.pa-card-content p {
+    max-width: 410px;
+    margin: 0;
+    color: var(--pa-muted);
+    font-size: 13px;
+    line-height: 1.85;
+}
+
+.pa-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+}
+
+.pa-card-tags span {
+    padding: 7px 10px;
+    border: 1px solid rgba(211,220,235,.85);
+    border-radius: 8px;
+    background: rgba(255,255,255,.75);
+    color: #65748a;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.pa-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 27px;
+}
+
+.pa-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--pa-primary);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.pa-card-link i {
+    transition: transform .2s ease;
+}
+
+.pa-area-card:hover .pa-card-link i {
+    transform: translateX(5px);
+}
+
+.pa-card-visual {
+    position: absolute;
+    right: 24px;
+    bottom: 22px;
+    display: grid;
+    width: 190px;
+    height: 190px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,.62);
+    color: rgba(49,88,216,.12);
+    font-size: 100px;
+    pointer-events: none;
+}
+
+.school .pa-card-visual {
+    right: 28px;
+    bottom: 28px;
+    width: 230px;
+    height: 230px;
+    font-size: 120px;
+}
+
+.pa-learning-stack .pa-area-card {
+    min-height: 301px;
+}
+
+.pa-learning-stack .pa-card-content {
+    max-width: 340px;
+    margin-top: 25px;
+}
+
+.pa-learning-stack .pa-card-content h3 {
+    font-size: 22px;
+}
+
+.pa-learning-stack .pa-card-visual {
+    right: 15px;
+    bottom: 14px;
+    width: 130px;
+    height: 130px;
+    font-size: 68px;
+}
+
+/* PLATFORM PRINCIPLES */
+
+.pa-approach-section {
+    padding: 100px 0;
+    background: white;
+}
+
+.pa-approach-grid {
+    display: grid;
+    grid-template-columns: .9fr 1.1fr;
+    align-items: center;
+    gap: 75px;
+}
+
+.pa-approach-copy h2 {
+    margin: 15px 0;
+    color: var(--pa-ink);
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(29px, 3vw, 39px);
+    font-weight: 700;
+    letter-spacing: -1.4px;
+    line-height: 1.25;
+}
+
+.pa-approach-copy p {
+    color: var(--pa-muted);
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.pa-approach-points {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 17px;
+}
+
+.pa-approach-point {
+    padding: 23px;
+    border: 1px solid var(--pa-line);
+    border-radius: 18px;
+    background: #fbfcfe;
+    transition: .25s ease;
+}
+
+.pa-approach-point:hover {
+    transform: translateY(-4px);
+    background: white;
+    box-shadow: var(--pa-shadow);
+}
+
+.pa-approach-point i {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    margin-bottom: 15px;
+    place-items: center;
+    border-radius: 12px;
+    background: #edf2ff;
+    color: var(--pa-primary);
+    font-size: 17px;
+}
+
+.pa-approach-point h4 {
+    margin: 0 0 8px;
+    color: var(--pa-ink);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.pa-approach-point p {
+    margin: 0;
+    color: var(--pa-muted);
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+/* COMING SOON */
+
+.pa-future-section {
+    padding: 100px 0;
+    background: #f2f5fa;
+}
+
+.pa-future-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.pa-future-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    min-height: 225px;
+    gap: 20px;
+    padding: 30px;
+    overflow: hidden;
+    border: 1px solid #e1e7f0;
+    border-radius: 23px;
+    background: white;
+    box-shadow: 0 12px 32px rgba(24,42,74,.055);
+}
+
+.pa-future-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 16px;
+    background: #eef2ff;
+    color: var(--pa-primary);
+    font-size: 22px;
+}
+
+.pa-future-card h3 {
+    margin: 3px 0 9px;
+    color: var(--pa-ink);
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.pa-future-card p {
+    max-width: 360px;
+    margin: 0;
+    color: var(--pa-muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.pa-coming-soon {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 17px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: #f1f4f8;
+    color: #7b8798;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .9px;
+    text-transform: uppercase;
+}
+
+/* CTA */
+
+.pa-cta-section {
+    padding: 82px 0;
+    background: white;
+}
+
+.pa-cta-panel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    padding: 48px 54px;
+    overflow: hidden;
+    border-radius: var(--pa-radius-lg);
+    background: linear-gradient(115deg, #203e9d 0%, #3158d8 58%, #5274e7 100%);
+    box-shadow: 0 22px 50px rgba(49,88,216,.2);
+}
+
+.pa-cta-panel::after {
+    position: absolute;
+    top: -130px;
+    right: 90px;
+    width: 350px;
+    height: 350px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50%;
+    content: "";
+    box-shadow: 0 0 0 45px rgba(255,255,255,.035),
+                0 0 0 90px rgba(255,255,255,.025);
+}
+
+.pa-cta-content {
+    position: relative;
+    z-index: 1;
+    max-width: 590px;
+}
+
+.pa-cta-content h2 {
+    margin: 0 0 12px;
+    color: white;
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(25px, 3vw, 35px);
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.pa-cta-content p {
+    margin: 0;
+    color: rgba(255,255,255,.77);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.pa-cta-panel .pa-button {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    min-height: 50px;
+    background: white;
+    color: var(--pa-primary);
+}
+
+/* FOOTER */
+
+.pa-footer {
+    padding: 65px 0 25px;
+    background: #101d31;
+    color: white;
+}
+
+.pa-footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 45px;
+    padding-bottom: 45px;
+}
+
+.pa-footer-brand p {
+    max-width: 290px;
+    margin: 17px 0 0;
+    color: #9eacbf;
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.pa-footer .pa-brand {
+    color: white;
+}
+
+.pa-footer h4 {
+    margin: 5px 0 19px;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.pa-footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.pa-footer-links a {
+    color: #9eacbf;
+    font-size: 11px;
+    transition: color .2s ease;
+}
+
+.pa-footer-links a:hover {
+    color: white;
+}
+
+.pa-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-top: 23px;
+    border-top: 1px solid rgba(255,255,255,.1);
+    color: #8392a8;
+    font-size: 10px;
+}
+
+/* MOBILE BOTTOM NAV */
+
+.pa-mobile-bottom {
+    display: none;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+    .pa-nav-inner {
+        gap: 15px;
+    }
+
+    .pa-nav-link,
+    .pa-nav-dropdown-toggle {
+        padding: 11px 8px;
+        font-size: 12px;
+    }
+
+    .pa-brand-name {
+        font-size: 19px;
+    }
+
+    .pa-learning-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pa-area-card.school {
+        min-height: 625px;
+    }
+
+    .pa-card-visual {
+        opacity: .75;
+    }
+}
+
+@media (max-width: 900px) {
+    .pa-mobile-toggle {
+        display: grid;
+    }
+
+    .pa-nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        display: none;
+        width: 100%;
+        max-height: calc(100vh - 82px);
+        overflow-y: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 3px;
+        padding: 16px 24px 22px;
+        border-top: 1px solid var(--pa-line);
+        background: white;
+        box-shadow: 0 20px 30px rgba(20,36,58,.1);
+    }
+
+    .pa-nav-links.open {
+        display: flex;
+    }
+
+    .pa-nav-item {
+        width: 100%;
+    }
+
+    .pa-nav-link,
+    .pa-nav-dropdown-toggle {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 13px 12px;
+        font-size: 13px;
+    }
+
+    .pa-dropdown {
+        position: static;
+        display: none;
+        width: 100%;
+        margin: 0 0 8px;
+        border: 0;
+        border-radius: 12px;
+        background: #f7f9fd;
+        box-shadow: none;
+    }
+
+    .pa-nav-item.open .pa-dropdown {
+        display: block;
+    }
+
+    .pa-approach-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .pa-footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .pa-container {
+        width: min(100% - 34px, 540px);
+    }
+
+    .pa-nav-inner {
+        min-height: 70px;
+    }
+
+    .pa-brand-mark {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .pa-brand-name {
+        font-size: 19px;
+    }
+
+    .pa-nav-actions {
+        gap: 7px;
+    }
+
+    .pa-nav-actions .pa-button {
+        min-height: 38px;
+        padding: 0 12px;
+        font-size: 11px;
+    }
+
+    .pa-icon-button {
+        width: 37px;
+        height: 37px;
+    }
+
+    .pa-hero {
+        min-height: 570px;
+        background-position: 59% center;
+    }
+
+    .pa-hero-content {
+        padding: 75px 0 85px;
+    }
+
+    .pa-hero h1 {
+        font-size: clamp(34px, 9vw, 43px);
+        letter-spacing: -1.4px;
+    }
+
+    .pa-hero-copy {
+        font-size: 13px;
+    }
+
+    .pa-trust-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 22px 0;
+        gap: 22px 12px;
+    }
+
+    .pa-trust-item {
+        gap: 9px;
+    }
+
+    .pa-trust-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .pa-trust-item strong {
+        font-size: 10px;
+    }
+
+    .pa-trust-item span {
+        font-size: 9px;
+    }
+
+    .pa-learning-section,
+    .pa-approach-section,
+    .pa-future-section {
+        padding: 75px 0;
+    }
+
+    .pa-section-heading {
+        margin-bottom: 30px;
+    }
+
+    .pa-section-heading h2 {
+        font-size: 30px;
+    }
+
+    .pa-section-heading p {
+        font-size: 13px;
+    }
+
+    .pa-learning-grid {
+        grid-template-columns: 1fr;
+        gap: 17px;
+    }
+
+    .pa-learning-stack {
+        grid-template-rows: auto;
+        gap: 17px;
+    }
+
+    .pa-area-card.school,
+    .pa-learning-stack .pa-area-card {
+        min-height: 330px;
+    }
+
+    .pa-area-card {
+        padding: 25px;
+        border-radius: 21px;
+    }
+
+    .pa-card-content {
+        margin-top: 28px;
+    }
+
+    .pa-card-content h3 {
+        font-size: 22px;
+    }
+
+    .pa-card-content p {
+        max-width: 330px;
+        font-size: 12px;
+    }
+
+    .pa-card-visual,
+    .school .pa-card-visual {
+        right: 8px;
+        bottom: 10px;
+        width: 130px;
+        height: 130px;
+        font-size: 68px;
+        opacity: .55;
+    }
+
+    .pa-learning-stack .pa-card-visual {
+        width: 105px;
+        height: 105px;
+        font-size: 55px;
+    }
+
+    .pa-approach-points {
+        gap: 11px;
+    }
+
+    .pa-approach-point {
+        padding: 17px;
+    }
+
+    .pa-future-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .pa-future-card {
+        min-height: 190px;
+        padding: 23px;
+        border-radius: 19px;
+    }
+
+    .pa-cta-section {
+        padding: 65px 0;
+    }
+
+    .pa-cta-panel {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 33px 25px;
+        border-radius: 23px;
+    }
+
+    .pa-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 35px 20px;
+    }
+
+    .pa-footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pa-mobile-bottom {
+        position: fixed;
+        z-index: 1100;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
+        border-top: 1px solid #e7ebf2;
+        background: rgba(255,255,255,.97);
+        box-shadow: 0 -8px 25px rgba(20,36,58,.08);
+        backdrop-filter: blur(15px);
+    }
+
+    .pa-mobile-bottom a {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 5px;
+        color: #8290a3;
+        font-size: 9px;
+        font-weight: 750;
+    }
+
+    .pa-mobile-bottom a i {
+        font-size: 18px;
+    }
+
+    .pa-mobile-bottom a.active,
+    .pa-mobile-bottom a:hover {
+        color: var(--pa-primary);
+    }
+
+    .pa-home {
+        padding-bottom: 65px;
+    }
+}
+
+@media (max-width: 390px) {
+    .pa-nav-actions .pa-button-outline {
+        display: none;
+    }
+
+    .pa-brand-name {
+        font-size: 17px;
+    }
+
+    .pa-hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pa-hero-actions .pa-button {
+        width: 100%;
+    }
+
+    .pa-approach-points {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   VISUAL REFINEMENT — PREMIUM GLOW THEME
+========================================================= */
+
+/* Brighter, more luminous homepage background */
+.pa-home {
+    background:
+        radial-gradient(ellipse at 8% 12%, rgba(107, 151, 255, .12), transparent 35%),
+        radial-gradient(ellipse at 92% 35%, rgba(118, 215, 220, .13), transparent 34%),
+        linear-gradient(135deg, #f8faff 0%, #f0f5ff 48%, #f8fbff 100%);
+}
+
+/* Give the learning section more visual richness */
+.pa-learning-section {
+    background:
+        radial-gradient(ellipse at 0% 30%, rgba(110, 146, 255, .12), transparent 38%),
+        radial-gradient(ellipse at 100% 75%, rgba(100, 213, 203, .11), transparent 35%),
+        linear-gradient(135deg, #f5f8ff, #edf3ff 50%, #f8fbff);
+}
+
+/* Richer section heading */
+.pa-section-heading h2 {
+    background: linear-gradient(100deg, #14243a 0%, #3158d8 75%, #5274e7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Card base */
+.pa-area-card {
+    isolation: isolate;
+    border: 1px solid rgba(210, 222, 245, .9);
+    box-shadow:
+        0 12px 28px rgba(43, 68, 120, .07),
+        0 3px 8px rgba(43, 68, 120, .035);
+    transition:
+        transform .38s cubic-bezier(.2,.8,.2,1),
+        box-shadow .38s ease,
+        border-color .38s ease;
+}
+
+/* Ambient glow behind each card */
+.pa-area-card::before {
+    z-index: -1;
+    opacity: .75;
+    transition:
+        transform .45s ease,
+        opacity .45s ease;
+}
+
+/* Glowing edge */
+.pa-area-card::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border: 1px solid rgba(255,255,255,0);
+    border-radius: inherit;
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+}
+
+/* Hover animation */
+.pa-area-card:hover {
+    transform: translateY(-9px) scale(1.008);
+    border-color: rgba(118, 151, 245, .65);
+}
+
+.pa-area-card:hover::before {
+    transform: scale(1.4);
+    opacity: 1;
+}
+
+.pa-area-card:hover::after {
+    border-color: rgba(255,255,255,.95);
+    opacity: 1;
+}
+
+/* Individual coloured glows */
+.pa-area-card.school:hover {
+    box-shadow:
+        0 25px 60px rgba(49, 88, 216, .17),
+        0 0 0 1px rgba(79, 119, 240, .16),
+        0 0 35px rgba(91, 130, 255, .20);
+}
+
+.pa-area-card.tech:hover {
+    border-color: rgba(54, 178, 148, .55);
+    box-shadow:
+        0 25px 55px rgba(30, 145, 119, .15),
+        0 0 0 1px rgba(54, 178, 148, .13),
+        0 0 35px rgba(54, 178, 148, .20);
+}
+
+.pa-area-card.exam:hover {
+    border-color: rgba(232, 157, 75, .55);
+    box-shadow:
+        0 25px 55px rgba(213, 137, 54, .14),
+        0 0 0 1px rgba(232, 157, 75, .13),
+        0 0 35px rgba(245, 179, 105, .20);
+}
+
+.pa-area-card.play:hover {
+    border-color: rgba(137, 109, 225, .55);
+    box-shadow:
+        0 25px 55px rgba(128, 102, 217, .16),
+        0 0 0 1px rgba(137, 109, 225, .14),
+        0 0 35px rgba(151, 124, 238, .21);
+}
+
+/* Card icons become more luminous on hover */
+.pa-card-icon {
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.pa-area-card:hover .pa-card-icon {
+    transform: translateY(-3px) scale(1.07);
+    box-shadow: 0 9px 22px rgba(49, 88, 216, .13);
+}
+
+/* Background visual movement */
+.pa-card-visual {
+    transition: transform .45s ease, opacity .35s ease;
+}
+
+.pa-area-card:hover .pa-card-visual {
+    transform: scale(1.12) rotate(-5deg);
+    opacity: .9;
+}
+
+/* Future cards also get a subtle glow */
+.pa-future-card {
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.pa-future-card:hover {
+    transform: translateY(-6px);
+    border-color: #d2dcf7;
+    box-shadow:
+        0 22px 45px rgba(49, 88, 216, .10),
+        0 0 28px rgba(115, 145, 235, .10);
+}
+
+/* Smooth background transition */
+.pa-approach-section {
+    background: linear-gradient(135deg, #ffffff, #f8faff);
+}
+
+.pa-future-section {
+    background:
+        radial-gradient(ellipse at 90% 10%, rgba(120, 151, 255, .10), transparent 40%),
+        linear-gradient(135deg, #f1f5ff, #f8faff);
+}
+
+/* DESKTOP HOVER DROPDOWNS */
+@media (min-width: 901px) {
+
+    .pa-nav-item:hover > .pa-dropdown,
+    .pa-nav-item:focus-within > .pa-dropdown {
+        display: block;
+        animation: paDropIn .18s ease both;
+    }
+
+    .pa-nav-item:hover > .pa-nav-dropdown-toggle,
+    .pa-nav-item:focus-within > .pa-nav-dropdown-toggle {
+        background: #f0f4ff;
+        color: var(--pa-primary);
+    }
+
+    .pa-nav-item:hover > .pa-nav-dropdown-toggle i,
+    .pa-nav-item:focus-within > .pa-nav-dropdown-toggle i {
+        transform: rotate(180deg);
+    }
+}
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="pa-home">
+
+    <!-- MAIN NAVIGATION -->
+    <nav class="pa-navbar" id="paNavbar">
+        <div class="pa-container pa-nav-inner">
+
+            <a href="{% url 'home' %}" class="pa-brand" aria-label="PupilAura home">
+                <span class="pa-brand-mark">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span class="pa-brand-name">Pupil<span>Aura</span></span>
+            </a>
+
+            <div class="pa-nav-links" id="paNavLinks">
+
+                <a href="{% url 'home' %}" class="pa-nav-link">
+                    Home
+                </a>
+
+                <!-- LEARN -->
+                <div class="pa-nav-item">
+                    <button class="pa-nav-dropdown-toggle" type="button">
+                        Learn <i class="bi bi-chevron-down"></i>
+                    </button>
+
+                    <div class="pa-dropdown">
+                        <div class="pa-dropdown-label">Learning</div>
+                        <a href="{% url 'student_classes' %}">
+                            <i class="bi bi-book"></i> School Subjects
+                        </a>
+                        <a href="/play-learn/">
+                            <i class="bi bi-controller"></i> Games &amp; Play
+                        </a>
+                        <a href="/play-learn/">
+                            <i class="bi bi-journal-richtext"></i> Stories
+                        </a>
+                        <a href="/student/tech/">
+                            <i class="bi bi-code-slash"></i> Tech &amp; Coding
+                        </a>
+                        <a href="/student/tech/#ai-tutor">
+                            <i class="bi bi-stars"></i> AI Tutor / Helper
+                        </a>
+                    </div>
+                </div>
+
+                <!-- EXAM PREP -->
+                <div class="pa-nav-item">
+                    <button class="pa-nav-dropdown-toggle" type="button">
+                        Exam Prep <i class="bi bi-chevron-down"></i>
+                    </button>
+
+                    <div class="pa-dropdown">
+                        <div class="pa-dropdown-label">Examination Centre</div>
+                        <a href="/exam-prep/">
+                            <i class="bi bi-pencil-square"></i> Practice Tests
+                        </a>
+                        <a href="/exam-prep/">
+                            <i class="bi bi-file-earmark-check"></i> Mock Exams
+                        </a>
+                        <a href="/exam-prep/">
+                            <i class="bi bi-graph-up-arrow"></i> My Exam Results
+                        </a>
+                    </div>
+                </div>
+
+                <!-- COMMUNITY -->
+                <div class="pa-nav-item">
+                    <button class="pa-nav-dropdown-toggle" type="button">
+                        Community <i class="bi bi-chevron-down"></i>
+                    </button>
+
+                    <div class="pa-dropdown">
+                        <div class="pa-dropdown-label">Student Community</div>
+                        <a href="#community">
+                            <i class="bi bi-people"></i> My Groups
+                        </a>
+                        <a href="#community">
+                            <i class="bi bi-chat-square-text"></i> Group Feed
+                        </a>
+                        <a href="#community">
+                            <i class="bi bi-person-hearts"></i> Study Buddies
+                        </a>
+                        <a href="#community">
+                            <i class="bi bi-person-plus"></i> Find Friends
+                        </a>
+
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff or user.is_superuser %}
+                                <a href="/admin-dashboard/">
+                                    <i class="bi bi-speedometer2"></i> Admin Dashboard
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- HELP & SAFETY -->
+                <div class="pa-nav-item">
+                    <button class="pa-nav-dropdown-toggle" type="button">
+                        Help &amp; Safety <i class="bi bi-chevron-down"></i>
+                    </button>
+
+                    <div class="pa-dropdown">
+                        <div class="pa-dropdown-label">Support &amp; Information</div>
+                        <a href="#contact">
+                            <i class="bi bi-envelope"></i> Contact Admin
+                        </a>
+                        <a href="#safety">
+                            <i class="bi bi-shield-check"></i> Safety Center
+                        </a>
+                        <a href="#updates">
+                            <i class="bi bi-megaphone"></i> Blog / Updates
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pa-nav-actions">
+
+                <button class="pa-icon-button" id="paSearchToggle"
+                        type="button" aria-label="Open search">
+                    <i class="bi bi-search"></i>
+                </button>
+
+                {% if user.is_authenticated %}
+
+                    {% if user.is_staff or user.is_superuser %}
+                        <a href="/admin-dashboard/" class="pa-button pa-button-outline">
+                            Admin Dashboard
+                        </a>
+                    {% endif %}
+
+                    <a href="/student/" class="pa-profile-link"
+                       aria-label="Student profile">
+                        <i class="bi bi-person-fill"></i>
+                    </a>
+
+                {% else %}
+
+                    <a href="{% url 'accounts:user_login' %}"
+                       class="pa-button pa-button-outline">
+                        Log In
+                    </a>
+
+                    <a href="{% url 'accounts:register' %}"
+                       class="pa-button pa-button-primary">
+                        Get Started
+                    </a>
+
+                {% endif %}
+
+                <button class="pa-icon-button pa-mobile-toggle"
+                        id="paMobileToggle" type="button"
+                        aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- SEARCH INTERFACE -->
+        <div class="pa-search-panel" id="paSearchPanel">
+            <label for="paGlobalSearch">Search PupilAura</label>
+            <div class="pa-search-input">
+                <i class="bi bi-search"></i>
+                <input type="search" id="paGlobalSearch"
+                       placeholder="Search learning areas...">
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- HERO -->
+    <section class="pa-hero">
+        <div class="pa-container">
+            <div class="pa-hero-content">
+
+                <div class="pa-hero-kicker">
+                    <i class="bi bi-stars"></i>
+                    A smarter way to learn and grow
+                </div>
+
+                <h1>
+                    Your learning journey.
+                    <span>More possibilities.</span>
+                </h1>
+
+                <p class="pa-hero-copy">
+                    From school learning and exam preparation to technology,
+                    creativity and interactive experiences, PupilAura brings
+                    meaningful learning opportunities together in one place.
+                </p>
+
+                <div class="pa-hero-actions">
+                    <a href="{% url 'student_classes' %}"
+                       class="pa-button pa-button-primary">
+                        Explore Learning
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a href="/student/tech/"
+                       class="pa-button pa-button-outline">
+                        Discover Tech Academy
+                    </a>
+                </div>
+
+                <div class="pa-hero-note">
+                    <i class="bi bi-shield-check"></i>
+                    Built around learning, growth and safer student experiences.
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- PLATFORM HIGHLIGHTS -->
+    <section class="pa-trust-strip">
+        <div class="pa-container pa-trust-inner">
+
+            <div class="pa-trust-item">
+                <div class="pa-trust-icon">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <div>
+                    <strong>Structured Learning</strong>
+                    <span>School curriculum</span>
+                </div>
+            </div>
+
+            <div class="pa-trust-item">
+                <div class="pa-trust-icon">
+                    <i class="bi bi-laptop"></i>
+                </div>
+                <div>
+                    <strong>Digital Skills</strong>
+                    <span>Technology education</span>
+                </div>
+            </div>
+
+            <div class="pa-trust-item">
+                <div class="pa-trust-icon">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <div>
+                    <strong>Exam Readiness</strong>
+                    <span>Practice and preparation</span>
+                </div>
+            </div>
+
+            <div class="pa-trust-item">
+                <div class="pa-trust-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div>
+                    <strong>Creative Discovery</strong>
+                    <span>Explore through play</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- SIX PLATFORM AREAS -->
+    <section class="pa-learning-section" id="learning">
+        <div class="pa-container">
+
+            <div class="pa-section-heading">
+                <span class="pa-eyebrow">Explore PupilAura</span>
+                <h2>One platform. Multiple ways to grow.</h2>
+                <p>
+                    Build strong academic foundations, develop practical
+                    abilities and explore new interests through connected
+                    learning experiences.
+                </p>
+            </div>
+
+            <div class="pa-learning-grid">
+
+                <!-- SCHOOL -->
+                <article class="pa-area-card school">
+
+                    <div class="pa-card-top">
+                        <div class="pa-card-icon">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <span class="pa-card-number">01 / SCHOOL</span>
+                    </div>
+
+                    <div class="pa-card-content">
+                        <h3>School Learning</h3>
+                        <p>
+                            Strengthen your understanding of school subjects
+                            with structured lessons, curriculum resources,
+                            quizzes and learning activities.
+                        </p>
+
+                        <div class="pa-card-tags">
+                            <span>School Subjects</span>
+                            <span>Lessons</span>
+                            <span>Quizzes</span>
+                            <span>Progress</span>
+                        </div>
+                    </div>
+
+                    <div class="pa-card-bottom">
+                        <a href="{% url 'student_classes' %}" class="pa-card-link">
+                            Explore School
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="pa-card-visual">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
+                </article>
+
+
+                <!-- RIGHT COLUMN -->
+                <div class="pa-learning-stack">
+
+                    <!-- TECH ACADEMY -->
+                    <article class="pa-area-card tech">
+
+                        <div class="pa-card-top">
+                            <div class="pa-card-icon">
+                                <i class="bi bi-code-slash"></i>
+                            </div>
+                            <span class="pa-card-number">02 / TECH ACADEMY</span>
+                        </div>
+
+                        <div class="pa-card-content">
+                            <h3>Tech Academy</h3>
+                            <p>
+                                Explore digital skills, programming and
+                                technology through practical learning
+                                experiences.
+                            </p>
+
+                            <div class="pa-card-tags">
+                                <span>Technology</span>
+                                <span>Coding</span>
+                                <span>Digital Skills</span>
+                            </div>
+                        </div>
+
+                        <div class="pa-card-bottom">
+                            <a href="/student/tech/" class="pa-card-link">
+                                Explore Tech Academy
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div class="pa-card-visual">
+                            <i class="bi bi-laptop"></i>
+                        </div>
+                    </article>
+
+
+                    <!-- EXAM PREP -->
+                    <article class="pa-area-card exam">
+
+                        <div class="pa-card-top">
+                            <div class="pa-card-icon">
+                                <i class="bi bi-clipboard2-check"></i>
+                            </div>
+                            <span class="pa-card-number">03 / EXAM PREP</span>
+                        </div>
+
+                        <div class="pa-card-content">
+                            <h3>Exam Preparation</h3>
+                            <p>
+                                Prepare with practice questions, mock exams
+                                and focused revision resources.
+                            </p>
+
+                            <div class="pa-card-tags">
+                                <span>Practice</span>
+                                <span>Mock Exams</span>
+                                <span>Revision</span>
+                            </div>
+                        </div>
+
+                        <div class="pa-card-bottom">
+                            <a href="/exam-prep/" class="pa-card-link">
+                                Start Preparing
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div class="pa-card-visual">
+                            <i class="bi bi-file-earmark-check"></i>
+                        </div>
+                    </article>
+
+                </div>
+
+            </div>
+
+
+            <!-- PLAY & LEARN -->
+            <div style="margin-top:23px;">
+                <article class="pa-area-card play"
+                         style="min-height:290px;">
+
+                    <div class="pa-card-top">
+                        <div class="pa-card-icon">
+                            <i class="bi bi-controller"></i>
+                        </div>
+                        <span class="pa-card-number">04 / PLAY &amp; LEARN</span>
+                    </div>
+
+                    <div class="pa-card-content">
+                        <h3>Learning through discovery</h3>
+                        <p>
+                            Explore interactive stories, educational games
+                            and activities designed to make learning more
+                            engaging and memorable.
+                        </p>
+
+                        <div class="pa-card-tags">
+                            <span>Interactive Stories</span>
+                            <span>Educational Games</span>
+                            <span>Creative Activities</span>
+                        </div>
+                    </div>
+
+                    <div class="pa-card-bottom">
+                        <a href="/play-learn/" class="pa-card-link">
+                            Explore Play &amp; Learn
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="pa-card-visual">
+                        <i class="bi bi-puzzle-fill"></i>
+                    </div>
+                </article>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- OUR APPROACH -->
+    <section class="pa-approach-section">
+        <div class="pa-container pa-approach-grid">
+
+            <div class="pa-approach-copy">
+                <span class="pa-eyebrow">The PupilAura approach</span>
+
+                <h2>Learning should open doors, not create limits.</h2>
+
+                <p>
+                    Education goes beyond memorising information. Students
+                    need opportunities to understand concepts, practise
+                    skills, build confidence and discover what they can do.
+                </p>
+
+                <p>
+                    PupilAura brings different learning experiences into one
+                    environment, with a focus on structured content,
+                    practical development and responsible interaction.
+                </p>
+
+                <a href="{% url 'student_classes' %}"
+                   class="pa-button pa-button-primary"
+                   style="margin-top:13px;">
+                    Begin Exploring
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="pa-approach-points">
+
+                <div class="pa-approach-point">
+                    <i class="bi bi-diagram-3"></i>
+                    <h4>Structured Education</h4>
+                    <p>
+                        Organised learning experiences that support
+                        understanding and steady progress.
+                    </p>
+                </div>
+
+                <div class="pa-approach-point">
+                    <i class="bi bi-lightning-charge"></i>
+                    <h4>Practical Development</h4>
+                    <p>
+                        Opportunities to develop useful skills beyond
+                        traditional classroom learning.
+                    </p>
+                </div>
+
+                <div class="pa-approach-point">
+                    <i class="bi bi-shield-lock"></i>
+                    <h4>Safety Conscious</h4>
+                    <p>
+                        A platform approach that prioritises responsible
+                        participation and student wellbeing.
+                    </p>
+                </div>
+
+                <div class="pa-approach-point">
+                    <i class="bi bi-stars"></i>
+                    <h4>Room to Discover</h4>
+                    <p>
+                        Different ways to explore interests, creativity
+                        and new possibilities.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- COMING SOON AREAS -->
+    <section class="pa-future-section" id="community">
+        <div class="pa-container">
+
+            <div class="pa-section-heading">
+                <span class="pa-eyebrow">More to come</span>
+                <h2>Growing beyond the classroom.</h2>
+                <p>
+                    PupilAura's vision extends beyond individual learning.
+                    These areas are planned additions to the platform.
+                </p>
+            </div>
+
+            <div class="pa-future-grid">
+
+                <article class="pa-future-card">
+                    <div class="pa-future-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <div>
+                        <h3>Student Community</h3>
+                        <p>
+                            A space for students to connect through moderated
+                            study groups, shared interests and collaborative
+                            learning experiences.
+                        </p>
+
+                        <span class="pa-coming-soon">
+                            <i class="bi bi-clock"></i>
+                            Coming Soon
+                        </span>
+                    </div>
+                </article>
+
+                <article class="pa-future-card">
+                    <div class="pa-future-icon">
+                        <i class="bi bi-house-heart-fill"></i>
+                    </div>
+
+                    <div>
+                        <h3>Parent View</h3>
+                        <p>
+                            A dedicated parent experience designed to provide
+                            read-only visibility into a child's learning
+                            progress and relevant platform activity.
+                        </p>
+
+                        <span class="pa-coming-soon">
+                            <i class="bi bi-clock"></i>
+                            Coming Soon
+                        </span>
+                    </div>
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- CTA -->
+    <section class="pa-cta-section">
+        <div class="pa-container">
+
+            <div class="pa-cta-panel">
+                <div class="pa-cta-content">
+                    <h2>Make your next learning step count.</h2>
+                    <p>
+                        Explore the learning opportunities available on
+                        PupilAura and start building your next skill.
+                    </p>
+                </div>
+
+                <a href="{% url 'accounts:register' %}"
+                   class="pa-button">
+                    Create Your Account
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="pa-footer" id="contact">
+        <div class="pa-container">
+
+            <div class="pa-footer-grid">
+
+                <div class="pa-footer-brand">
+                    <a href="{% url 'home' %}" class="pa-brand">
+                        <span class="pa-brand-mark">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </span>
+                        <span class="pa-brand-name">
+                            Pupil<span>Aura</span>
+                        </span>
+                    </a>
+
+                    <p>
+                        Learn. Connect. Grow. A connected learning
+                        environment built to support education,
+                        practical skills and discovery.
+                    </p>
+                </div>
+
+                <div>
+                    <h4>Learning</h4>
+                    <div class="pa-footer-links">
+                        <a href="{% url 'student_classes' %}">School Subjects</a>
+                        <a href="/student/tech/">Tech Academy</a>
+                        <a href="/exam-prep/">Exam Preparation</a>
+                        <a href="/play-learn/">Play &amp; Learn</a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4>Platform</h4>
+                    <div class="pa-footer-links">
+                        <a href="#community">Community</a>
+                        <a href="#safety">Safety Center</a>
+                        <a href="#updates">Blog &amp; Updates</a>
+                        <a href="#contact">Contact Admin</a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4>Get Started</h4>
+                    <div class="pa-footer-links">
+                        {% if user.is_authenticated %}
+                            <a href="/student/">My Profile</a>
+                        {% else %}
+                            <a href="{% url 'accounts:user_login' %}">Log In</a>
+                            <a href="{% url 'accounts:register' %}">Create Account</a>
+                        {% endif %}
+                        <a href="{% url 'home' %}">Home</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pa-footer-bottom">
+                <span>
+                    &copy; {% now "Y" %} PupilAura. All rights reserved.
+                </span>
+                <span>Learn. Connect. Grow.</span>
+            </div>
+
+        </div>
+    </footer>
+
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="pa-mobile-bottom" aria-label="Mobile navigation">
+
+        <a href="{% url 'home' %}" class="active">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+
+        <a href="{% url 'student_classes' %}">
+            <i class="bi bi-book"></i>
+            <span>Learn</span>
+        </a>
+
+        <a href="#community">
+            <i class="bi bi-people"></i>
+            <span>Community</span>
+        </a>
+
+        {% if user.is_authenticated %}
+            <a href="/student/">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:user_login' %}">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+        {% endif %}
+
+    </nav>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const navbar = document.getElementById("paNavbar");
+    const navLinks = document.getElementById("paNavLinks");
+    const mobileToggle = document.getElementById("paMobileToggle");
+    const searchToggle = document.getElementById("paSearchToggle");
+    const searchPanel = document.getElementById("paSearchPanel");
+
+    /* NAVBAR SCROLL STATE */
+    function updateNavbar() {
+        if (window.scrollY > 15) {
+            navbar.classList.add("scrolled");
+        } else {
+            navbar.classList.remove("scrolled");
+        }
+    }
+
+    updateNavbar();
+    window.addEventListener("scroll", updateNavbar);
+
+    /* MOBILE NAVIGATION */
+    if (mobileToggle) {
+        mobileToggle.addEventListener("click", function () {
+            navLinks.classList.toggle("open");
+
+            const icon = mobileToggle.querySelector("i");
+
+            if (navLinks.classList.contains("open")) {
+                icon.classList.remove("bi-list");
+                icon.classList.add("bi-x-lg");
+            } else {
+                icon.classList.remove("bi-x-lg");
+                icon.classList.add("bi-list");
+            }
+        });
+    }
+
+/* DROPDOWN MENUS
+   Desktop: hover and keyboard focus.
+   Mobile/tablet: click to open.
+*/
+
+const isMobileNavigation = () =>
+    window.matchMedia("(max-width: 900px)").matches;
+
+document.querySelectorAll(".pa-nav-item").forEach(function (item) {
+
+    const button = item.querySelector(".pa-nav-dropdown-toggle");
+
+    if (!button) return;
+
+    button.addEventListener("click", function (event) {
+
+        // Desktop dropdowns are controlled by hover.
+        if (!isMobileNavigation()) return;
+
+        event.stopPropagation();
+
+        const wasOpen = item.classList.contains("open");
+
+        document.querySelectorAll(".pa-nav-item.open").forEach(function (openItem) {
+            openItem.classList.remove("open");
+        });
+
+        if (!wasOpen) {
+            item.classList.add("open");
+        }
+    });
+
+});
+
+
+    /* CLOSE DROPDOWNS WHEN CLICKING OUTSIDE */
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".pa-nav-item")) {
+            document.querySelectorAll(".pa-nav-item.open").forEach(function (item) {
+                item.classList.remove("open");
+            });
+        }
+    });
+
+    /* SEARCH PANEL */
+    if (searchToggle && searchPanel) {
+        searchToggle.addEventListener("click", function (event) {
+            event.stopPropagation();
+            searchPanel.classList.toggle("open");
+
+            if (searchPanel.classList.contains("open")) {
+                const searchInput = document.getElementById("paGlobalSearch");
+                if (searchInput) searchInput.focus();
+            }
+        });
+
+        searchPanel.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest("#paSearchPanel") &&
+                !event.target.closest("#paSearchToggle")) {
+                searchPanel.classList.remove("open");
+            }
+        });
+    }
+
+    /* CLOSE MOBILE MENU AFTER NAVIGATION */
+    document.querySelectorAll("#paNavLinks a").forEach(function (link) {
+        link.addEventListener("click", function () {
+            navLinks.classList.remove("open");
+
+            if (mobileToggle) {
+                const icon = mobileToggle.querySelector("i");
+                icon.classList.remove("bi-x-lg");
+                icon.classList.add("bi-list");
+            }
+        });
+    });
+
+});
+</script>
+{% endblock %}

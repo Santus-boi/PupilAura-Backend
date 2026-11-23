@@ -1,0 +1,634 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ education_level.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Education Level{% endblock %}
+{% block page_subtitle %}{{ education_level.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EDUCATION LEVEL DETAIL — page-specific styles
+    ========================================================= */
+
+    /* ---------- HERO overrides ---------- */
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        color: white;
+        border-radius: 18px;
+        padding: 28px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .hero-content { min-width: 0; }
+
+    .hero-label {
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 7px;
+    }
+
+    .hero-content h1 {
+        font-size: 25px;
+        line-height: 1.25;
+        margin-bottom: 8px;
+        overflow-wrap: anywhere;
+        color: white;
+    }
+
+    .hero-content p {
+        max-width: 680px;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .hero-meta {
+        margin-top: 13px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .hero-action {
+        flex-shrink: 0;
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- BUTTONS ---------- */
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        border-radius: 9px;
+        padding: 11px 17px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: white;
+        color: var(--primary);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        color: var(--primary);
+    }
+
+    .btn-blue {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-blue:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-light {
+        background: rgba(255, 255, 255, 0.14);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-light:hover {
+        background: rgba(255, 255, 255, 0.22);
+        color: white;
+    }
+
+    /* ---------- STATS ---------- */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.green { background: #dcfce7; color: var(--success); }
+    .stat-icon.purple { background: #ede9fe; color: var(--purple); }
+    .stat-icon.orange { background: #ffedd5; color: var(--warning); }
+
+    .stat-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1.2;
+        color: var(--text);
+    }
+
+    /* ---------- INFO GRID ---------- */
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .info-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .info-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 7px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    /* ---------- SECTION / TABLE ---------- */
+
+    .section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .section-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .section-description {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: var(--surface-soft);
+        color: var(--muted);
+        padding: 13px 20px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    tbody tr { transition: var(--transition); }
+    tbody tr:hover { background: var(--surface-soft); }
+
+    .class-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+    }
+
+    .class-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .class-name {
+        font-weight: 800;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .class-id {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .action-group {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 14px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        color: var(--primary);
+        border-color: #bfdbfe;
+        background: #eff6ff;
+    }
+
+    /* ---------- EMPTY STATE ---------- */
+
+    .empty-state {
+        padding: 65px 25px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        background: var(--surface-soft);
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .empty-state h3 {
+        font-size: 17px;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        max-width: 450px;
+        margin: 0 auto 20px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 1100px) {
+        .hero {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .hero-action { width: 100%; }
+    }
+
+    @media (max-width: 800px) {
+        .section-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .toolbar { width: 100%; }
+    }
+
+    @media (max-width: 650px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .info-grid { grid-template-columns: 1fr; }
+        .hero { padding: 22px; }
+        .hero-content h1 { font-size: 21px; }
+        .hero-action { flex-direction: column; }
+        .hero-action .btn { width: 100%; }
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .toolbar .btn { width: 100%; }
+        .section-header { padding: 18px; }
+        .empty-state { padding: 50px 20px; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .stat-icon.green { background: rgba(22, 163, 74, 0.15); }
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.15); }
+        .stat-icon.orange { background: rgba(217, 119, 6, 0.15); }
+        .badge-blue { background: rgba(37, 99, 235, 0.15); }
+        .action-btn:hover { background: rgba(37, 99, 235, 0.12); }
+        .class-icon { background: rgba(37, 99, 235, 0.15); }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:education_levels' %}">Education Levels</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ education_level.name }}</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-label">Education Level</div>
+        <h1>{{ education_level.name }}</h1>
+        <p>
+            Manage the school classes and curriculum structure belonging
+            to this education level.
+        </p>
+        <div class="hero-meta">
+            <span class="hero-badge">ID: {{ education_level.id }}</span>
+            <span class="hero-badge">{{ education_level.get_level_type_display }}</span>
+            <span class="hero-badge">Order: {{ education_level.order }}</span>
+        </div>
+    </div>
+    <div class="hero-action">
+        <a href="{% url 'admin_dashboard:education_level_edit' education_level.id %}" class="btn btn-primary">
+            ✎ Edit Level
+        </a>
+        <a href="{% url 'admin_dashboard:education_levels' %}" class="btn btn-light">
+            ← Back
+        </a>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div>
+                <div class="stat-label">School Classes</div>
+                <div class="stat-value">{{ total_classes|default:0 }}</div>
+            </div>
+            <div class="stat-icon green" aria-hidden="true">🏫</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div>
+                <div class="stat-label">Subjects</div>
+                <div class="stat-value">{{ total_subjects|default:0 }}</div>
+            </div>
+            <div class="stat-icon purple" aria-hidden="true">📖</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-top">
+            <div>
+                <div class="stat-label">Lessons</div>
+                <div class="stat-value">{{ total_lessons|default:0 }}</div>
+            </div>
+            <div class="stat-icon orange" aria-hidden="true">🎓</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- LEVEL INFORMATION -->
+<section class="info-grid">
+    <div class="info-card">
+        <div class="info-label">Education Level</div>
+        <div class="info-value">{{ education_level.name }}</div>
+    </div>
+    <div class="info-card">
+        <div class="info-label">Level Type</div>
+        <div class="info-value">{{ education_level.get_level_type_display }}</div>
+    </div>
+</section>
+
+<!-- SCHOOL CLASSES -->
+<section class="section-card">
+
+    <div class="section-header">
+        <div>
+            <div class="section-title">School Classes</div>
+            <div class="section-description">
+                Classes belonging to {{ education_level.name }}.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a href="{% url 'admin_dashboard:school_class_create' %}?education_level={{ education_level.id }}"
+               class="btn btn-blue">
+                ＋ Add Class
+            </a>
+        </div>
+    </div>
+
+    {% if school_classes %}
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>School Class</th>
+                        <th>Subjects</th>
+                        <th>Order</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for school_class in school_classes %}
+                        <tr>
+                            <td>
+                                <div class="class-info">
+                                    <div class="class-icon" aria-hidden="true">
+                                        {{ school_class.name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="class-name">{{ school_class.name }}</div>
+                                        <div class="class-id">ID: {{ school_class.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-blue">
+                                    {{ school_class.subject_count|default:0 }}
+                                    {% if school_class.subject_count == 1 %}Subject{% else %}Subjects{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="order-number">{{ school_class.order }}</span>
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a href="{% url 'admin_dashboard:school_class_detail' school_class.id %}"
+                                       class="action-btn"
+                                       title="View school class"
+                                       aria-label="View {{ school_class.name }}">
+                                        👁
+                                    </a>
+                                    <a href="{% url 'admin_dashboard:school_class_edit' school_class.id %}"
+                                       class="action-btn"
+                                       title="Edit school class"
+                                       aria-label="Edit {{ school_class.name }}">
+                                        ✎
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">🏫</div>
+            <h3>No school classes yet</h3>
+            <p>
+                This education level does not have any school classes yet.
+                Create a school class to continue building the curriculum
+                hierarchy.
+            </p>
+            <a href="{% url 'admin_dashboard:school_class_create' %}?education_level={{ education_level.id }}"
+               class="btn btn-blue">
+                ＋ Create School Class
+            </a>
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

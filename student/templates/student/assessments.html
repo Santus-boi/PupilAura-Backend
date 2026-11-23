@@ -1,0 +1,421 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}Assessments | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="View and take assessments from your enrolled subjects on PupilAura.">
+{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>Assessments</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =====================================================
+       ASSESSMENTS PAGE — page-only styles
+    ===================================================== */
+
+    .pa-assessment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .pa-assessment-card {
+        display: flex;
+        flex-direction: column;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .pa-assessment-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.10);
+        border-color: #dbe5f5;
+    }
+
+    /* Top row: icon + type badge */
+    .pa-assessment-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .pa-assessment-icon {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 24px;
+    }
+
+    .pa-assessment-icon.lesson { background: #fff1f2; color: #e11d48; }
+    .pa-assessment-icon.week { background: #dbeafe; color: #1d4ed8; }
+    .pa-assessment-icon.term { background: #dcfce7; color: #15803d; }
+
+    .pa-type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .pa-type-badge.lesson { background: #fee2e2; color: #b91c1c; }
+    .pa-type-badge.week { background: #dbeafe; color: #1d4ed8; }
+    .pa-type-badge.term { background: #dcfce7; color: #15803d; }
+    .pa-type-badge.other { background: #f3f4f6; color: #4b5563; }
+
+    /* Passed pill */
+    .pa-passed-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    /* Title + description */
+    .pa-assessment-card h2 {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font: 800 16px "Plus Jakarta Sans", sans-serif;
+        line-height: 1.4;
+        letter-spacing: -0.15px;
+        overflow-wrap: anywhere;
+    }
+
+    .pa-assessment-desc {
+        margin: 0 0 16px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    /* Meta list */
+    .pa-assessment-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-bottom: 16px;
+    }
+
+    .pa-meta-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    .pa-meta-item i {
+        color: var(--primary);
+        margin-top: 2px;
+        flex-shrink: 0;
+        font-size: 13px;
+    }
+
+    /* Divider */
+    .pa-assessment-divider {
+        height: 1px;
+        margin: 0 0 14px;
+        background: var(--border);
+        border: 0;
+    }
+
+    /* Footer meta: question count + pass mark */
+    .pa-assessment-footer-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .pa-footer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 11.5px;
+        font-weight: 700;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        color: #4b5563;
+    }
+
+    .pa-footer-badge.warn {
+        background: #fef3c7;
+        border-color: #fde68a;
+        color: #92400e;
+    }
+
+    /* Action button */
+    .pa-assessment-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 11px 16px;
+        margin-top: auto;
+        border: 0;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #2563eb, #4338ca);
+        color: white;
+        font-size: 13.5px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 10px 22px -10px rgba(37, 99, 235, 0.55);
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .pa-assessment-action:hover {
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px -10px rgba(37, 99, 235, 0.7);
+    }
+
+    /* Empty state */
+    .pa-assessment-empty {
+        padding: 60px 24px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 20px;
+        background:
+            radial-gradient(500px 260px at 50% 0%, rgba(37, 99, 235, 0.06), transparent 60%),
+            white;
+        text-align: center;
+    }
+
+    .pa-assessment-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+        border-radius: 20px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 28px;
+    }
+
+    .pa-assessment-empty h2 {
+        margin: 0 0 10px;
+        color: var(--ink);
+        font: 800 20px "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.3px;
+    }
+
+    .pa-assessment-empty p {
+        max-width: 420px;
+        margin: 0 auto 22px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+        .pa-assessment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 650px) {
+        .pa-assessment-grid { grid-template-columns: 1fr; }
+        .pa-assessment-card { padding: 20px; }
+        .pa-assessment-card h2 { font-size: 15px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADING -->
+<section class="pa-page-heading">
+    <div>
+        <div class="pa-eyebrow">Your assessments</div>
+        <h1>Assessments</h1>
+        <p>View and take assessments from your enrolled subjects.</p>
+    </div>
+</section>
+
+{% if quizzes %}
+
+    <div class="pa-assessment-grid">
+        {% for quiz in quizzes %}
+            <article class="pa-assessment-card">
+
+                <!-- Icon + type badge -->
+                <div class="pa-assessment-top">
+
+                    <div class="pa-assessment-icon
+                        {% if quiz.assessment_type == 'Lesson Assessment' %}lesson
+                        {% elif quiz.assessment_type == 'Week Assessment' %}week
+                        {% elif quiz.assessment_type == 'Term Assessment' %}term
+                        {% endif %}">
+                        {% if quiz.assessment_type == "Lesson Assessment" %}
+                            <i class="bi bi-journal-check" aria-hidden="true"></i>
+                        {% elif quiz.assessment_type == "Week Assessment" %}
+                            <i class="bi bi-calendar2-check" aria-hidden="true"></i>
+                        {% elif quiz.assessment_type == "Term Assessment" %}
+                            <i class="bi bi-award" aria-hidden="true"></i>
+                        {% else %}
+                            <i class="bi bi-ui-checks" aria-hidden="true"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if quiz.assessment_type == "Lesson Assessment" %}
+                            <span class="pa-type-badge lesson">Lesson</span>
+                        {% elif quiz.assessment_type == "Week Assessment" %}
+                            <span class="pa-type-badge week">Week</span>
+                        {% elif quiz.assessment_type == "Term Assessment" %}
+                            <span class="pa-type-badge term">Term</span>
+                        {% else %}
+                            <span class="pa-type-badge other">Assessment</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Passed pill -->
+                {% if quiz.student_passed %}
+                    <span class="pa-passed-pill">
+                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        Passed
+                    </span>
+                {% endif %}
+
+                <!-- Title -->
+                <h2>{{ quiz.title }}</h2>
+
+                <!-- Description -->
+                <p class="pa-assessment-desc">
+                    {% if quiz.description %}
+                        {{ quiz.description }}
+                    {% else %}
+                        Test your understanding of the material covered.
+                    {% endif %}
+                </p>
+
+                <!-- Curriculum meta -->
+                <div class="pa-assessment-meta">
+
+                    {% if quiz.assessment_subject %}
+                        {% if quiz.assessment_subject.school_class %}
+                            <div class="pa-meta-item">
+                                <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                                <span>
+                                    {% if quiz.assessment_subject.school_class.education_level %}
+                                        {{ quiz.assessment_subject.school_class.education_level.name }} —
+                                    {% endif %}
+                                    {{ quiz.assessment_subject.school_class.name }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if quiz.assessment_subject %}
+                        <div class="pa-meta-item">
+                            <i class="bi bi-book" aria-hidden="true"></i>
+                            <span>{{ quiz.assessment_subject.name }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if quiz.assessment_term %}
+                        <div class="pa-meta-item">
+                            <i class="bi bi-calendar3" aria-hidden="true"></i>
+                            <span>{{ quiz.assessment_term.name }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if quiz.assessment_week %}
+                        <div class="pa-meta-item">
+                            <i class="bi bi-calendar-week" aria-hidden="true"></i>
+                            <span>
+                                Week {{ quiz.assessment_week.number }}
+                                {% if quiz.assessment_week.title %}— {{ quiz.assessment_week.title }}{% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+
+                    {% if quiz.assessment_lesson %}
+                        <div class="pa-meta-item">
+                            <i class="bi bi-journal-text" aria-hidden="true"></i>
+                            <span>{{ quiz.assessment_lesson.title }}</span>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <hr class="pa-assessment-divider">
+
+                <!-- Quiz meta -->
+                <div class="pa-assessment-footer-meta">
+                    <span class="pa-footer-badge">
+                        <i class="bi bi-question-circle" aria-hidden="true"></i>
+                        {{ quiz.questions.count }} Question{{ quiz.questions.count|pluralize }}
+                    </span>
+                    <span class="pa-footer-badge warn">
+                        <i class="bi bi-trophy" aria-hidden="true"></i>
+                        Pass mark: {{ quiz.pass_mark }}%
+                    </span>
+                </div>
+
+                <!-- Action -->
+                <a href="{% url 'quiz_detail' quiz.id %}" class="pa-assessment-action">
+                    {% if quiz.student_passed %}
+                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                        Take again
+                    {% else %}
+                        <i class="bi bi-play-fill" aria-hidden="true"></i>
+                        Start assessment
+                    {% endif %}
+                </a>
+
+            </article>
+        {% endfor %}
+    </div>
+
+{% else %}
+
+    <div class="pa-assessment-empty">
+        <div class="pa-assessment-empty-icon">
+            <i class="bi bi-clipboard-x" aria-hidden="true"></i>
+        </div>
+        <h2>No assessments available</h2>
+        <p>
+            There are currently no published assessments available for your enrolled subjects.
+        </p>
+        <a href="{% url 'my_progress' %}" class="pa-btn-primary">
+            <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+            View my progress
+        </a>
+    </div>
+
+{% endif %}
+
+{% endblock %}

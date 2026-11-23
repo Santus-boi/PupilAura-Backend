@@ -1,0 +1,582 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard | PupilAura{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_subtitle %}PupilAura administration{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       DASHBOARD — page-specific styles
+       Base supplies: sidebar, topbar, buttons, cards, badges,
+       empty states, breadcrumb, footer, dark mode shell.
+       This block only adds what's unique to the dashboard.
+    ========================================================= */
+
+    .dashboard-heading {
+        margin-bottom: 25px;
+    }
+
+    .dashboard-heading h1 {
+        margin-bottom: 5px;
+        color: var(--text);
+        font-size: clamp(1.7rem, 3vw, 2.25rem);
+        line-height: 1.2;
+        font-weight: 850;
+        letter-spacing: -0.025em;
+    }
+
+    .dashboard-heading p {
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    /* ---------- STAT CARDS (vertical layout) ---------- */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        padding: 22px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        display: block;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        right: -45px;
+        top: -45px;
+        border-radius: 50%;
+        background: #eff6ff;
+        opacity: 0.8;
+    }
+
+    .stat-icon {
+        position: relative;
+        z-index: 2;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        border-radius: 11px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 1.05rem;
+        font-weight: 850;
+    }
+
+    .stat-label {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 650;
+    }
+
+    .stat-value {
+        position: relative;
+        z-index: 2;
+        color: var(--text);
+        font-size: 1.75rem;
+        line-height: 1.2;
+        font-weight: 850;
+    }
+
+    .stat-students .stat-icon {
+        background: #eff6ff;
+        color: var(--primary);
+    }
+
+    .stat-assessments .stat-icon {
+        background: #f5f3ff;
+        color: var(--purple);
+    }
+
+    .stat-reviews .stat-icon {
+        background: #fffbeb;
+        color: var(--warning);
+    }
+
+    .stat-passed .stat-icon {
+        background: #f0fdf4;
+        color: var(--success);
+    }
+
+    /* ---------- DASHBOARD GRID ---------- */
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .dashboard-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+
+    .dashboard-card .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 21px 23px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 820;
+    }
+
+    .card-description {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 0.75rem;
+    }
+
+    .card-link {
+        flex: 0 0 auto;
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 750;
+    }
+
+    .card-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ---------- RECENT ATTEMPTS ---------- */
+
+    .attempt-list {
+        list-style: none;
+    }
+
+    .attempt-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 17px 23px;
+        border-bottom: 1px solid #eef0f3;
+        transition: var(--transition);
+    }
+
+    .attempt-item:hover {
+        background: #f8fafc;
+    }
+
+    .attempt-item:last-child {
+        border-bottom: none;
+    }
+
+    .attempt-student {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .student-avatar {
+        flex: 0 0 auto;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    .attempt-info { min-width: 0; }
+
+    .attempt-student-name {
+        overflow: hidden;
+        color: var(--text);
+        font-size: 0.82rem;
+        font-weight: 750;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .attempt-quiz {
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 0.74rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .attempt-result {
+        flex: 0 0 auto;
+        text-align: right;
+    }
+
+    .attempt-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 7px;
+        font-size: 0.68rem;
+        font-weight: 750;
+    }
+
+    .attempt-status.passed { background: #f0fdf4; color: var(--success); }
+    .attempt-status.pending { background: #fffbeb; color: var(--warning); }
+    .attempt-status.failed { background: #fef2f2; color: var(--danger); }
+    .attempt-status.progress { background: #eff6ff; color: var(--primary); }
+
+    .attempt-score {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 0.7rem;
+    }
+
+    .attempt-review-link {
+        display: inline-block;
+        margin-top: 4px;
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.68rem;
+        font-weight: 750;
+    }
+
+    .attempt-review-link:hover {
+        text-decoration: underline;
+    }
+
+    /* ---------- QUICK ACTIONS ---------- */
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px;
+        padding: 20px;
+    }
+
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 9px;
+        min-height: 105px;
+        padding: 15px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        color: var(--text);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .quick-action:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .quick-action-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 0.85rem;
+        font-weight: 850;
+    }
+
+    .quick-action strong {
+        font-size: 0.78rem;
+    }
+
+    .quick-action span {
+        color: var(--muted);
+        font-size: 0.68rem;
+        line-height: 1.4;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 1100px) {
+        .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+        .stats-grid { gap: 12px; }
+        .stat-card { padding: 18px; }
+        .stat-value { font-size: 1.5rem; }
+        .attempt-item { padding: 15px; }
+        .quick-actions { padding: 15px; }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .dashboard-heading h1 { font-size: 1.6rem; }
+        .dashboard-card .card-header { padding: 18px; }
+        .attempt-item { align-items: flex-start; }
+        .quick-actions { grid-template-columns: 1fr; }
+        .attempt-quiz { max-width: 170px; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .stat-card::after { background: #172554; }
+        .stat-students .stat-icon { background: rgba(37, 99, 235, 0.16); }
+        .stat-assessments .stat-icon { background: rgba(124, 58, 237, 0.16); }
+        .stat-reviews .stat-icon { background: rgba(217, 119, 6, 0.16); }
+        .stat-passed .stat-icon { background: rgba(22, 163, 74, 0.16); }
+
+        .attempt-item { border-bottom-color: #253247; }
+        .attempt-item:hover { background: #172033; }
+        .attempt-status.failed { background: #450a0a; }
+        .student-avatar { background: rgba(37, 99, 235, 0.16); color: #60a5fa; }
+
+        .quick-action { background: #1e293b; }
+        .quick-action:hover { background: #172554; border-color: #1e40af; }
+        .quick-action-icon { background: rgba(37, 99, 235, 0.16); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <span>Admin</span>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-current">Dashboard</span>
+</div>
+
+<section class="dashboard-heading">
+    <h1>Dashboard Overview</h1>
+    <p>Monitor students, assessments and learning activity across PupilAura.</p>
+</section>
+
+<!-- STATISTICS -->
+<section class="stats-grid" aria-label="Dashboard statistics">
+
+    <article class="stat-card stat-students">
+        <div class="stat-icon" aria-hidden="true">👥</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value">{{ total_students|default:"0" }}</div>
+    </article>
+
+    <article class="stat-card stat-assessments">
+        <div class="stat-icon" aria-hidden="true">✓</div>
+        <div class="stat-label">Assessments</div>
+        <div class="stat-value">{{ total_assessments|default:"0" }}</div>
+    </article>
+
+    <article class="stat-card stat-reviews">
+        <div class="stat-icon" aria-hidden="true">!</div>
+        <div class="stat-label">Pending Reviews</div>
+        <div class="stat-value">{{ pending_reviews|default:"0" }}</div>
+    </article>
+
+    <article class="stat-card stat-passed">
+        <div class="stat-icon" aria-hidden="true">★</div>
+        <div class="stat-label">Passed Attempts</div>
+        <div class="stat-value">{{ passed_attempts|default:"0" }}</div>
+    </article>
+
+</section>
+
+<!-- DASHBOARD GRID -->
+<section class="dashboard-grid">
+
+    <!-- RECENT ATTEMPTS -->
+    <article class="dashboard-card">
+
+        <header class="card-header">
+            <div>
+                <div class="card-title">Recent Assessment Attempts</div>
+                <div class="card-description">Latest student assessment activity</div>
+            </div>
+            <a href="{% url 'admin_dashboard:assessment_attempts' %}" class="card-link">
+                View All
+            </a>
+        </header>
+
+        {% if recent_attempts %}
+
+            <ul class="attempt-list">
+
+                {% for attempt in recent_attempts %}
+
+                    <li class="attempt-item">
+
+                        <div class="attempt-student">
+                            <div class="student-avatar">
+                                {{ attempt.student.email|first|upper }}
+                            </div>
+                            <div class="attempt-info">
+                                <div class="attempt-student-name">
+                                    {{ attempt.student.email }}
+                                </div>
+                                <div class="attempt-quiz">
+                                    {{ attempt.quiz.title }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="attempt-result">
+
+                            {% if attempt.has_pending_review %}
+
+                                <span class="attempt-status pending">Pending Review</span>
+                                <div class="attempt-score">
+                                    {% if attempt.percentage is not None %}
+                                        {{ attempt.percentage|floatformat:2 }}%
+                                    {% else %}
+                                        Awaiting result
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'admin_dashboard:review_attempt' attempt.id %}" class="attempt-review-link">
+                                    Review →
+                                </a>
+
+                            {% elif attempt.passed %}
+
+                                <span class="attempt-status passed">Passed</span>
+                                <div class="attempt-score">
+                                    {% if attempt.percentage is not None %}
+                                        {{ attempt.percentage|floatformat:2 }}%
+                                    {% else %}
+                                        Completed
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'admin_dashboard:attempt_detail' attempt.id %}" class="attempt-review-link">
+                                    View →
+                                </a>
+
+                            {% elif attempt.completed_at %}
+
+                                <span class="attempt-status failed">Not Passed</span>
+                                <div class="attempt-score">
+                                    {% if attempt.percentage is not None %}
+                                        {{ attempt.percentage|floatformat:2 }}%
+                                    {% else %}
+                                        Completed
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'admin_dashboard:attempt_detail' attempt.id %}" class="attempt-review-link">
+                                    View →
+                                </a>
+
+                            {% else %}
+
+                                <span class="attempt-status progress">In Progress</span>
+                                <div class="attempt-score">Assessment in progress</div>
+                                <a href="{% url 'admin_dashboard:attempt_detail' attempt.id %}" class="attempt-review-link">
+                                    View →
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <div class="empty-state">
+                No assessment attempts have been recorded yet.
+            </div>
+
+        {% endif %}
+
+    </article>
+
+    <!-- QUICK ACTIONS -->
+    <article class="dashboard-card">
+
+        <header class="card-header">
+            <div>
+                <div class="card-title">Quick Actions</div>
+                <div class="card-description">Common administration tasks</div>
+            </div>
+        </header>
+
+        <div class="quick-actions">
+
+            <a href="{% url 'admin_dashboard:students' %}" class="quick-action">
+                <div class="quick-action-icon" aria-hidden="true">👥</div>
+                <strong>Students</strong>
+                <span>Manage student accounts</span>
+            </a>
+
+            <a href="{% url 'admin_dashboard:curriculum' %}" class="quick-action">
+                <div class="quick-action-icon" aria-hidden="true">▤</div>
+                <strong>Curriculum</strong>
+                <span>Manage learning content</span>
+            </a>
+
+            <a href="{% url 'admin_dashboard:assessment_attempts' %}" class="quick-action">
+                <div class="quick-action-icon" aria-hidden="true">✓</div>
+                <strong>Assessments</strong>
+                <span>View student assessment attempts</span>
+            </a>
+
+            <a href="{% url 'admin_dashboard:pending_reviews' %}" class="quick-action">
+                <div class="quick-action-icon" aria-hidden="true">!</div>
+                <strong>Reviews</strong>
+                <span>
+                    Review manual answers
+                    {% if pending_reviews %}({{ pending_reviews }} pending){% endif %}
+                </span>
+            </a>
+
+            <a href="{% url 'admin_dashboard:resource_generator' %}" class="quick-action">
+                <div class="quick-action-icon" aria-hidden="true">⬆</div>
+                <strong>Generator</strong>
+                <span>Bulk import exam questions from CSV</span>
+            </a>
+
+        </div>
+
+    </article>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,463 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Students | PupilAura Admin{% endblock %}
+
+{% block page_title %}Students{% endblock %}
+{% block page_subtitle %}Manage registered PupilAura students{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       STUDENTS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Search input */
+    .student-search-box {
+        position: relative;
+        width: 260px;
+        flex-shrink: 0;
+    }
+
+    .student-search-box input {
+        width: 100%;
+        height: 40px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+        padding: 0 13px 0 37px;
+        outline: none;
+        color: var(--text);
+        font-size: 13px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .student-search-box input::placeholder {
+        color: var(--muted);
+    }
+
+    .student-search-box input:focus {
+        border-color: var(--primary);
+        background: var(--surface);
+    }
+
+    .student-search-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    /* Table min width */
+    .students-table {
+        min-width: 900px;
+    }
+
+    /* Student cell */
+    .student-cell {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 200px;
+    }
+
+    .student-avatar {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 800;
+        overflow: hidden;
+    }
+
+    .student-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .student-email {
+        color: var(--text);
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .student-email:hover {
+        color: var(--primary);
+    }
+
+    .student-date {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    /* Status + role badges (page-specific visual variant) */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 750;
+    }
+
+    .status-badge.active {
+        background: #f0fdf4;
+        color: var(--success);
+    }
+
+    .status-badge.inactive {
+        background: #fef2f2;
+        color: var(--danger);
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 7px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* View button (small inline) */
+    .view-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 11px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .view-button:hover {
+        background: #eff6ff;
+        color: var(--primary);
+        border-color: #bfdbfe;
+    }
+
+    /* Search empty state */
+    .search-empty {
+        display: none;
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .search-empty.visible {
+        display: block;
+    }
+
+    .search-empty-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 12px;
+        border-radius: 13px;
+        background: var(--surface-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 21px;
+    }
+
+    .search-empty h3 {
+        color: var(--text);
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+
+    .search-empty p {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+        .student-search-box {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .student-avatar {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        .student-search-box input {
+            background: var(--surface-soft);
+        }
+        .role-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .status-badge.active {
+            background: rgba(22, 163, 74, 0.13);
+            color: #86efac;
+        }
+        .status-badge.inactive {
+            background: rgba(220, 38, 38, 0.13);
+            color: #fca5a5;
+        }
+        .view-button:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #1e40af;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Students</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <h1>Students</h1>
+                    <p>
+                        View and manage all registered student accounts.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_students|default:0 }} student{{ total_students|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ active_students|default:0 }} active
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_students|default:0 }}</div>
+            <div class="stat-label">Total Students</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ active_students|default:0 }}</div>
+            <div class="stat-label">Active Students</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-exclamation-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ inactive_students|default:0 }}</div>
+            <div class="stat-label">Inactive Students</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- STUDENTS TABLE -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All Students</div>
+            <div class="section-description">
+                A complete list of student accounts registered on PupilAura.
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="student-search-box">
+                <i class="bi bi-search student-search-icon" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    id="studentSearch"
+                    placeholder="Search students..."
+                    aria-label="Search students"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+    </div>
+
+    {% if students %}
+        <div class="table-wrapper">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="studentsTable">
+                    {% for student in students %}
+                        <tr class="student-row">
+                            <td>
+                                <div class="student-cell">
+                                    <div class="student-avatar">
+                                        {% if student.profile_picture %}
+                                            <img
+                                                src="{{ student.profile_picture.url }}"
+                                                alt="{{ student.email }} profile picture"
+                                            >
+                                        {% else %}
+                                            {{ student.email|first|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <a
+                                            href="{% url 'admin_dashboard:student_detail' student.id %}"
+                                            class="student-email"
+                                        >
+                                            {{ student.email }}
+                                        </a>
+                                        <div class="student-date">
+                                            Student ID #{{ student.id }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="role-badge">
+                                    {{ student.get_role_display }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if student.is_active %}
+                                    <span class="status-badge active">
+                                        <span class="status-dot" aria-hidden="true"></span>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge inactive">
+                                        <span class="status-dot" aria-hidden="true"></span>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ student.date_joined|date:"M d, Y" }}</td>
+
+                            <td>
+                                <a
+                                    href="{% url 'admin_dashboard:student_detail' student.id %}"
+                                    class="view-button"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="search-empty" id="searchEmpty" aria-live="polite">
+            <div class="search-empty-icon" aria-hidden="true">
+                <i class="bi bi-search"></i>
+            </div>
+            <h3>No matching students</h3>
+            <p>Try a different name, email address, ID, role, or status.</p>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3>No students yet</h3>
+            <p>Student accounts will appear here after registration.</p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* =========================================================
+       STUDENT SEARCH
+    ========================================================== */
+
+    const searchInput = document.getElementById("studentSearch");
+    const searchEmpty = document.getElementById("searchEmpty");
+    const studentRows = document.querySelectorAll(".student-row");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const searchTerm = this.value.toLowerCase().trim();
+            let visibleRows = 0;
+
+            studentRows.forEach(function (row) {
+                const text = row.textContent.toLowerCase();
+                const matches = text.includes(searchTerm);
+
+                row.style.display = matches ? "" : "none";
+
+                if (matches) {
+                    visibleRows++;
+                }
+            });
+
+            if (searchEmpty) {
+                const shouldShow =
+                    searchTerm.length > 0 && visibleRows === 0;
+                searchEmpty.classList.toggle("visible", shouldShow);
+            }
+        });
+    }
+</script>
+{% endblock %}

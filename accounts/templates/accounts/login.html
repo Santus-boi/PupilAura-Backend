@@ -1,0 +1,803 @@
+<!doctype html>
+
+<html lang="en" data-theme="light">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="description"
+        content="Login to PupilAura learning platform"
+    >
+
+    <title>Login | PupilAura</title>
+
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- Bootstrap Icons -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+
+    {% load static %}
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="{% static 'bootstrap-5.3.8-dist/css/bootstrap.min.css' %}"
+        rel="stylesheet"
+    >
+
+
+    <!-- PupilAura Styles -->
+
+    <link
+        href="{% static 'assets/css/pupilaura.css' %}"
+        rel="stylesheet"
+    >
+
+
+    <style>
+
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        :root {
+            --primary: #0d6efd;
+            --primary-dark: #0b5ed7;
+            --primary-soft: #eaf3ff;
+
+            --orange: #f97316;
+            --orange-dark: #ea580c;
+
+            --text: #1f2937;
+            --muted: #6b7280;
+
+            --border: #e5e7eb;
+
+            --page-bg: #f5f7fb;
+
+            --card-radius: 24px;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+
+        body {
+            min-height: 100vh;
+
+            margin: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px 16px;
+
+            background:
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(13, 110, 253, 0.08),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(249, 115, 22, 0.07),
+                    transparent 30%
+                ),
+                var(--page-bg);
+
+            color: var(--text);
+
+            font-family:
+                "Nunito",
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+
+        /* =====================================================
+           LOGIN WRAPPER
+        ===================================================== */
+
+        .login-page {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .login-container {
+            width: 100%;
+            max-width: 470px;
+        }
+
+
+        /* =====================================================
+           LOGIN CARD
+        ===================================================== */
+
+        .login-card {
+            position: relative;
+
+            overflow: hidden;
+
+            background: rgba(255, 255, 255, 0.97);
+
+            border: 1px solid rgba(229, 231, 235, 0.9);
+
+            border-radius: var(--card-radius);
+
+            box-shadow:
+                0 24px 70px rgba(15, 23, 42, 0.10),
+                0 5px 20px rgba(15, 23, 42, 0.04);
+
+            padding: 42px;
+        }
+
+
+        .login-card::before {
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+
+            height: 5px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--primary),
+                    #4f9cff,
+                    var(--orange)
+                );
+        }
+
+
+        /* =====================================================
+           BRAND
+        ===================================================== */
+
+        .login-brand {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            margin-bottom: 28px;
+
+            color: var(--primary);
+
+            font-family: "Poppins", sans-serif;
+
+            font-size: 1.3rem;
+            font-weight: 800;
+
+            letter-spacing: -0.3px;
+        }
+
+
+        .login-brand-icon {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 34px;
+            height: 34px;
+
+            border-radius: 10px;
+
+            background: var(--primary-soft);
+
+            color: var(--primary);
+
+            font-size: 1rem;
+        }
+
+
+        /* =====================================================
+           ICON
+        ===================================================== */
+
+        .login-icon {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 72px;
+            height: 72px;
+
+            margin: 0 auto 20px;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #eaf3ff,
+                    #f3f7ff
+                );
+
+            color: var(--primary);
+
+            box-shadow:
+                inset 0 0 0 1px rgba(13, 110, 253, 0.07);
+
+            font-size: 1.8rem;
+        }
+
+
+        /* =====================================================
+           HEADING
+        ===================================================== */
+
+        .login-title {
+            margin-bottom: 7px;
+
+            color: #111827;
+
+            font-family: "Poppins", sans-serif;
+
+            font-size: 1.65rem;
+            font-weight: 700;
+
+            letter-spacing: -0.5px;
+        }
+
+
+        .login-subtitle {
+            color: var(--muted);
+
+            font-size: 0.9rem;
+
+            line-height: 1.6;
+        }
+
+
+        /* =====================================================
+           FORM
+        ===================================================== */
+
+        .form-label {
+            margin-bottom: 8px;
+
+            color: #374151;
+
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+
+        .input-wrapper {
+            position: relative;
+        }
+
+
+        .input-wrapper > i {
+            position: absolute;
+
+            top: 50%;
+            left: 15px;
+
+            transform: translateY(-50%);
+
+            color: #9ca3af;
+
+            font-size: 0.95rem;
+
+            pointer-events: none;
+
+            transition: color 0.2s ease;
+        }
+
+
+        .form-control {
+            min-height: 50px;
+
+            padding: 12px 15px 12px 43px;
+
+            background: #ffffff;
+
+            border: 1px solid #dfe4ea;
+
+            border-radius: 12px;
+
+            color: #1f2937;
+
+            font-size: 0.88rem;
+
+            box-shadow: none;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+        }
+
+
+        .form-control::placeholder {
+            color: #a3aab5;
+        }
+
+
+        .form-control:hover {
+            border-color: #cbd3df;
+        }
+
+
+        .form-control:focus {
+            background: #ffffff;
+
+            border-color: var(--primary);
+
+            box-shadow:
+                0 0 0 4px rgba(13, 110, 253, 0.10);
+
+            outline: none;
+        }
+
+
+        .input-wrapper:focus-within > i {
+            color: var(--primary);
+        }
+
+
+        /* =====================================================
+           DJANGO MESSAGES
+        ===================================================== */
+
+        .alert {
+            border: 0;
+
+            border-radius: 12px;
+
+            font-size: 0.82rem;
+        }
+
+
+        /* =====================================================
+           LOGIN BUTTON
+        ===================================================== */
+
+        .login-button {
+            min-height: 51px;
+
+            border: 0;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--orange),
+                    var(--orange-dark)
+                );
+
+            color: #ffffff;
+
+            font-size: 0.88rem;
+            font-weight: 800;
+
+            box-shadow:
+                0 8px 18px rgba(249, 115, 22, 0.20);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                filter 0.2s ease;
+        }
+
+
+        .login-button:hover {
+            color: #ffffff;
+
+            transform: translateY(-2px);
+
+            filter: brightness(1.03);
+
+            box-shadow:
+                0 12px 25px rgba(249, 115, 22, 0.27);
+        }
+
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+
+        /* =====================================================
+           REGISTER
+        ===================================================== */
+
+        .register-text {
+            color: var(--muted);
+
+            font-size: 0.82rem;
+        }
+
+
+        .register-link {
+            color: var(--primary);
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            transition: color 0.2s ease;
+        }
+
+
+        .register-link:hover {
+            color: var(--primary-dark);
+
+            text-decoration: underline;
+        }
+
+
+        /* =====================================================
+           SECURITY NOTE
+        ===================================================== */
+
+        .security-note {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 7px;
+
+            margin-top: 24px;
+
+            color: #9ca3af;
+
+            font-size: 0.72rem;
+        }
+
+
+        .security-note i {
+            color: var(--primary);
+
+            font-size: 0.8rem;
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 575.98px) {
+
+            body {
+                padding: 18px 12px;
+            }
+
+
+            .login-card {
+                padding: 32px 22px;
+
+                border-radius: 20px;
+            }
+
+
+            .login-brand {
+                margin-bottom: 23px;
+            }
+
+
+            .login-icon {
+                width: 64px;
+                height: 64px;
+
+                margin-bottom: 17px;
+
+                border-radius: 18px;
+
+                font-size: 1.55rem;
+            }
+
+
+            .login-title {
+                font-size: 1.45rem;
+            }
+
+
+            .login-subtitle {
+                font-size: 0.84rem;
+            }
+
+        }
+
+
+        /* =====================================================
+           REDUCED MOTION
+        ===================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     LOGIN PAGE
+========================================================= -->
+
+<main class="login-page">
+
+    <div class="login-container">
+
+        <div class="login-card">
+
+
+            <!-- =================================================
+                 BRAND
+            ================================================== -->
+
+            <div class="text-center">
+
+                <div class="login-brand">
+
+                    <span class="login-brand-icon">
+
+                        <i class="bi bi-mortarboard-fill"></i>
+
+                    </span>
+
+                    PupilAura
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 HEADER
+            ================================================== -->
+
+            <div class="text-center mb-4">
+
+                <div class="login-icon">
+
+                    <i class="bi bi-person-lock"></i>
+
+                </div>
+
+
+                <h1 class="login-title">
+                    Welcome back
+                </h1>
+
+
+                <p class="login-subtitle mb-0">
+                    Sign in to continue learning and track your progress.
+                </p>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 DJANGO MESSAGES
+            ================================================== -->
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div
+                        class="alert alert-{{ message.tags }} mb-3"
+                        role="alert"
+                    >
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+
+            <!-- =================================================
+                 LOGIN FORM
+            ================================================== -->
+
+            <form
+                method="POST"
+                action="{% url 'accounts:user_login' %}"
+            >
+
+                {% csrf_token %}
+
+
+                <!-- EMAIL -->
+
+                <div class="mb-3">
+
+                    <label
+                        for="email"
+                        class="form-label"
+                    >
+                        Email
+                    </label>
+
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-envelope"></i>
+
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- PASSWORD -->
+
+                <div class="mb-4">
+
+                    <label
+                        for="password"
+                        class="form-label"
+                    >
+                        Password
+                    </label>
+
+
+                    <div class="input-wrapper">
+
+                        <i class="bi bi-lock"></i>
+
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- LOGIN BUTTON -->
+
+                <button
+                    type="submit"
+                    class="btn login-button w-100"
+                >
+
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+
+                    Login
+
+                </button>
+
+            </form>
+
+
+
+            <!-- =================================================
+                 REGISTER LINK
+            ================================================== -->
+
+            <p class="text-center register-text mt-4 mb-0">
+
+                Don't have an account?
+
+                <a
+                    href="{% url 'accounts:register' %}"
+                    class="register-link"
+                >
+                    Create an account
+                </a>
+
+            </p>
+
+
+
+            <!-- =================================================
+                 SECURITY
+            ================================================== -->
+
+            <div class="security-note">
+
+                <i class="bi bi-shield-check"></i>
+
+                Secure access to your PupilAura account.
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+<!-- =========================================================
+     BOOTSTRAP JS
+========================================================= -->
+
+<script
+    src="{% static 'bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js' %}"
+></script>
+
+
+<script
+    src="{% static 'assets/js/app.js' %}"
+></script>
+
+
+</body>
+
+</html>

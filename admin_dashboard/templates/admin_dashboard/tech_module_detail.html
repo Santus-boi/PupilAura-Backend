@@ -1,0 +1,529 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ module.title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Module Details{% endblock %}
+{% block page_subtitle %}Manage this technology module and its lessons{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lesson-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .lesson-item {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .lesson-item:last-child {
+        border-bottom: 0;
+    }
+
+    .lesson-number {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .lesson-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .lesson-title {
+        font-weight: 700;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .lesson-description {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    .module-info-rows {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .module-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+    }
+
+    .module-info-row:first-child {
+        padding-top: 0;
+    }
+
+    .module-info-row:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .module-info-label {
+        color: var(--muted);
+        flex-shrink: 0;
+    }
+
+    .module-info-value {
+        font-weight: 600;
+        text-align: right;
+        color: var(--text);
+        overflow-wrap: anywhere;
+    }
+
+    .danger-zone {
+        border: 1px solid #fecaca;
+        background: #fff7f7;
+        border-radius: 14px;
+        padding: 22px;
+    }
+
+    .danger-zone h4 {
+        color: #b91c1c;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .danger-zone p {
+        color: #7f1d1d;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+
+    /* AI generator button */
+    .btn-ai {
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        color: #fff !important;
+        border: 1px solid transparent;
+    }
+
+    .btn-ai:hover {
+        background: linear-gradient(135deg, #6d28d9, #4338ca);
+        color: #fff !important;
+    }
+
+    .ai-action-card {
+        border-color: #c4b5fd;
+    }
+
+    .ai-action-card .card-header {
+        background: rgba(124, 58, 237, 0.06);
+    }
+
+    .ai-action-card p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
+
+    @media (max-width: 767px) {
+        .lesson-item {
+            align-items: flex-start;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .lesson-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+
+        .danger-zone {
+            background: rgba(127, 29, 29, 0.12);
+            border-color: #7f1d1d;
+        }
+
+        .danger-zone h4,
+        .danger-zone p {
+            color: #fca5a5;
+        }
+
+        .ai-action-card {
+            border-color: #5b21b6;
+        }
+
+        .ai-action-card .card-header {
+            background: rgba(124, 58, 237, 0.12);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_courses' %}">Tech Courses</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_course_detail' module.course.id %}">
+        {{ module.course.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ module.title }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-collection-play-fill"></i>
+                </div>
+
+                <div>
+                    <h1>{{ module.title }}</h1>
+                    <p>
+                        <i class="bi bi-laptop" style="margin-right:4px;"></i>
+                        {{ module.course.title }}
+
+                        {% if module.description %}
+                            · {{ module.description }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+
+                <!-- AI LESSON GENERATOR -->
+                <a href="{% url 'admin_dashboard:ai_tech_lesson_generator' module.id %}"
+                   class="btn btn-light">
+                    <i class="bi bi-stars"></i> Generate AI Lessons
+                </a>
+
+                <a href="{% url 'admin_dashboard:tech_module_edit' module.id %}"
+                   class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Module
+                </a>
+
+                <a href="{% url 'admin_dashboard:tech_course_detail' module.course.id %}"
+                   class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Course
+                </a>
+
+                <a href="{% url 'admin_dashboard:tech_module_delete' module.id %}"
+                   class="btn btn-light">
+                    <i class="bi bi-trash"></i> Delete
+                </a>
+
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {% if module.published %}● Published{% else %}● Draft{% endif %}
+            </span>
+
+            <span class="meta-badge">
+                {{ lessons|length }} lesson{{ lessons|length|pluralize }}
+            </span>
+
+            <span class="meta-badge">
+                Order {{ module.order }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-list-ol"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ module.order }}</div>
+            <div class="stat-label">Module Order</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-play-circle"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ lessons|length }}</div>
+            <div class="stat-label">Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-laptop"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ module.course.title|truncatechars:18 }}</div>
+            <div class="stat-label">Parent Course</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- MAIN GRID -->
+<section class="content-grid">
+
+    <!-- LEFT: LESSONS -->
+    <div class="details-main">
+
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Module Lessons</h2>
+                    <p>Lessons belonging to this module.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    disabled
+                    title="Lesson management will be enabled next"
+                >
+                    <i class="bi bi-plus-lg"></i> Add Lesson
+                </button>
+            </div>
+
+            {% if lessons %}
+
+                <div class="lesson-list">
+
+                    {% for lesson in lessons %}
+
+                        <div class="lesson-item">
+
+                            <div class="lesson-number">
+                                {{ lesson.order }}
+                            </div>
+
+                            <div class="lesson-info">
+
+                                <div class="lesson-title">
+                                    {{ lesson.title }}
+                                </div>
+
+                                {% if lesson.description %}
+                                    <div class="lesson-description">
+                                        {{ lesson.description|truncatechars:100 }}
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                            {% if lesson.published %}
+                                <span class="badge badge-green">
+                                    Published
+                                </span>
+                            {% else %}
+                                <span class="badge badge-orange">
+                                    Draft
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon" aria-hidden="true">
+                        <i class="bi bi-play-btn"></i>
+                    </div>
+
+                    <h3>No Lessons Yet</h3>
+
+                    <p>
+                        This module does not have any lessons yet.
+                        You can use the AI Lesson Generator to create
+                        lesson content for this module.
+                    </p>
+
+                    <a href="{% url 'admin_dashboard:ai_tech_lesson_generator' module.id %}"
+                       class="btn btn-ai">
+                        <i class="bi bi-stars"></i> Generate First Lessons
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </article>
+
+    </div>
+
+    <!-- RIGHT: INFO + ACTIONS + DANGER -->
+    <aside class="details-sidebar">
+
+        <!-- MODULE INFORMATION -->
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Module Information</h2>
+                    <p>Key details about this module.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="module-info-rows">
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Module</span>
+                        <span class="module-info-value">
+                            #{{ module.id }}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Course</span>
+                        <span class="module-info-value">
+                            {{ module.course.title }}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Category</span>
+                        <span class="module-info-value">
+                            {% if module.course.category %}
+                                {{ module.course.category.name }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Order</span>
+                        <span class="module-info-value">
+                            {{ module.order }}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Status</span>
+                        <span class="module-info-value">
+                            {% if module.published %}Published{% else %}Draft{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Created</span>
+                        <span class="module-info-value">
+                            {{ module.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <div class="module-info-row">
+                        <span class="module-info-label">Updated</span>
+                        <span class="module-info-value">
+                            {{ module.updated_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+        </article>
+
+        <!-- AI LESSON GENERATOR -->
+        <article class="card ai-action-card">
+
+            <div class="card-header">
+                <div>
+                    <h2>
+                        <i class="bi bi-stars"></i>
+                        AI Lesson Generator
+                    </h2>
+                    <p>Generate structured lessons for this module.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <p>
+                    Create lesson content based on this module's topic.
+                    Review the generated content before using it in your
+                    learning platform.
+                </p>
+
+                <a href="{% url 'admin_dashboard:ai_tech_lesson_generator' module.id %}"
+                   class="btn btn-ai"
+                   style="width:100%; justify-content:center;">
+                    <i class="bi bi-magic"></i> Generate AI Lessons
+                </a>
+
+            </div>
+        </article>
+
+        <!-- DANGER ZONE -->
+        <article class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Danger Zone</h2>
+                    <p>Permanently delete this module.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="danger-zone">
+
+                    <h4>
+                        <i class="bi bi-exclamation-triangle"
+                           style="margin-right:4px;"></i>
+                        Delete Module
+                    </h4>
+
+                    <p>
+                        Deleting this module will permanently delete all
+                        lessons and lesson content belonging to it.
+                    </p>
+
+                    <a href="{% url 'admin_dashboard:tech_module_delete' module.id %}"
+                       class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Module
+                    </a>
+
+                </div>
+
+            </div>
+        </article>
+
+    </aside>
+
+</section>
+
+{% endblock %}

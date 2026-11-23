@@ -1,0 +1,136 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}AI Lesson Generator | PupilAura Admin{% endblock %}
+
+{% block page_title %}AI Lesson Generator{% endblock %}
+{% block page_subtitle %}Generate a complete lesson plan from a topic{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">AI Lesson Generator</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h1>AI Lesson Generator</h1>
+                    <p>
+                        Enter a topic and context, and PupilAura will
+                        draft a complete lesson (objectives, content,
+                        examples, activity, practical). Saved as a
+                        <strong>draft</strong> — review before publishing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card" style="max-width: 850px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Generate Lesson</h2>
+        <p>Fill in the context so the AI produces curriculum-aligned content.</p>
+    </div>
+
+    <div class="card-body">
+
+        {% if generated_lesson %}
+            <div class="non-field-errors" style="background:#eff6ff; border-color:#bfdbfe; color:#1e40af; margin-bottom:20px;">
+                <strong>Preview — not saved yet.</strong>
+                AI generated the content below. Pass a <code>week_id</code>
+                in the form to save this as a draft lesson attached to a Week.
+                <hr style="margin:12px 0; border-color:#bfdbfe;">
+                <details>
+                    <summary style="cursor:pointer; font-weight:700;">Show generated content</summary>
+                    <pre style="white-space:pre-wrap; margin-top:12px; font-family:inherit;">{{ generated_lesson.content }}</pre>
+                </details>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="topic">Lesson Topic <span class="required">*</span></label>
+                <input type="text" name="topic" id="topic" class="form-control" required
+                       placeholder="e.g. Introduction to Computer Hardware"
+                       value="{{ form_data.topic|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="subject">Subject <span class="required">*</span></label>
+                <input type="text" name="subject" id="subject" class="form-control" required
+                       placeholder="e.g. Computer Studies"
+                       value="{{ form_data.subject|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="school_class">School Class</label>
+                <input type="text" name="school_class" id="school_class" class="form-control"
+                       placeholder="e.g. JSS 2"
+                       value="{{ form_data.school_class|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="education_level">Education Level</label>
+                <input type="text" name="education_level" id="education_level" class="form-control"
+                       placeholder="e.g. Junior Secondary"
+                       value="{{ form_data.education_level|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="term">Term</label>
+                <input type="text" name="term" id="term" class="form-control"
+                       placeholder="e.g. First Term"
+                       value="{{ form_data.term|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="week">Week</label>
+                <input type="text" name="week" id="week" class="form-control"
+                       placeholder="e.g. Week 3"
+                       value="{{ form_data.week|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="week_id">Attach to existing Week (optional)</label>
+                <input type="number" name="week_id" id="week_id" class="form-control"
+                       placeholder="Week ID (leave blank to preview only)"
+                       value="{{ request.GET.week_id|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="difficulty">Difficulty</label>
+                <select name="difficulty" id="difficulty" class="form-select">
+                    <option value="foundational">Foundational</option>
+                    <option value="standard" selected>Standard</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'admin_dashboard:curriculum' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-stars"></i> Generate Lesson
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

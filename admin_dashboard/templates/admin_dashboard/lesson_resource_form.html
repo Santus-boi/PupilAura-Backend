@@ -1,0 +1,238 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Edit Resource{% else %}Add Resource{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if object %}Edit Resource{% else %}Add Resource{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    Add a PDF, worksheet, exercise, notes, slides, project file, or other downloadable material to {{ lesson.title }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       LESSON RESOURCE FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .resource-form-card {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Per-field wrapper */
+    .resource-field {
+        margin-bottom: 20px;
+    }
+
+    .resource-field:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .resource-field label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .resource-field textarea {
+        min-height: 130px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .resource-field input[type="file"] {
+        padding: 9px;
+    }
+
+    .resource-field input::placeholder,
+    .resource-field textarea::placeholder {
+        color: var(--muted);
+    }
+
+    .resource-field.has-error input:not([type="checkbox"]),
+    .resource-field.has-error textarea,
+    .resource-field.has-error select {
+        border-color: var(--danger);
+    }
+
+    .resource-field.has-error input:not([type="checkbox"]):focus,
+    .resource-field.has-error textarea:focus,
+    .resource-field.has-error select:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    /* Checkbox row */
+    .resource-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .resource-checkbox-row input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--primary);
+    }
+
+    .resource-checkbox-row label {
+        margin: 0;
+        cursor: pointer;
+    }
+
+    /* Form actions */
+    .resource-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 20px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .resource-form-actions {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+        .resource-form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:lesson_content' lesson.id %}">
+        {{ lesson.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if object %}Edit Resource{% else %}Add Resource{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-{% if object %}pencil-square{% else %}paperclip{% endif %}"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if object %}Edit Lesson Resource{% else %}Add Lesson Resource{% endif %}
+                    </h1>
+                    <p>
+                        Add a PDF, worksheet, exercise, notes, slides,
+                        project file, or other downloadable material to
+                        <strong>{{ lesson.title }}</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-book" style="margin-right:6px;"></i>
+                {{ lesson.title }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="card resource-form-card">
+    <div class="card-header">
+        <h2>Resource Details</h2>
+        <p>Upload the resource and provide its information.</p>
+    </div>
+
+    <div class="card-body">
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="resource-field{% if field.errors %} has-error{% endif %}">
+
+                    {% if field.name == "published" %}
+                        <div class="resource-checkbox-row">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                        </div>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                        <span class="help-text">{{ field.help_text }}</span>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <ul class="error-list">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <div class="resource-form-actions">
+                <a
+                    href="{% url 'admin_dashboard:lesson_content' lesson.id %}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}
+                        <i class="bi bi-check2"></i> Update Resource
+                    {% else %}
+                        <i class="bi bi-plus-lg"></i> Add Resource
+                    {% endif %}
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

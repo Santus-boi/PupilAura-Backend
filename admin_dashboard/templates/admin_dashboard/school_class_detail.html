@@ -1,0 +1,318 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ school_class.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Class Details{% endblock %}
+{% block page_subtitle %}Manage the subjects and curriculum structure for this school class{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SCHOOL CLASS DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Subject cell in table */
+    .subject-name-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 180px;
+    }
+
+    .subject-icon {
+        flex: 0 0 auto;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .subject-name {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .subject-meta {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Term count pill */
+    .term-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 26px;
+        padding: 0 8px;
+        border-radius: 7px;
+        background: #f5f3ff;
+        color: var(--purple);
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    /* Small inline action buttons (view/edit) */
+    .subject-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 750;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .subject-view {
+        background: #eff6ff;
+        color: var(--primary);
+        border: 1px solid #dbeafe;
+    }
+
+    .subject-view:hover {
+        background: #dbeafe;
+        color: var(--primary-dark, #1d4ed8);
+    }
+
+    .subject-edit {
+        background: var(--surface);
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+
+    .subject-edit:hover {
+        background: var(--surface-soft);
+        color: var(--text);
+    }
+
+    /* Table min width */
+    .subjects-table {
+        min-width: 620px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+        .subject-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .subject-action {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .subject-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .term-count {
+            background: rgba(124, 58, 237, 0.15);
+            color: #c4b5fd;
+        }
+        .subject-view {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #1e40af;
+            color: #93c5fd;
+        }
+        .subject-view:hover {
+            background: rgba(37, 99, 235, 0.2);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:school_classes' %}">School Classes</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ school_class.name }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h1>{{ school_class.name }}</h1>
+                    <p>
+                        Manage the subjects and curriculum structure
+                        for this school class.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:school_classes' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="{% url 'admin_dashboard:school_class_edit' school_class.id %}" class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Class
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-mortarboard" style="margin-right:6px;"></i>
+                {{ school_class.education_level.name }}
+            </span>
+            <span class="meta-badge">
+                {{ subjects|length }} subject{{ subjects|length|pluralize }}
+            </span>
+            <span class="meta-badge">Order {{ school_class.order }}</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ school_class.education_level.name }}</div>
+            <div class="stat-label">Education Level</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-journal-bookmark"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subjects|length }}</div>
+            <div class="stat-label">Total Subjects</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-sort-numeric-down"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ school_class.order }}</div>
+            <div class="stat-label">Class Order</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- SUBJECTS -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Subjects</div>
+            <div class="section-description">
+                Subjects assigned to {{ school_class.name }}.
+            </div>
+        </div>
+        <div class="toolbar">
+            <a
+                href="{% url 'admin_dashboard:subject_create' %}?school_class={{ school_class.id }}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Add Subject
+            </a>
+        </div>
+    </div>
+
+    {% if subjects %}
+        <div class="table-wrapper">
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Subject</th>
+                        <th scope="col">Terms</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                        <tr>
+                            <td>
+                                <div class="subject-name-wrapper">
+                                    <div class="subject-icon" aria-hidden="true">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                    <div>
+                                        <div class="subject-name">{{ subject.name }}</div>
+                                        <div class="subject-meta">{{ school_class.name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="term-count" title="{{ subject.terms.all|length }} term(s)">
+                                    {{ subject.terms.all|length }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="subject-actions">
+                                    <a
+                                        href="{% url 'admin_dashboard:subject_detail' subject.id %}"
+                                        class="subject-action subject-view"
+                                    >
+                                        View
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:subject_edit' subject.id %}"
+                                        class="subject-action subject-edit"
+                                    >
+                                        Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-bookmark"></i>
+            </div>
+            <h3>No subjects yet</h3>
+            <p>
+                This school class does not have any subjects yet.
+                Add the first subject to begin building its
+                curriculum.
+            </p>
+            <a
+                href="{% url 'admin_dashboard:subject_create' %}?school_class={{ school_class.id }}"
+                class="btn btn-blue"
+            >
+                <i class="bi bi-plus-lg"></i> Add First Subject
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

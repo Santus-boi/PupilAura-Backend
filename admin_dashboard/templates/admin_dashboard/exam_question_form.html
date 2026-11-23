@@ -1,0 +1,573 @@
+
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Exam Question Form" }} | PupilAura Admin{% endblock %}
+{% block page_title %}Exam Preparation{% endblock %}
+{% block page_subtitle %}Manage exam questions and learning resources{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-heading {
+        display:flex; justify-content:space-between; align-items:flex-start;
+        gap:18px; margin-bottom:24px;
+    }
+    .page-heading h1 { font-size:27px; color:var(--text); margin-bottom:8px; }
+    .page-heading p { color:var(--muted); font-size:14px; line-height:1.6; }
+
+    .btn {
+        display:inline-flex; align-items:center; justify-content:center; gap:8px;
+        border:1px solid transparent; border-radius:9px; padding:11px 16px;
+        font-size:13px; font-weight:700; text-decoration:none; cursor:pointer;
+        transition:var(--transition);
+    }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-dark); color:#fff; }
+    .btn-secondary {
+        background:var(--surface); color:var(--text); border-color:var(--border);
+    }
+    .btn-secondary:hover { background:var(--surface-soft); color:var(--text); }
+    .btn-danger { background:#dc2626; color:#fff; }
+    .btn-danger:hover { background:#b91c1c; color:#fff; }
+
+    .context-banner {
+        display:flex; gap:14px; padding:17px 20px; margin-bottom:24px;
+        background:var(--surface-soft); border:1px solid var(--border); border-radius:12px;
+    }
+    .context-icon {
+        width:40px; height:40px; display:grid; place-items:center; flex-shrink:0;
+        border-radius:10px; background:var(--surface); color:var(--primary);
+        font-size:19px;
+    }
+    .context-banner h3 { font-size:14px; color:var(--text); margin-bottom:5px; }
+    .context-banner p { color:var(--muted); font-size:13px; line-height:1.6; }
+    .context-meta {
+        display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:8px;
+        color:var(--muted); font-size:12px;
+    }
+
+    .form-layout {
+        display:grid; grid-template-columns:minmax(0,1fr) 290px;
+        align-items:start; gap:22px;
+    }
+    .form-card,.side-card {
+        background:var(--surface); border:1px solid var(--border);
+        border-radius:14px; box-shadow:var(--shadow-sm); overflow:hidden;
+    }
+    .card-header,.side-card-header {
+        padding:21px 23px; border-bottom:1px solid var(--border);
+    }
+    .card-header h2 { font-size:17px; color:var(--text); margin-bottom:6px; }
+    .card-header p { color:var(--muted); font-size:13px; line-height:1.5; }
+    .card-body,.side-card-body { padding:23px; }
+    .section-title {
+        font-size:14px; font-weight:800; color:var(--text);
+        margin:8px 0 17px; padding-bottom:12px;
+        border-bottom:1px solid var(--border);
+    }
+    .section-description {
+        color:var(--muted); font-size:12px; line-height:1.6;
+        margin:-8px 0 17px;
+    }
+    .form-grid {
+        display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:19px 18px;
+    }
+    .form-group { min-width:0; }
+    .form-group.full-width { grid-column:1/-1; }
+    .form-group label,.choice-label {
+        display:block; font-size:13px; font-weight:700;
+        color:var(--text); margin-bottom:8px;
+    }
+    .required-mark { color:var(--danger); }
+    .form-group input:not([type=checkbox]):not([type=file]),
+    .form-group select,.form-group textarea,
+    .choice-row input:not([type=checkbox]) {
+        display:block; width:100%; padding:12px 13px;
+        background:var(--surface); color:var(--text);
+        border:1px solid var(--border); border-radius:9px;
+        outline:none; font-size:13px; line-height:1.5;
+    }
+    .form-group textarea { min-height:120px; resize:vertical; }
+    .form-group input[type=file] {
+        width:100%; padding:11px; background:var(--surface);
+        color:var(--text); border:1px solid var(--border); border-radius:9px;
+    }
+    .form-group input:focus,.form-group select:focus,
+    .form-group textarea:focus,.choice-row input:focus {
+        border-color:var(--primary);
+        box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+    .help-text { color:var(--muted); font-size:12px; line-height:1.6; margin-top:7px; }
+    .error-list,.field-error {
+        color:var(--danger); font-size:12px; line-height:1.5; margin-top:7px;
+    }
+    .non-field-errors {
+        background:var(--surface-soft); border:1px solid var(--danger);
+        border-radius:9px; color:var(--danger);
+        padding:13px 15px; margin-bottom:20px; font-size:13px;
+    }
+
+    .choice-section {
+        padding:20px; border:1px solid var(--border);
+        border-radius:12px; background:var(--surface-soft);
+    }
+    .choice-heading {
+        display:flex; align-items:flex-start; justify-content:space-between;
+        gap:12px; margin-bottom:16px;
+    }
+    .choice-heading h3 { color:var(--text); font-size:15px; margin-bottom:5px; }
+    .choice-heading p { color:var(--muted); font-size:12px; line-height:1.5; }
+    .choice-list { display:flex; flex-direction:column; gap:12px; }
+    .choice-row {
+        display:grid; grid-template-columns:42px minmax(0,1fr) 90px 38px;
+        align-items:center; gap:10px; padding:12px;
+        background:var(--surface); border:1px solid var(--border);
+        border-radius:10px;
+    }
+    .choice-letter {
+        width:34px; height:34px; display:grid; place-items:center;
+        border-radius:8px; background:var(--surface-soft);
+        color:var(--text); font-weight:800; font-size:13px;
+    }
+    .choice-row input[type=checkbox] {
+        width:17px; height:17px; accent-color:var(--primary);
+    }
+    .correct-toggle {
+        display:flex; align-items:center; gap:6px;
+        color:var(--muted); font-size:11px; font-weight:700;
+        white-space:nowrap;
+    }
+    .remove-choice {
+        width:34px; height:34px; border:1px solid var(--border);
+        border-radius:8px; background:var(--surface);
+        color:var(--danger); cursor:pointer;
+    }
+    .remove-choice:hover { background:#fee2e2; }
+    .choice-row.deleted { display:none; }
+    .choice-errors { color:var(--danger); font-size:12px; margin-top:5px; }
+    .choice-help {
+        color:var(--muted); font-size:12px; line-height:1.6;
+        margin-top:13px;
+    }
+    .choice-empty {
+        padding:18px; text-align:center; color:var(--muted);
+        border:1px dashed var(--border); border-radius:9px; font-size:13px;
+    }
+
+    .checkbox-row {
+        display:flex; align-items:flex-start; gap:11px; padding:15px;
+        background:var(--surface-soft); border:1px solid var(--border);
+        border-radius:10px;
+    }
+    .checkbox-row input { width:17px; height:17px; margin-top:2px; accent-color:var(--primary); }
+    .checkbox-row label { cursor:pointer; margin:0; }
+    .checkbox-row strong { display:block; color:var(--text); font-size:13px; margin-bottom:5px; }
+    .checkbox-row span { display:block; color:var(--muted); font-size:12px; line-height:1.5; }
+
+    .form-actions {
+        display:flex; justify-content:space-between; align-items:center;
+        flex-wrap:wrap; gap:12px; padding:19px 23px;
+        background:var(--surface-soft); border-top:1px solid var(--border);
+    }
+    .form-actions-left,.form-actions-right { display:flex; flex-wrap:wrap; gap:10px; }
+
+    .side-card { margin-bottom:18px; }
+    .side-card:last-child { margin-bottom:0; }
+    .side-card-header h3 { color:var(--text); font-size:15px; }
+    .tip-item { display:flex; gap:11px; margin-bottom:18px; }
+    .tip-item:last-child { margin-bottom:0; }
+    .tip-icon {
+        width:32px; height:32px; display:grid; place-items:center;
+        flex-shrink:0; border-radius:8px; background:var(--surface-soft);
+        color:var(--primary); font-size:12px; font-weight:800;
+    }
+    .tip-item h4 { color:var(--text); font-size:13px; margin:2px 0 5px; }
+    .tip-item p { color:var(--muted); font-size:12px; line-height:1.6; }
+    .status-note {
+        background:var(--surface-soft); color:var(--text);
+        border:1px solid var(--border); border-radius:9px;
+        padding:13px; font-size:12px; line-height:1.65;
+    }
+
+    @media(max-width:1050px) {
+        .form-layout { grid-template-columns:minmax(0,1fr) 260px; gap:16px; }
+    }
+    @media(max-width:900px) {
+        .form-layout { grid-template-columns:1fr; }
+        .side-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .side-card { margin-bottom:0; }
+    }
+    @media(max-width:650px) {
+        .page-heading { flex-direction:column; }
+        .page-heading h1 { font-size:23px; }
+        .card-header,.card-body { padding:17px; }
+        .form-grid { grid-template-columns:1fr; gap:16px; }
+        .form-group.full-width { grid-column:auto; }
+        .choice-section { padding:13px; }
+        .choice-row { grid-template-columns:34px minmax(0,1fr) 34px; gap:7px; }
+        .choice-row .correct-toggle { grid-column:2; grid-row:2; }
+        .choice-row .remove-choice { grid-column:3; grid-row:1; }
+        .choice-row input[type=text] { min-width:0; }
+        .form-actions { flex-direction:column; align-items:stretch; padding:16px; }
+        .form-actions-left,.form-actions-right { width:100%; }
+        .form-actions .btn { flex:1; }
+        .side-column { grid-template-columns:1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}">Resource Details</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{% url 'admin_dashboard:exam_questions' resource.id %}">Questions</a>
+    <span class="breadcrumb-separator">›</span>
+    <span class="breadcrumb-current">{% if is_edit %}Edit Question{% else %}Create Question{% endif %}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>{{ page_title|default:"Create Exam Question" }}</h1>
+        <p>{{ page_subtitle|default:"Add the question and its answer choices on this page." }}</p>
+    </div>
+    <a href="{% url 'admin_dashboard:exam_questions' resource.id %}" class="btn btn-secondary">
+        ← Back to Questions
+    </a>
+</div>
+
+<div class="context-banner">
+    <div class="context-icon">✎</div>
+    <div>
+        <h3>Resource: {{ resource.title }}</h3>
+        <p>This question and its answer choices will be saved together.</p>
+        <div class="context-meta">
+            <span><strong>Exam:</strong> {{ exam.name }}</span>
+            <span><strong>Subject:</strong> {{ resource.subject.name|default:"Not assigned" }}</span>
+            <span><strong>Year:</strong> {{ resource.year.year|default:"Not assigned" }}</span>
+            <span><strong>Type:</strong> {{ resource.get_resource_type_display }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-layout">
+    <section class="form-card">
+        <div class="card-header">
+            <h2>Question Information</h2>
+            <p>Complete the question details and, for multiple-choice questions, enter all answer options below.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate id="examQuestionForm">
+            {% csrf_token %}
+
+            <div class="card-body">
+                {% if form.non_field_errors or choice_formset.non_form_errors %}
+                    <div class="non-field-errors">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                        {% for error in choice_formset.non_form_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <h3 class="section-title">Basic Details</h3>
+                <div class="form-grid">
+                    {% for field in form %}
+                        {% if field.name == "resource" or field.name == "question_number" or field.name == "question_type" or field.name == "marks" or field.name == "order" or field.name == "source_question" %}
+                            <div class="form-group {% if field.name == 'resource' or field.name == 'source_question' %}full-width{% endif %}">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="required-mark">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                                {% for error in field.errors %}<div class="error-list">{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <h3 class="section-title" style="margin-top:30px;">Question Content</h3>
+                <div class="form-grid">
+                    {% for field in form %}
+                        {% if field.name == "question_text" or field.name == "image" or field.name == "explanation" or field.name == "correct_answer" or field.name == "solution" %}
+                            <div class="form-group full-width">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="required-mark">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}<p class="help-text">{{ field.help_text }}</p>{% endif %}
+                                {% if field.name == "question_text" %}
+                                    <p class="help-text">Write the complete question. Include any instructions learners need.</p>
+                                {% elif field.name == "correct_answer" %}
+                                    <p class="help-text">For theory or practical solutions, enter the expected answer here.</p>
+                                {% elif field.name == "solution" %}
+                                    <p class="help-text">Provide a detailed explanation or step-by-step solution where applicable.</p>
+                                {% elif field.name == "image" %}
+                                    <p class="help-text">Optional. Attach a diagram, photograph, or other image relevant to the question.</p>
+                                {% endif %}
+                                {% for error in field.errors %}<div class="error-list">{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div id="choicesSection" style="margin-top:30px;">
+                    <h3 class="section-title">Answer Choices</h3>
+                    <p class="section-description">
+                        Add the available options and select exactly one correct answer.
+                        You can add more choices if necessary.
+                    </p>
+
+                    {{ choice_formset.management_form }}
+
+                    {% if choice_formset.non_form_errors %}
+                        <div class="non-field-errors">
+                            {% for error in choice_formset.non_form_errors %}<div>{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="choice-section">
+                        <div class="choice-heading">
+                            <div>
+                                <h3>Multiple-choice options</h3>
+                                <p>At least four non-empty options are required for an MCQ.</p>
+                            </div>
+                            <button type="button" class="btn btn-secondary" id="addChoiceBtn">+ Add Choice</button>
+                        </div>
+
+                        <div class="choice-list" id="choiceList">
+                            {% for choice_form in choice_formset %}
+                                <div class="choice-row" data-choice-row>
+                                    {% for hidden in choice_form.hidden_fields %}{{ hidden }}{% endfor %}
+
+                                    <div class="choice-letter" data-choice-letter>
+                                        {{ forloop.counter|add:64|stringformat:"c" }}
+                                    </div>
+
+                                    <div>
+                                        {{ choice_form.text }}
+                                        {% for error in choice_form.text.errors %}
+                                            <div class="choice-errors">{{ error }}</div>
+                                        {% endfor %}
+                                        {% for error in choice_form.non_field_errors %}
+                                            <div class="choice-errors">{{ error }}</div>
+                                        {% endfor %}
+                                        {% if choice_form.DELETE %}
+                                            <span style="display:none;">{{ choice_form.DELETE }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <label class="correct-toggle">
+                                        {{ choice_form.is_correct }}
+                                        Correct
+                                    </label>
+
+                                    <button type="button" class="remove-choice" data-remove-choice title="Remove choice">✕</button>
+
+                                    {% if choice_form.order %}
+                                        <div style="display:none;">{{ choice_form.order }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <p class="choice-help">
+                            Select the checkbox beside the correct option. Only one option can be marked correct.
+                            Removing an existing option marks it for deletion when you save.
+                        </p>
+
+                        <template id="emptyChoiceTemplate">
+                            <div class="choice-row" data-choice-row>
+                                {% for hidden in choice_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                <div class="choice-letter" data-choice-letter>New</div>
+                                <div>
+                                    {{ choice_formset.empty_form.text }}
+                                    {% if choice_formset.empty_form.DELETE %}
+                                        <span style="display:none;">{{ choice_formset.empty_form.DELETE }}</span>
+                                    {% endif %}
+                                </div>
+                                <label class="correct-toggle">
+                                    {{ choice_formset.empty_form.is_correct }}
+                                    Correct
+                                </label>
+                                <button type="button" class="remove-choice" data-remove-choice title="Remove choice">✕</button>
+                                {% if choice_formset.empty_form.order %}
+                                    <div style="display:none;">{{ choice_formset.empty_form.order }}</div>
+                                {% endif %}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top:30px;">Publishing</h3>
+                {% for field in form %}
+                    {% if field.name == "published" %}
+                        <div class="checkbox-row">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}">
+                                <strong>Publish this question</strong>
+                                <span>Published questions can be made available to learners wherever the student-facing exam feature supports them.</span>
+                            </label>
+                        </div>
+                        {% for error in field.errors %}<div class="error-list">{{ error }}</div>{% endfor %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <div class="form-actions-left">
+                    <a href="{% url 'admin_dashboard:exam_questions' resource.id %}" class="btn btn-secondary">Cancel</a>
+                </div>
+                <div class="form-actions-right">
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_edit %}✓ Save Question and Choices{% else %}+ Create Question and Choices{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <aside class="side-column">
+        <section class="side-card">
+            <div class="side-card-header"><h3>Question Writing Tips</h3></div>
+            <div class="side-card-body">
+                <div class="tip-item">
+                    <div class="tip-icon">01</div>
+                    <div><h4>Be clear</h4><p>Use direct wording and make sure the question is understandable.</p></div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">02</div>
+                    <div><h4>Set the marks</h4><p>Assign marks that reflect the complexity of the question.</p></div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">03</div>
+                    <div><h4>Check the answer</h4><p>For MCQs, select exactly one correct option before saving.</p></div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">04</div>
+                    <div><h4>Review before publishing</h4><p>Check numbering, wording, marks, choices and attached images.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="side-card">
+            <div class="side-card-header"><h3>Before You Save</h3></div>
+            <div class="side-card-body">
+                <div class="status-note">
+                    <strong>Important:</strong> The question and its answer choices are submitted together on this page. For MCQs, provide at least four options and mark one correct answer.
+                </div>
+                <div style="margin-top:16px;">
+                    <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}" class="btn btn-secondary" style="width:100%;">
+                        View Resource
+                    </a>
+                </div>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const questionType = document.getElementById("id_question_type");
+    const choicesSection = document.getElementById("choicesSection");
+    const choiceList = document.getElementById("choiceList");
+    const addChoiceBtn = document.getElementById("addChoiceBtn");
+    const emptyTemplate = document.getElementById("emptyChoiceTemplate");
+    const totalForms = document.getElementById("id_choices-TOTAL_FORMS");
+
+    function updateChoiceNumbers() {
+        let visibleIndex = 0;
+
+        choiceList.querySelectorAll("[data-choice-row]").forEach(function (row) {
+            if (row.classList.contains("deleted")) return;
+
+            const letter = row.querySelector("[data-choice-letter]");
+            if (letter) {
+                letter.textContent = String.fromCharCode(65 + visibleIndex);
+            }
+            visibleIndex++;
+        });
+    }
+
+    function updateChoiceVisibility() {
+        if (!questionType || !choicesSection) return;
+
+        const isMCQ = questionType.value === "mcq";
+        choicesSection.style.display = isMCQ ? "" : "none";
+
+        choiceList.querySelectorAll("[data-choice-row] input").forEach(function (input) {
+            if (input.name.includes("-DELETE")) return;
+            input.disabled = !isMCQ;
+        });
+    }
+
+    function addChoice() {
+        if (!totalForms || !emptyTemplate) return;
+
+        const index = parseInt(totalForms.value, 10);
+        const html = emptyTemplate.innerHTML.replace(/__prefix__/g, index);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = html.trim();
+
+        const row = wrapper.firstElementChild;
+        if (!row) return;
+
+        choiceList.appendChild(row);
+        totalForms.value = index + 1;
+        updateChoiceNumbers();
+        updateChoiceVisibility();
+    }
+
+    addChoiceBtn?.addEventListener("click", addChoice);
+
+    choiceList?.addEventListener("click", function (event) {
+        const removeButton = event.target.closest("[data-remove-choice]");
+        if (!removeButton) return;
+
+        const row = removeButton.closest("[data-choice-row]");
+        if (!row) return;
+
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+        const idInput = row.querySelector('input[name$="-id"]');
+
+        if (deleteInput && idInput && idInput.value) {
+            deleteInput.checked = true;
+            row.classList.add("deleted");
+        } else {
+            row.remove();
+        }
+
+        updateChoiceNumbers();
+    });
+
+    choiceList?.addEventListener("change", function (event) {
+        if (!event.target.matches('input[type="checkbox"][name$="-is_correct"]')) return;
+
+        if (event.target.checked) {
+            choiceList.querySelectorAll('input[type="checkbox"][name$="-is_correct"]').forEach(function (checkbox) {
+                if (checkbox !== event.target) checkbox.checked = false;
+            });
+        }
+    });
+
+    questionType?.addEventListener("change", updateChoiceVisibility);
+
+    updateChoiceNumbers();
+    updateChoiceVisibility();
+});
+</script>
+{% endblock %}

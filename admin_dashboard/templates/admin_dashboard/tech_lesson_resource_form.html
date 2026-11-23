@@ -1,0 +1,478 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if resource %}Edit Resource{% else %}Add Resource{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if resource %}Edit Resource{% else %}Add Resource{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if resource %}
+        Update the learning resource attached to this lesson
+    {% else %}
+        Add a downloadable learning resource for this lesson
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH LESSON RESOURCE FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .resource-form-card {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Current file panel */
+    .current-file {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 11px;
+        padding: 12px;
+        border: 1px solid #dbeafe;
+        border-radius: 9px;
+        background: #eff6ff;
+    }
+
+    .current-file-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--primary);
+        font-size: 18px;
+    }
+
+    .current-file-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .current-file-label {
+        margin-bottom: 2px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .current-file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .current-file-link {
+        flex-shrink: 0;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .current-file-link:hover {
+        color: var(--primary-dark, #1d4ed8);
+    }
+
+    /* Publish checkbox box */
+    .publish-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-soft);
+    }
+
+    .publish-box input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        accent-color: var(--primary);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .publish-content {
+        flex: 1;
+    }
+
+    .publish-label {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .publish-description {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    /* Info card (sidebar) */
+    .resource-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .resource-info-item:first-child {
+        padding-top: 0;
+    }
+
+    .resource-info-item:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .resource-info-icon {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: var(--primary);
+        font-size: 15px;
+    }
+
+    .resource-info-content {
+        min-width: 0;
+    }
+
+    .resource-info-label {
+        margin-bottom: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .resource-info-value {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .resource-info-note {
+        margin-top: 20px;
+        padding: 13px;
+        border-radius: 8px;
+        background: #eff6ff;
+        color: #1e40af;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .resource-info-note i {
+        margin-right: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .current-file {
+            align-items: flex-start;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .current-file {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #1e3a8a;
+        }
+        .current-file-icon {
+            background: rgba(37, 99, 235, 0.2);
+        }
+        .resource-info-icon {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .resource-info-note {
+            background: #172554;
+            color: #bfdbfe;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lessons' %}">Tech Lessons</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}">
+        {{ lesson.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if resource %}Edit Resource{% else %}Add Resource{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if resource %}Edit Resource{% else %}Add Resource{% endif %}
+                    </h1>
+                    <p>
+                        {% if resource %}
+                            Update the learning resource attached to this lesson.
+                        {% else %}
+                            Add a downloadable learning resource for this lesson.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Lesson
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="resource-form-card">
+    <section class="content-grid">
+
+        <!-- FORM CARD -->
+        <article class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Resource Details</h2>
+                    <p>Configure the resource information and file.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                {% if form.non_field_errors %}
+                    <div class="non-field-errors">
+                        <ul class="error-list">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Title -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.title.id_for_label }}">
+                            Resource Title <span class="required">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <ul class="error-list">
+                                {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Give the resource a clear and descriptive title.
+                        </div>
+                    </div>
+
+                    <!-- File -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.file.id_for_label }}">
+                            Resource File
+                            {% if not resource %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <ul class="error-list">
+                                {% for error in form.file.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% if resource and resource.file %}
+                            <div class="current-file">
+                                <div class="current-file-icon" aria-hidden="true">
+                                    <i class="bi bi-file-earmark"></i>
+                                </div>
+                                <div class="current-file-info">
+                                    <div class="current-file-label">Current file</div>
+                                    <div class="current-file-name">{{ resource.file.name }}</div>
+                                </div>
+                                <a href="{{ resource.file.url }}" target="_blank"
+                                   rel="noopener noreferrer" class="current-file-link">
+                                    Open <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <div class="help-text">
+                            Upload a PDF, document, worksheet, ZIP file,
+                            or other learning material.
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.description.id_for_label }}">
+                            Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <ul class="error-list">
+                                {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">
+                            Briefly explain what students will find inside this resource.
+                        </div>
+                    </div>
+
+                    <!-- Order -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.order.id_for_label }}">
+                            Display Order
+                        </label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                            <ul class="error-list">
+                                {% for error in form.order.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <div class="help-text">Lower numbers appear first in the lesson.</div>
+                    </div>
+
+                    <!-- Published -->
+                    <div class="form-group">
+                        <div class="publish-box">
+                            {{ form.published }}
+                            <div class="publish-content">
+                                <label for="{{ form.published.id_for_label }}" class="publish-label">
+                                    Publish this resource
+                                </label>
+                                <div class="publish-description">
+                                    Published resources are available
+                                    to students when the lesson is accessible.
+                                </div>
+                            </div>
+                        </div>
+                        {% if form.published.errors %}
+                            <ul class="error-list">
+                                {% for error in form.published.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2"></i>
+                            {% if resource %}Update Resource{% else %}Save Resource{% endif %}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </article>
+
+        <!-- INFORMATION CARD -->
+        <aside class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Resource Information</h2>
+                    <p>Current lesson context.</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div>
+                    <div class="resource-info-item">
+                        <div class="resource-info-icon" aria-hidden="true">
+                            <i class="bi bi-book-fill"></i>
+                        </div>
+                        <div class="resource-info-content">
+                            <div class="resource-info-label">Lesson</div>
+                            <div class="resource-info-value">{{ lesson.title }}</div>
+                        </div>
+                    </div>
+
+                    <div class="resource-info-item">
+                        <div class="resource-info-icon" aria-hidden="true">
+                            <i class="bi bi-layers-fill"></i>
+                        </div>
+                        <div class="resource-info-content">
+                            <div class="resource-info-label">Module</div>
+                            <div class="resource-info-value">{{ lesson.module.title }}</div>
+                        </div>
+                    </div>
+
+                    <div class="resource-info-item">
+                        <div class="resource-info-icon" aria-hidden="true">
+                            <i class="bi bi-code-square"></i>
+                        </div>
+                        <div class="resource-info-content">
+                            <div class="resource-info-label">Course</div>
+                            <div class="resource-info-value">{{ lesson.module.course.title }}</div>
+                        </div>
+                    </div>
+
+                    <div class="resource-info-item">
+                        <div class="resource-info-icon" aria-hidden="true">
+                            <i class="bi bi-list-ol"></i>
+                        </div>
+                        <div class="resource-info-content">
+                            <div class="resource-info-label">Lesson Order</div>
+                            <div class="resource-info-value">{{ lesson.order }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resource-info-note">
+                    <i class="bi bi-lightbulb-fill"></i>
+                    Resources can be used for worksheets, documentation,
+                    project files, reference materials, and downloadable
+                    lesson content.
+                </div>
+            </div>
+        </aside>
+
+    </section>
+</div>
+
+{% endblock %}

@@ -1,0 +1,686 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}{{ group.name }} | PupilAura Community{% endblock %}
+
+{% block community_breadcrumb %}
+<a href="{% url 'community:home' %}">Community</a>
+<span class="mx-2">/</span>
+<strong>{{ group.name }}</strong>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.group-detail-page {
+    --gd-primary: #dc2626;
+    --gd-dark: #172033;
+    --gd-muted: #8490a3;
+    --gd-border: #e9edf4;
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+    color: var(--gd-dark);
+}
+
+.gd-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border: 1px solid var(--gd-border);
+    border-radius: 11px;
+    background: #fff;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.gd-back:hover {
+    color: var(--gd-primary);
+    border-color: #fecaca;
+    transform: translateX(-3px);
+}
+
+/* Hero */
+.gd-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(25px, 5vw, 46px);
+    border-radius: 25px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 90% 10%, rgba(255,255,255,.14), transparent 28%),
+        radial-gradient(circle at 5% 100%, rgba(220,38,38,.32), transparent 38%),
+        linear-gradient(125deg, #111827, #273247 58%, #421c2a);
+    box-shadow: 0 16px 40px rgba(15,23,42,.13);
+}
+
+.gd-hero::before,
+.gd-hero::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.gd-hero::before {
+    width: 300px;
+    height: 300px;
+    top: -170px;
+    right: -70px;
+}
+
+.gd-hero::after {
+    width: 190px;
+    height: 190px;
+    right: 100px;
+    bottom: -140px;
+}
+
+.gd-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 13px;
+    border: 1px solid rgba(255,255,255,.17);
+    border-radius: 30px;
+    background: rgba(255,255,255,.11);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+}
+
+.gd-hero h1 {
+    max-width: 800px;
+    margin: 19px 0 12px;
+    color: #fff;
+    font-size: clamp(27px, 5vw, 43px);
+    font-weight: 850;
+    letter-spacing: -1.2px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.gd-description {
+    max-width: 750px;
+    margin: 0 0 24px;
+    color: #d1d5db;
+    font-size: 14px;
+    line-height: 1.9;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.gd-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.gd-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,.09);
+    color: #e5e7eb;
+    font-size: 12px;
+}
+
+/* Sections */
+.gd-section {
+    margin-top: 22px;
+    padding: clamp(19px, 3vw, 28px);
+    border: 1px solid var(--gd-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(15,23,42,.035);
+}
+
+.gd-section-heading {
+    margin: 0 0 6px;
+    color: #172033;
+    font-size: 18px;
+    font-weight: 850;
+    letter-spacing: -.4px;
+}
+
+.gd-section-subtitle {
+    margin: 0;
+    color: var(--gd-muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* Membership */
+.gd-membership {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 19px;
+    padding: 18px;
+    border: 1px solid transparent;
+    border-radius: 15px;
+}
+
+.gd-membership-active {
+    background: #f0fdf5;
+    border-color: #bbf7d0;
+}
+
+.gd-membership-pending {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.gd-membership-restricted {
+    background: #fff1f2;
+    border-color: #fecdd3;
+}
+
+.gd-membership-none {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.gd-membership-title {
+    margin-bottom: 5px;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.gd-membership-description {
+    color: #718096;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.gd-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 17px;
+    border: 0;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 5px 14px rgba(220,38,38,.18);
+    transition: .2s ease;
+}
+
+.gd-primary-btn:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(220,38,38,.24);
+}
+
+/* Group chat */
+.gd-chat-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 19px;
+    border: 1px solid #e9edf4;
+    border-radius: 16px;
+    background: linear-gradient(120deg, #fff, #fafbff);
+    transition: .2s ease;
+}
+
+.gd-chat-entry:hover {
+    border-color: #fecaca;
+    box-shadow: 0 8px 22px rgba(15,23,42,.05);
+}
+
+.gd-chat-info {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+}
+
+.gd-chat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 21px;
+}
+
+.gd-chat-title {
+    margin-bottom: 4px;
+    color: #172033;
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.gd-chat-description {
+    margin: 0;
+    color: var(--gd-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.gd-chat-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 8px;
+    padding: 11px 15px;
+    border-radius: 11px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.gd-chat-btn:hover {
+    background: #b91c1c;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Management */
+.gd-member-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 13px;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid #edf0f5;
+    border-radius: 13px;
+    background: #fafbfc;
+    transition: .2s ease;
+}
+
+.gd-member-list:hover {
+    border-color: #dbe2ed;
+    background: #fff;
+}
+
+.gd-member-name {
+    color: #253047;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.gd-member-date {
+    display: block;
+    margin-top: 4px;
+    color: #94a0b1;
+    font-size: 11px;
+}
+
+.gd-management-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.gd-management-actions form {
+    margin: 0;
+}
+
+.gd-management-actions button {
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.gd-empty {
+    padding: 17px;
+    border: 1px dashed #dce2ec;
+    border-radius: 12px;
+    background: #fafbfe;
+    color: #8792a5;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gd-hero {
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .group-detail-page {
+        padding-bottom: 25px;
+    }
+
+    .gd-back {
+        margin-bottom: 14px;
+    }
+
+    .gd-hero {
+        padding: 24px 19px;
+        border-radius: 18px;
+    }
+
+    .gd-hero h1 {
+        letter-spacing: -.7px;
+    }
+
+    .gd-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .gd-section {
+        margin-top: 16px;
+        padding: 17px;
+        border-radius: 16px;
+    }
+
+    .gd-membership {
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .gd-membership form,
+    .gd-membership form button {
+        width: 100%;
+    }
+
+    .gd-chat-entry {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .gd-chat-btn {
+        width: 100%;
+    }
+
+    .gd-member-list {
+        align-items: flex-start;
+    }
+
+    .gd-management-actions {
+        width: 100%;
+    }
+
+    .gd-management-actions form,
+    .gd-management-actions button {
+        flex: 1;
+    }
+}
+</style>
+{% endblock %}
+
+{% block community_content %}
+<div class="group-detail-page">
+
+    <a href="{% url 'community:home' %}" class="gd-back">
+        <i class="bi bi-arrow-left"></i>
+        Back to Community
+    </a>
+
+    <!-- Group information -->
+    <section class="gd-hero">
+        <span class="gd-type">
+            <i class="bi bi-people-fill"></i>
+            {{ group.get_group_type_display }}
+        </span>
+
+        <h1>{{ group.name }}</h1>
+
+        <p class="gd-description">{{ group.description }}</p>
+
+        <div class="gd-meta">
+            <span>
+                <i class="bi bi-person-circle"></i>
+                Created by {{ group.created_by.first_name|default:group.created_by.email }}
+            </span>
+
+            <span>
+                <i class="bi bi-calendar3"></i>
+                {{ group.created_at|date:"M d, Y" }}
+            </span>
+
+            {% if group.school_class %}
+                <span>
+                    <i class="bi bi-mortarboard"></i>
+                    {{ group.school_class.name }}
+                </span>
+            {% elif group.exam %}
+                <span>
+                    <i class="bi bi-journal-bookmark"></i>
+                    {{ group.exam.name }}
+                    {% if group.exam_subject %}
+                        · {{ group.exam_subject.name }}
+                    {% endif %}
+                </span>
+            {% elif group.tech_course %}
+                <span>
+                    <i class="bi bi-code-slash"></i>
+                    {{ group.tech_course.title }}
+                </span>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Membership status -->
+    <section class="gd-section">
+        <h3 class="gd-section-heading">Your Membership</h3>
+        <p class="gd-section-subtitle">
+            Your membership determines your participation and access to this group.
+        </p>
+
+        {% if is_member %}
+            <div class="gd-membership gd-membership-active">
+                <div>
+                    <div class="gd-membership-title">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                        You are an active member
+                    </div>
+                    <div class="gd-membership-description">
+                        You can publish discussions, comment on posts and chat with group members.
+                    </div>
+                </div>
+
+                <span class="badge bg-success-subtle text-success px-3 py-2">
+                    Active Member
+                </span>
+            </div>
+
+            <div class="gd-chat-entry">
+                <div class="gd-chat-info">
+                    <div class="gd-chat-icon">
+                        <i class="bi bi-chat-dots-fill"></i>
+                    </div>
+                    <div>
+                        <div class="gd-chat-title">Group Chat</div>
+                        <p class="gd-chat-description">
+                            Ask questions, share ideas and interact with other members in the group's dedicated chat.
+                        </p>
+                    </div>
+                </div>
+
+                <a href="{% url 'community:group_chat' group.slug %}" class="gd-chat-btn">
+                    <i class="bi bi-chat-square-text-fill"></i>
+                    Open Group Chat
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+            </div>
+
+        {% elif membership and membership.status == "pending" %}
+            <div class="gd-membership gd-membership-pending">
+                <div>
+                    <div class="gd-membership-title">
+                        <i class="bi bi-clock-history text-warning me-1"></i>
+                        Membership request pending
+                    </div>
+                    <div class="gd-membership-description">
+                        Your request is awaiting approval. You cannot participate in discussions yet.
+                    </div>
+                </div>
+
+                <span class="badge bg-warning-subtle text-warning px-3 py-2">
+                    Pending
+                </span>
+            </div>
+
+        {% elif membership and membership.status == "banned" %}
+            <div class="gd-membership gd-membership-restricted">
+                <div>
+                    <div class="gd-membership-title">
+                        <i class="bi bi-shield-lock-fill text-danger me-1"></i>
+                        Membership restricted
+                    </div>
+                    <div class="gd-membership-description">
+                        Your access to this group has been restricted.
+                    </div>
+                </div>
+
+                <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                    Restricted
+                </span>
+            </div>
+
+        {% else %}
+            <div class="gd-membership gd-membership-none">
+                <div>
+                    <div class="gd-membership-title">
+                        Join this learning community
+                    </div>
+                    <div class="gd-membership-description">
+                        Request membership to participate in group discussions and activities.
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'community:request_to_join' group.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="gd-primary-btn">
+                        <i class="bi bi-person-plus-fill"></i>
+                        Request to Join
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </section>
+
+    {% if can_manage_memberships %}
+    <!-- Membership management -->
+    <section class="gd-section">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <div>
+                <h3 class="gd-section-heading">Membership Management</h3>
+                <p class="gd-section-subtitle">
+                    Review membership requests and manage group access.
+                </p>
+            </div>
+
+            <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                <i class="bi bi-shield-check me-1"></i>
+                Authorized Manager
+            </span>
+        </div>
+
+        <h6 class="fw-bold mb-3">
+            Pending Requests
+            <span class="text-muted">({{ pending_memberships|length }})</span>
+        </h6>
+
+        {% for member in pending_memberships %}
+            <div class="gd-member-list">
+                <div>
+                    <div class="gd-member-name">
+                        {{ member.user.first_name|default:member.user.email }}
+                    </div>
+                    <small class="gd-member-date">
+                        Requested {{ member.joined_at|date:"M d, Y" }}
+                    </small>
+                </div>
+
+                <div class="gd-management-actions">
+                    <form method="POST" action="{% url 'community:manage_membership' group.slug member.id 'approve' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Approve
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'community:manage_membership' group.slug member.id 'reject' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x-lg me-1"></i>Reject
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="gd-empty">
+                <i class="bi bi-inbox me-1"></i>
+                There are no pending membership requests.
+            </div>
+        {% endfor %}
+
+        <hr class="my-4">
+
+        <h6 class="fw-bold mb-3">
+            Active Members
+            <span class="text-muted">({{ active_memberships|length }})</span>
+        </h6>
+
+        {% for member in active_memberships %}
+            <div class="gd-member-list">
+                <div>
+                    <div class="gd-member-name">
+                        {{ member.user.first_name|default:member.user.email }}
+                    </div>
+                    <small class="gd-member-date">
+                        Joined {{ member.joined_at|date:"M d, Y" }}
+                    </small>
+                </div>
+
+                <div class="gd-management-actions">
+                    <form method="POST"
+                          action="{% url 'community:manage_membership' group.slug member.id 'ban' %}"
+                          onsubmit="return confirm('Restrict this member from participating in the group?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-lock me-1"></i>Restrict
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="gd-empty">
+                There are no other active members to display.
+            </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,537 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Question Details | PupilAura Admin{% endblock %}
+
+{% block page_title %}Question Details{% endblock %}
+{% block page_subtitle %}Question {{ question.question_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ---------- PAGE HEADER ---------- */
+
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .page-title h1 {
+        font-size: 28px;
+        line-height: 1.2;
+        margin-bottom: 7px;
+        color: var(--text);
+    }
+
+    .page-title p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ---------- BUTTONS ---------- */
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 16px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); color: white; }
+
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface-soft); }
+
+    .btn-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+    .btn-danger:hover { background: #fee2e2; }
+
+    /* ---------- STATS ---------- */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.blue { background: #eff6ff; color: var(--primary); }
+    .stat-icon.green { background: #f0fdf4; color: var(--success); }
+    .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+
+    .stat-info span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .stat-info strong {
+        display: block;
+        font-size: 24px;
+        color: var(--text);
+    }
+
+    /* ---------- CARDS ---------- */
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 22px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .card-header h2 {
+        font-size: 16px;
+        font-weight: 750;
+        color: var(--text);
+    }
+
+    .card-header p {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .card-body { padding: 22px; }
+
+    /* ---------- DETAIL GRID ---------- */
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .detail-item { min-width: 0; }
+
+    .detail-label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 7px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .detail-value a { color: var(--primary); }
+
+    .question-text {
+        font-size: 16px;
+        line-height: 1.9;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    /* ---------- BADGES ---------- */
+
+    .type-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .type-badge {
+        background: #eff6ff;
+        color: var(--primary);
+    }
+
+    .status-published { background: #f0fdf4; color: #166534; }
+    .status-draft { background: #f3f4f6; color: #4b5563; }
+
+    /* ---------- CHOICES ---------- */
+
+    .choice-list { display: grid; gap: 12px; }
+
+    .choice-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface-soft);
+    }
+
+    .choice-marker {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--text);
+    }
+
+    .choice-item.correct {
+        border-color: #86efac;
+        background: #f0fdf4;
+    }
+
+    .choice-item.correct .choice-marker {
+        background: #16a34a;
+        color: white;
+        border-color: #16a34a;
+    }
+
+    .choice-text {
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .correct-label {
+        display: block;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 5px;
+    }
+
+    /* ---------- EMPTY ---------- */
+
+    .empty-state {
+        padding: 45px 20px;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    .empty-state h3 {
+        color: var(--text);
+        margin-bottom: 7px;
+        font-size: 16px;
+    }
+
+    /* ---------- FOOTER ACTIONS ---------- */
+
+    .footer-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 800px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .page-header { flex-direction: column; }
+        .header-actions { width: 100%; }
+        .header-actions .btn { width: 100%; }
+        .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 550px) {
+        .page-title h1 { font-size: 23px; }
+        .stat-card { padding: 16px; }
+        .card-header, .card-body { padding: 16px; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .stat-icon.blue,
+        .type-badge { background: rgba(37, 99, 235, 0.15); color: #93c5fd; }
+        .stat-icon.green { background: rgba(22, 163, 74, 0.15); color: #86efac; }
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.15); color: #c4b5fd; }
+
+        .status-published { background: #052e16; color: #86efac; }
+        .status-draft { background: #374151; color: #d1d5db; }
+
+        .choice-item.correct {
+            background: #052e16;
+            border-color: #166534;
+        }
+        .choice-item.correct .choice-marker {
+            background: #166534;
+            border-color: #166534;
+        }
+
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.12);
+            border-color: #7f1d1d;
+            color: #fca5a5;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exams' %}">Exams</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}">{{ resource.title }}</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:exam_questions' resource.id %}">Questions</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Question {{ question.question_number }}</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="page-title">
+        <h1>Question {{ question.question_number }}</h1>
+        <p>Review the question, marks, publication status, and answer choices.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'admin_dashboard:exam_question_edit' question.id %}" class="btn btn-primary">✎ Edit Question</a>
+        <a href="{% url 'admin_dashboard:exam_questions' resource.id %}" class="btn btn-secondary">← All Questions</a>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">?</div>
+        <div class="stat-info">
+            <span>Question Number</span>
+            <strong>{{ question.question_number }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">★</div>
+        <div class="stat-info">
+            <span>Marks</span>
+            <strong>{{ question.marks }}</strong>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">☷</div>
+        <div class="stat-info">
+            <span>Answer Choices</span>
+            <strong>{{ choices|length }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- QUESTION INFO -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2>Question Information</h2>
+            <p>Main details saved for this exam question.</p>
+        </div>
+        {% if question.published %}
+            <span class="status-badge status-published">Published</span>
+        {% else %}
+            <span class="status-badge status-draft">Draft</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">Exam</span>
+                <div class="detail-value">{{ exam.name }}</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Resource</span>
+                <div class="detail-value">
+                    <a href="{% url 'admin_dashboard:exam_resource_detail' resource.id %}">
+                        {{ resource.title }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Subject</span>
+                <div class="detail-value">{{ resource.subject.name|default:"Not assigned" }}</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Exam Year</span>
+                <div class="detail-value">{{ resource.year.year|default:"Not assigned" }}</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Question Type</span>
+                <div class="detail-value">
+                    <span class="type-badge">{{ question.get_question_type_display }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Display Order</span>
+                <div class="detail-value">{{ question.order }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QUESTION TEXT -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2>Question Text</h2>
+            <p>The question as entered by the administrator.</p>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="question-text">{{ question.question_text|linebreaksbr }}</div>
+
+        {% if question.image %}
+            <div style="margin-top: 22px;">
+                <span class="detail-label">Question Image</span>
+                <img src="{{ question.image.url }}"
+                     alt="Question image"
+                     style="display: block; max-width: 100%; max-height: 500px; border-radius: 10px; border: 1px solid var(--border); margin-top: 6px;">
+            </div>
+        {% endif %}
+
+        {% if question.explanation %}
+            <div style="margin-top: 24px; padding: 18px; border-radius: 10px; background: var(--surface-soft); border: 1px solid var(--border);">
+                <span class="detail-label">Explanation</span>
+                <div style="font-size: 13px; line-height: 1.8; white-space: pre-wrap; color: var(--text);">
+                    {{ question.explanation }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CHOICES -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2>Answer Choices</h2>
+            <p>Choices associated with this question.</p>
+        </div>
+        <a href="{% url 'admin_dashboard:exam_choices' question.id %}" class="btn btn-primary">
+            Manage Choices
+        </a>
+    </div>
+
+    {% if choices %}
+        <div class="card-body">
+            <div class="choice-list">
+                {% for choice in choices %}
+                    <div class="choice-item {% if choice.is_correct %}correct{% endif %}">
+                        <div class="choice-marker">{{ forloop.counter }}</div>
+                        <div class="choice-text">
+                            {{ choice.text|linebreaksbr }}
+                            {% if choice.is_correct %}
+                                <span class="correct-label">✓ Correct answer</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>No answer choices added</h3>
+            <p>
+                This question currently has no saved choices. If it is a
+                multiple-choice question, add its options through the
+                question editor.
+            </p>
+            <a href="{% url 'admin_dashboard:exam_question_edit' question.id %}" class="btn btn-primary">
+                Edit Question
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- BOTTOM ACTIONS -->
+<div class="footer-actions">
+    <a href="{% url 'admin_dashboard:exam_questions' resource.id %}" class="btn btn-secondary">
+        ← Back to Questions
+    </a>
+    <a href="{% url 'admin_dashboard:exam_question_edit' question.id %}" class="btn btn-primary">
+        Edit Question
+    </a>
+    <form method="post"
+          action="{% url 'admin_dashboard:exam_question_delete' question.id %}"
+          onsubmit="return confirm('Delete this question permanently?');"
+          style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete Question</button>
+    </form>
+</div>
+
+{% endblock %}

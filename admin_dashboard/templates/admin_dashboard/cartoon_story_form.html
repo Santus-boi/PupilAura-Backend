@@ -1,0 +1,665 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}{{ form_title }} | PupilAura{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+{% block page_subtitle %}Configure an interactive cartoon story for young learners{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:cartoon_stories' %}">Interactive Cartoon Stories</a>
+    <span>/</span>
+    <span>{{ form_title }}</span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.cartoon-form-container {
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+/* INTRO & FORM SECTIONS */
+.form-intro,
+.form-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 23px;
+    margin-bottom: 20px;
+}
+
+.form-intro {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.intro-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37, 99, 235, .10);
+    color: var(--primary);
+    border-radius: 13px;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.form-intro h3 {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 5px;
+}
+
+.form-intro p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* SECTION HEADER */
+.section-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 21px;
+}
+
+.section-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 5px;
+}
+
+.section-header p {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+}
+
+/* FORM GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+}
+
+.form-group {
+    min-width: 0;
+    margin-bottom: 19px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 750;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.required-mark {
+    color: var(--danger);
+}
+
+/* INPUTS */
+.form-control {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control::placeholder {
+    color: var(--muted);
+    opacity: .8;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+textarea.form-control {
+    min-height: 125px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+select.form-control option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+/* FIELD HELP & ERRORS */
+.field-help {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 6px;
+}
+
+.field-errors {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* CHECKBOX */
+.checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--bg);
+}
+
+.checkbox-card input {
+    width: 17px;
+    height: 17px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.checkbox-card label {
+    font-size: 13px;
+    font-weight: 750;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.checkbox-card small {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+/* COVER IMAGES */
+.cover-preview {
+    display: none;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-top: 12px;
+}
+
+.current-cover {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-top: 10px;
+}
+
+/* FORM ACTIONS */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 5px 0 35px;
+}
+
+.action-right {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 750;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    color: #fff;
+}
+
+.btn-secondary {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ERROR SUMMARY */
+.error-summary {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section {
+        padding: 17px;
+    }
+
+    .form-intro {
+        align-items: flex-start;
+        padding: 17px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-right {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    .form-intro,
+    .form-section {
+        padding: 14px;
+    }
+
+    .intro-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block hero %}
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div>
+                <div class="hero-title">
+                    🎬 {{ form_title }}
+                </div>
+                <p class="hero-subtitle">
+                    {% if cartoon_story %}
+                        Update the story details and learning settings.
+                    {% else %}
+                        Create the foundation for a new interactive cartoon experience.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:cartoon_stories' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Stories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="cartoon-form-container">
+
+    <div class="form-intro">
+        <div class="intro-icon">🎭</div>
+        <div>
+            <h3>Interactive Cartoon Story Builder</h3>
+            <p>
+                First configure the story. After saving, you can add individual scenes,
+                character narration, illustrations, questions and answer options.
+                This is a separate system from the written Story Library.
+            </p>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="error-summary">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="form-section">
+            <div class="section-header">
+                <h3>Basic Story Information</h3>
+                <p>Set the title, description and educational theme.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Story Title <span class="required-mark">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% for error in form.title.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        Story Description <span class="required-mark">*</span>
+                    </label>
+                    {{ form.description }}
+                    <span class="field-help">
+                        Explain what happens in the story and what children will experience.
+                    </span>
+                    {% for error in form.description.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.category.id_for_label }}">
+                        Story Category <span class="required-mark">*</span>
+                    </label>
+                    {{ form.category }}
+                    {% for error in form.category.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.lesson.id_for_label }}">
+                        Learning Lesson
+                    </label>
+                    {{ form.lesson }}
+                    <span class="field-help">
+                        Example: Sharing with others, honesty or environmental awareness.
+                    </span>
+                    {% for error in form.lesson.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-header">
+                <h3>Visual Identity</h3>
+                <p>Configure the story's cover image and emoji representation.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.emoji.id_for_label }}">
+                        Story Emoji
+                    </label>
+                    {{ form.emoji }}
+                    <span class="field-help">
+                        Optional emoji displayed with the story.
+                    </span>
+                    {% for error in form.emoji.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.cover_emoji.id_for_label }}">
+                        Cover Emoji
+                    </label>
+                    {{ form.cover_emoji }}
+                    <span class="field-help">
+                        Optional emoji fallback when a cover image is unavailable.
+                    </span>
+                    {% for error in form.cover_emoji.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.cover.id_for_label }}">
+                        Cover Image
+                    </label>
+                    {{ form.cover }}
+                    <span class="field-help">
+                        Upload an image representing this cartoon story.
+                    </span>
+
+                    {% for error in form.cover.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+
+                    {% if cartoon_story and cartoon_story.cover %}
+                        <div>
+                            <span class="field-help">Current cover:</span>
+                            <img
+                                src="{{ cartoon_story.cover.url }}"
+                                alt="Current cartoon story cover"
+                                class="current-cover"
+                            >
+                        </div>
+                    {% endif %}
+
+                    <img
+                        id="coverPreview"
+                        class="cover-preview"
+                        alt="Selected cover preview"
+                    >
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-header">
+                <h3>Audience and Duration</h3>
+                <p>Define the intended age range and expected reading or viewing time.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.min_age.id_for_label }}">
+                        Minimum Age <span class="required-mark">*</span>
+                    </label>
+                    {{ form.min_age }}
+                    {% for error in form.min_age.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.max_age.id_for_label }}">
+                        Maximum Age <span class="required-mark">*</span>
+                    </label>
+                    {{ form.max_age }}
+                    {% for error in form.max_age.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.estimated_duration_minutes.id_for_label }}">
+                        Estimated Duration (Minutes) <span class="required-mark">*</span>
+                    </label>
+                    {{ form.estimated_duration_minutes }}
+                    {% for error in form.estimated_duration_minutes.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Display Order
+                    </label>
+                    {{ form.order }}
+                    <span class="field-help">
+                        Lower numbers appear earlier when stories are ordered by this field.
+                    </span>
+                    {% for error in form.order.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-header">
+                <h3>Publishing Settings</h3>
+                <p>Control the story's publication and featured status.</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.status.id_for_label }}">
+                        Publication Status
+                    </label>
+                    {{ form.status }}
+                    <span class="field-help">
+                        Complete the scenes and questions before publishing.
+                    </span>
+                    {% for error in form.status.errors %}
+                        <div class="field-errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-card">
+                        {{ form.is_featured }}
+                        <div>
+                            <label for="{{ form.is_featured.id_for_label }}">
+                                Featured Cartoon Story
+                            </label>
+                            <small>
+                                Highlight this story in featured sections of the platform.
+                            </small>
+                            {% for error in form.is_featured.errors %}
+                                <div class="field-errors">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field }}
+        {% endfor %}
+
+        <div class="form-actions">
+            <a
+                href="{% url 'admin_dashboard:cartoon_stories' %}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <div class="action-right">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i>
+                    {% if cartoon_story %}Save Story Changes{% else %}Create Cartoon Story{% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const coverInput = document.getElementById("id_cover");
+    const preview = document.getElementById("coverPreview");
+
+    let currentPreviewUrl = null;
+
+    if (coverInput && preview) {
+        coverInput.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+
+            if (currentPreviewUrl) {
+                URL.revokeObjectURL(currentPreviewUrl);
+                currentPreviewUrl = null;
+            }
+
+            if (!file) {
+                preview.style.display = "none";
+                preview.removeAttribute("src");
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                preview.style.display = "none";
+                preview.removeAttribute("src");
+                return;
+            }
+
+            currentPreviewUrl = URL.createObjectURL(file);
+            preview.src = currentPreviewUrl;
+            preview.style.display = "block";
+        });
+    }
+
+    window.addEventListener("beforeunload", function () {
+        if (currentPreviewUrl) {
+            URL.revokeObjectURL(currentPreviewUrl);
+        }
+    });
+});
+</script>
+{% endblock %}

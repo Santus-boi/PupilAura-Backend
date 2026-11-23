@@ -1,0 +1,389 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ subject.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}Exam Subject Details{% endblock %}
+{% block page_subtitle %}{{ exam.name }} — {{ subject.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM SUBJECT DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Two-column info grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .detail-item {
+        padding: 17px;
+        border: 1px solid var(--border);
+        background: var(--surface-soft);
+        border-radius: 12px;
+        min-width: 0;
+    }
+
+    .detail-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+        line-height: 1.6;
+    }
+
+    .detail-value a {
+        color: var(--primary);
+    }
+
+    .description-text {
+        font-size: 13px;
+        line-height: 1.8;
+        color: var(--muted);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    /* Resource cell in table */
+    .item-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+    }
+
+    .item-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .item-name {
+        font-weight: 800;
+    }
+
+    .item-subtitle {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* Danger zone */
+    .danger-zone .section-header {
+        border-bottom-color: #fecaca;
+    }
+
+    /* Responsive */
+    @media (max-width: 550px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .item-icon {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        .danger-zone .section-header {
+            border-bottom-color: #7f1d1d;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exams' %}">Exam Preparation</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">{{ exam.name }}</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ subject.name }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div>
+                    <h1>{{ subject.name }}</h1>
+                    <p>
+                        View and manage this subject under {{ exam.name }}.
+                        Review its code, publication status, display order,
+                        and associated learning resources.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a
+                    href="{% url 'admin_dashboard:exam_subject_edit' subject.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-pencil"></i> Edit Subject
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_subjects' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-arrow-left"></i> All Subjects
+                </a>
+                <a
+                    href="{% url 'admin_dashboard:exam_subject_create' exam.id %}"
+                    class="btn btn-light"
+                >
+                    <i class="bi bi-plus-lg"></i> Add Subject
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-journal-bookmark-fill" style="margin-right:6px;"></i>
+                {{ exam.name }}
+            </span>
+            <span class="meta-badge">
+                {% if subject.published %}● Published{% else %}● Unpublished{% endif %}
+            </span>
+            <span class="meta-badge">Order {{ subject.order }}</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-journal-text"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ resource_count|default:0 }}</div>
+            <div class="stat-label">Associated Resources</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon {% if subject.published %}green{% else %}orange{% endif %}">
+            <i class="bi bi-{% if subject.published %}check2-circle{% else %}clock{% endif %}"></i>
+        </div>
+        <div>
+            <div class="stat-value">
+                {% if subject.published %}Published{% else %}Unpublished{% endif %}
+            </div>
+            <div class="stat-label">Publication Status</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-sort-numeric-down"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subject.order }}</div>
+            <div class="stat-label">Display Order</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- SUBJECT INFORMATION -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Subject Information</div>
+            <div class="section-description">
+                Details and settings for this examination subject.
+            </div>
+        </div>
+        <a
+            href="{% url 'admin_dashboard:exam_subject_edit' subject.id %}"
+            class="btn btn-blue"
+        >
+            <i class="bi bi-pencil"></i> Edit Information
+        </a>
+    </div>
+
+    <div class="card-body">
+        <div class="detail-grid">
+
+            <div class="detail-item">
+                <div class="detail-label">Subject Name</div>
+                <div class="detail-value">{{ subject.name }}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Subject Code</div>
+                <div class="detail-value">
+                    {% if subject.code %}
+                        {{ subject.code }}
+                    {% else %}
+                        Not provided
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Examination</div>
+                <div class="detail-value">
+                    <a href="{% url 'admin_dashboard:exam_detail' exam.id %}">
+                        {{ exam.name }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Publication Status</div>
+                <div class="detail-value">
+                    {% if subject.published %}
+                        <span class="badge badge-green">Published</span>
+                    {% else %}
+                        <span class="badge badge-orange">Unpublished</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Display Order</div>
+                <div class="detail-value">{{ subject.order }}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Subject ID</div>
+                <div class="detail-value">{{ subject.id }}</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- SUBJECT RESOURCES -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Subject Resources</div>
+            <div class="section-description">
+                Resources currently associated with {{ subject.name }}.
+            </div>
+        </div>
+    </div>
+
+    {% if resources %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Year</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource in resources %}
+                        <tr>
+                            <td>
+                                <div class="item-info">
+                                    <div class="item-icon" aria-hidden="true">
+                                        {{ resource.title|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="item-name">{{ resource.title }}</div>
+                                        <div class="item-subtitle">ID: {{ resource.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ resource.year.year }}</td>
+                            <td>
+                                <span class="badge badge-purple">
+                                    {{ resource.get_resource_type_display|default:resource.resource_type }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if resource.published %}
+                                    <span class="badge badge-green">Published</span>
+                                {% else %}
+                                    <span class="badge badge-orange">Unpublished</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ resource.order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <h3>No resources for this subject yet</h3>
+            <p>
+                Resources associated with this subject will appear here
+                once they have been created.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- DANGER ZONE -->
+<section class="section-card danger-zone">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Danger Zone</div>
+            <div class="section-description">
+                Permanently delete this subject.
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <p class="description-text" style="margin-bottom:16px;">
+            Deleting this subject may also affect its associated
+            resources and other related records. This action cannot
+            be undone.
+        </p>
+
+        <form
+            method="post"
+            action="{% url 'admin_dashboard:exam_subject_delete' subject.id %}"
+            onsubmit="return confirm('Are you sure you want to delete {{ subject.name|escapejs }}? Related resources may also be affected.');"
+        >
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Delete Subject
+            </button>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

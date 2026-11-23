@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+    {{ title }} | PupilAura Admin
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}" style="
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #172033;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        text-decoration: none;
+    ">
+        <span style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 800;
+        ">P</span>
+        <span>PupilAura</span>
+        <span style="
+            margin-left: 6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        ">Advanced Admin</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+    <a href="{% url 'admin_dashboard:dashboard' %}" style="
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 18px;
+        padding: 7px 13px;
+        border-radius: 7px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid #bfdbfe;
+    ">
+        ← Back to PupilAura Dashboard
+    </a>
+{% endblock %}

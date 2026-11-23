@@ -1,0 +1,434 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Add Education Level | PupilAura Admin{% endblock %}
+
+{% block page_title %}Add Education Level{% endblock %}
+{% block page_subtitle %}Create a new education level{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EDUCATION LEVEL FORM — page-specific styles
+    ========================================================= */
+
+    /* ---------- PAGE INTRO ---------- */
+
+    .page-intro {
+        margin-bottom: 25px;
+    }
+
+    .page-intro h1 {
+        font-size: 27px;
+        font-weight: 800;
+        margin-bottom: 7px;
+        letter-spacing: -0.02em;
+        color: var(--text);
+    }
+
+    .page-intro p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+        max-width: 700px;
+    }
+
+    /* ---------- FORM CARD ---------- */
+
+    .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+
+    .form-header {
+        padding: 22px 25px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-header h2 {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 5px;
+        color: var(--text);
+    }
+
+    .form-header p {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .form-body {
+        padding: 25px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .required { color: var(--danger); }
+
+    .form-control {
+        width: 100%;
+        height: 45px;
+        padding: 0 13px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        outline: none;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+    textarea.form-control {
+        height: auto;
+        min-height: 120px;
+        padding: 12px 13px;
+        resize: vertical;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    }
+
+    .form-control:invalid:not(:placeholder-shown) {
+        border-color: rgba(220, 38, 38, 0.55);
+    }
+
+    .help-text {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .field-error {
+        margin-top: 7px;
+        color: var(--danger);
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .non-field-errors {
+        margin-bottom: 20px;
+        padding: 13px 15px;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .non-field-errors ul {
+        margin: 0 0 0 18px;
+    }
+
+    /* ---------- FORM ACTIONS ---------- */
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 20px 25px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-soft);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+        border: none;
+        border-radius: 9px;
+        padding: 10px 17px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.20); outline-offset: 2px; }
+
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        color: var(--text);
+        border-color: #cbd5e1;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* ---------- INFO CARD ---------- */
+
+    .info-card {
+        margin-top: 20px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 17px 18px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .info-icon {
+        flex-shrink: 0;
+        font-size: 18px;
+    }
+
+    .info-content h3 {
+        color: #1e40af;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .info-content p {
+        color: #1e40af;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 800px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .form-group.full { grid-column: auto; }
+    }
+
+    @media (max-width: 550px) {
+        .page-intro h1 { font-size: 23px; }
+
+        .form-body { padding: 20px; }
+        .form-header { padding: 20px; }
+
+        .form-actions {
+            padding: 17px 20px;
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .form-actions .btn { width: 100%; }
+
+        .info-card { align-items: flex-start; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .non-field-errors {
+            background: rgba(220, 38, 38, 0.12);
+            border-color: rgba(220, 38, 38, 0.25);
+            color: #fca5a5;
+        }
+
+        .info-card {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: rgba(37, 99, 235, 0.25);
+        }
+
+        .info-content h3,
+        .info-content p {
+            color: #93c5fd;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:education_levels' %}">Education Levels</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Add</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE INTRO -->
+<div class="page-intro">
+    <h1>Add Education Level</h1>
+    <p>Create a new education level for the PupilAura school curriculum hierarchy.</p>
+</div>
+
+<!-- NON-FIELD ERRORS -->
+{% if form.non_field_errors %}
+    <div class="non-field-errors" role="alert">
+        {{ form.non_field_errors }}
+    </div>
+{% endif %}
+
+<!-- FORM -->
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <section class="form-card">
+
+        <div class="form-header">
+            <h2>Education Level Information</h2>
+            <p>Enter the basic information for this academic level.</p>
+        </div>
+
+        <div class="form-body">
+
+            <div class="form-grid">
+
+                <!-- NAME -->
+                <div class="form-group">
+                    <label for="id_name" class="form-label">
+                        Education Level Name
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="id_name"
+                           name="name"
+                           class="form-control"
+                           value="{{ form.name.value|default:'' }}"
+                           placeholder="e.g. Primary School"
+                           maxlength="100"
+                           autocomplete="off"
+                           required
+                           autofocus
+                           aria-describedby="name-help{% if form.name.errors %} name-error{% endif %}">
+                    <div class="help-text" id="name-help">
+                        Use a clear name such as Nursery, Primary, Junior Secondary, or Senior Secondary.
+                    </div>
+                    {% if form.name.errors %}
+                        <div class="field-error" id="name-error" role="alert">
+                            {{ form.name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- TYPE -->
+                <div class="form-group">
+                    <label for="id_level_type" class="form-label">
+                        Education Level Type
+                        <span class="required">*</span>
+                    </label>
+                    <select id="id_level_type"
+                            name="level_type"
+                            class="form-control"
+                            required
+                            aria-describedby="level-type-help{% if form.level_type.errors %} level-type-error{% endif %}">
+                        <option value="">Select level type</option>
+                        <option value="nursery" {% if form.level_type.value == "nursery" %}selected{% endif %}>Nursery</option>
+                        <option value="primary" {% if form.level_type.value == "primary" %}selected{% endif %}>Primary</option>
+                        <option value="jss" {% if form.level_type.value == "jss" %}selected{% endif %}>Junior Secondary</option>
+                        <option value="ss" {% if form.level_type.value == "ss" %}selected{% endif %}>Senior Secondary</option>
+                    </select>
+                    <div class="help-text" id="level-type-help">
+                        This determines the academic category used by PupilAura.
+                    </div>
+                    {% if form.level_type.errors %}
+                        <div class="field-error" id="level-type-error" role="alert">
+                            {{ form.level_type.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- ORDER -->
+                <div class="form-group">
+                    <label for="id_order" class="form-label">
+                        Display Order
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number"
+                           id="id_order"
+                           name="order"
+                           class="form-control"
+                           value="{{ form.order.value|default:'0' }}"
+                           min="0"
+                           step="1"
+                           required
+                           aria-describedby="order-help{% if form.order.errors %} order-error{% endif %}">
+                    <div class="help-text" id="order-help">
+                        Lower numbers appear first in the curriculum. For example: Nursery = 1, Primary = 2.
+                    </div>
+                    {% if form.order.errors %}
+                        <div class="field-error" id="order-error" role="alert">
+                            {{ form.order.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'admin_dashboard:education_levels' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                ✓ Create Education Level
+            </button>
+        </div>
+
+    </section>
+</form>
+
+<!-- INFORMATION -->
+<div class="info-card">
+    <div class="info-icon" aria-hidden="true">💡</div>
+    <div class="info-content">
+        <h3>Curriculum hierarchy</h3>
+        <p>
+            Education Levels are the first layer of the school curriculum.
+            After creating a level, you can add school classes under it,
+            then subjects, terms, weeks, lessons, videos, images, and
+            learning resources.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

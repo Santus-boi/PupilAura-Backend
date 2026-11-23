@@ -1,0 +1,415 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ subject.name }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ subject.name }}{% endblock %}
+{% block page_subtitle %}Manage the terms and learning structure for this subject{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SUBJECT DETAIL — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Terms list */
+    .term-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .term-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .term-item:hover {
+        border-color: #bfdbfe;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .term-main {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        min-width: 0;
+    }
+
+    .term-number {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .term-info {
+        min-width: 0;
+    }
+
+    .term-info h3 {
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        overflow-wrap: anywhere;
+    }
+
+    .term-info p {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .term-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    /* Week count badge */
+    .week-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #dbeafe;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Small view/edit pill buttons */
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 7px 10px;
+        border-radius: 7px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .view-btn:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    /* Subject info list (sidebar) */
+    .subject-info-list {
+        display: grid;
+        gap: 18px;
+    }
+
+    .subject-info-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .subject-info-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .subject-info-label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .subject-info-value {
+        font-size: 13px;
+        font-weight: 800;
+        text-align: right;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .subject-info-value a {
+        color: var(--primary);
+    }
+
+    .subject-info-value a:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .term-item {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+        .term-meta {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+        .subject-info-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+        .subject-info-value {
+            text-align: left;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .term-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .week-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .view-btn {
+            background: var(--surface);
+            color: #93c5fd;
+        }
+        .view-btn:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: #3b82f6;
+        }
+        .term-item:hover {
+            border-color: #3b82f6;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:school_classes' %}">School Classes</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:school_class_detail' subject.school_class.id %}">
+        {{ subject.school_class.name }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ subject.name }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div>
+                    <h1>{{ subject.name }}</h1>
+                    <p>
+                        Manage the terms and learning structure for this subject.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:school_class_detail' subject.school_class.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="{% url 'admin_dashboard:subject_edit' subject.id %}" class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Subject
+                </a>
+                <a href="{% url 'admin_dashboard:term_create' %}?subject={{ subject.id }}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Term
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-mortarboard" style="margin-right:6px;"></i>
+                {{ subject.school_class.education_level.name }}
+            </span>
+            <span class="meta-badge">
+                <i class="bi bi-building" style="margin-right:6px;"></i>
+                {{ subject.school_class.name }}
+            </span>
+            <span class="meta-badge">Subject ID: {{ subject.id }}</span>
+            <span class="meta-badge">
+                {{ terms|length }} term{{ terms|length|pluralize }}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subject.school_class.education_level.name }}</div>
+            <div class="stat-label">Education Level</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-building"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ subject.school_class.name }}</div>
+            <div class="stat-label">School Class</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ terms|length }}</div>
+            <div class="stat-label">Total Terms</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- CONTENT GRID -->
+<section class="content-grid">
+
+    <!-- TERMS -->
+    <article class="card">
+        <div class="card-header">
+            <div>
+                <h2>Terms</h2>
+                <p>Terms assigned to {{ subject.name }}.</p>
+            </div>
+            <a href="{% url 'admin_dashboard:term_create' %}?subject={{ subject.id }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add Term
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if terms %}
+                <div class="term-list">
+                    {% for term in terms %}
+                        <div class="term-item">
+                            <div class="term-main">
+                                <div class="term-number" aria-hidden="true">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="term-info">
+                                    <h3>{{ term.name }}</h3>
+                                    <p>{{ term.get_term_type_display }}</p>
+                                </div>
+                            </div>
+
+                            <div class="term-meta">
+                                <span class="week-badge">
+                                    <i class="bi bi-calendar-week"></i>
+                                    {{ term.weeks.count }}
+                                    week{{ term.weeks.count|pluralize }}
+                                </span>
+                                <a href="{% url 'admin_dashboard:term_detail' term.id %}" class="view-btn">
+                                    View
+                                </a>
+                                <a href="{% url 'admin_dashboard:term_edit' term.id %}" class="view-btn">
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon" aria-hidden="true">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+                    <h3>No Terms Yet</h3>
+                    <p>This subject does not have any terms yet.</p>
+                    <a href="{% url 'admin_dashboard:term_create' %}?subject={{ subject.id }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add First Term
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- SUBJECT INFORMATION -->
+    <aside class="card">
+        <div class="card-header">
+            <div>
+                <h2>Subject Information</h2>
+                <p>Curriculum details.</p>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="subject-info-list">
+
+                <div class="subject-info-item">
+                    <span class="subject-info-label">Subject</span>
+                    <span class="subject-info-value">{{ subject.name }}</span>
+                </div>
+
+                <div class="subject-info-item">
+                    <span class="subject-info-label">Education Level</span>
+                    <span class="subject-info-value">
+                        <a href="{% url 'admin_dashboard:education_level_detail' subject.school_class.education_level.id %}">
+                            {{ subject.school_class.education_level.name }}
+                        </a>
+                    </span>
+                </div>
+
+                <div class="subject-info-item">
+                    <span class="subject-info-label">School Class</span>
+                    <span class="subject-info-value">
+                        <a href="{% url 'admin_dashboard:school_class_detail' subject.school_class.id %}">
+                            {{ subject.school_class.name }}
+                        </a>
+                    </span>
+                </div>
+
+                <div class="subject-info-item">
+                    <span class="subject-info-label">Subject ID</span>
+                    <span class="subject-info-value">{{ subject.id }}</span>
+                </div>
+
+                <div class="subject-info-item">
+                    <span class="subject-info-label">Total Terms</span>
+                    <span class="subject-info-value">{{ terms|length }}</span>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+
+</section>
+
+{% endblock %}

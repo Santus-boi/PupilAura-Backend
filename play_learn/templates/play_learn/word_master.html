@@ -1,0 +1,482 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Word Master | PupilAura{% endblock %}
+
+{% block content %}
+<style>
+.wm {
+    --bg:#101827;--panel:#192438;--border:#34445d;
+    --text:#edf3fc;--muted:#9aabc2;--blue:#3b82f6;
+    color:var(--text);max-width:1100px;margin:auto;padding:24px 14px 45px;
+}
+.wm *{box-sizing:border-box}
+.wm-hero{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:22px}
+.wm h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:900;margin:0}
+.wm p{color:var(--muted);margin:6px 0}
+.wm-card{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:19px}
+.wm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:17px}
+.wm-stat small{display:block;color:var(--muted);font-size:.8rem}
+.wm-stat strong{font-size:1.45rem}
+.wm-layout{display:grid;grid-template-columns:minmax(0,1fr) 275px;gap:15px}
+.wm-main{min-height:430px}
+.wm-modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:17px}
+.wm button,.wm select{font:inherit}
+.wm-btn{border:1px solid var(--border);background:#293a53;color:white;padding:11px 15px;border-radius:10px;cursor:pointer;font-weight:700}
+.wm-btn:hover{background:#3a5274}
+.wm-btn.active{background:#1d4ed8;border-color:#60a5fa}
+.wm-btn:disabled{opacity:.4;cursor:not-allowed}
+.wm-primary{background:#2563eb;border-color:#3b82f6}
+.wm-danger{background:#7f1d1d}
+.wm-full{width:100%;margin-top:9px}
+.wm-label{display:block;color:var(--muted);font-size:.85rem;margin-bottom:7px}
+.wm-select{width:100%;background:#26364e;color:white;border:1px solid var(--border);padding:11px;border-radius:9px;margin-bottom:13px}
+.wm-question{text-align:center;padding:24px 8px}
+.wm-category{color:#60a5fa;font-weight:800;text-transform:uppercase;letter-spacing:1px;font-size:.75rem}
+.wm-word{font-size:clamp(2rem,7vw,3.5rem);font-weight:900;letter-spacing:2px;margin:15px 0;overflow-wrap:anywhere}
+.wm-definition{color:#c5d2e4;font-size:1.05rem;line-height:1.6;max-width:570px;margin:0 auto}
+.wm-answer{width:100%;max-width:460px;padding:15px;border-radius:11px;border:1px solid var(--border);background:#0f172a;color:white;font-size:1.1rem;margin-top:22px;outline:none}
+.wm-answer:focus{border-color:#60a5fa}
+.wm-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+.wm-feedback{min-height:32px;text-align:center;font-weight:700;margin-top:15px}
+.wm-good{color:#4ade80}.wm-bad{color:#fb7185}
+.wm-tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.wm-tile{width:43px;height:48px;border-radius:9px;background:#334e70;border:1px solid #647b9a;color:white;font-size:1.2rem;font-weight:900;cursor:pointer}
+.wm-tile.used{opacity:.25;cursor:default}
+.wm-progress{height:8px;background:#334155;border-radius:20px;overflow:hidden;margin-top:9px}
+.wm-progress div{height:100%;background:#22c55e;width:100%;transition:width .3s}
+.wm-side h3{font-size:1rem;font-weight:800;margin:0 0 12px}
+.wm-side+.wm-side{margin-top:12px}
+.wm-side p{font-size:.88rem;line-height:1.6}
+.wm-rank{display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:9px 0;font-size:.9rem}
+.wm-results{text-align:center;padding:30px 12px}
+.wm-results .big{font-size:3.5rem;font-weight:900;color:#60a5fa}
+.wm-hidden{display:none!important}
+.wm-help{font-size:.82rem;color:var(--muted);line-height:1.6}
+@media(max-width:760px){
+    .wm-layout{grid-template-columns:1fr}
+    .wm-stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+<div class="wm">
+    <div class="wm-hero">
+        <div>
+            <h1>🧠 Word Master</h1>
+            <p>Challenge your vocabulary. Sharpen your mind. Master words.</p>
+        </div>
+        <div>🏆 Best: <strong id="wmBest">0</strong></div>
+    </div>
+
+    <div class="wm-stats">
+        <div class="wm-card wm-stat"><small>⭐ Score</small><strong id="wmScore">0</strong></div>
+        <div class="wm-card wm-stat"><small>🔥 Streak</small><strong id="wmStreak">0</strong></div>
+        <div class="wm-card wm-stat"><small>⏱️ Time</small><strong id="wmTime">60s</strong></div>
+        <div class="wm-card wm-stat"><small>✓ Correct</small><strong id="wmCorrect">0</strong></div>
+    </div>
+
+    <div class="wm-layout">
+        <div class="wm-card wm-main">
+            <div class="wm-modes">
+                <button class="wm-btn active" data-mode="anagram">🔤 Anagrams</button>
+                <button class="wm-btn" data-mode="definition">📖 Definitions</button>
+                <button class="wm-btn" data-mode="spelling">✍️ Spelling</button>
+            </div>
+
+            <div style="max-width:230px;margin-bottom:18px">
+                <label class="wm-label" for="wmDifficulty">Difficulty</label>
+                <select class="wm-select" id="wmDifficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+
+            <div id="wmGame">
+                <div class="wm-question">
+                    <div class="wm-category" id="wmCategory">ANAGRAM CHALLENGE</div>
+                    <div class="wm-word" id="wmPrompt">WORD</div>
+                    <div class="wm-definition" id="wmDefinition">Rearrange the letters to discover the correct word.</div>
+
+                    <div id="wmTiles" class="wm-tiles"></div>
+
+                    <input id="wmAnswer" class="wm-answer" type="text"
+                           placeholder="Type your answer here..." autocomplete="off"
+                           aria-label="Your answer">
+
+                    <div class="wm-actions">
+                        <button class="wm-btn wm-primary" id="wmSubmit">Submit answer</button>
+                        <button class="wm-btn" id="wmHint">💡 Hint</button>
+                        <button class="wm-btn" id="wmSkip">Skip</button>
+                    </div>
+                    <div class="wm-feedback" id="wmFeedback"></div>
+                </div>
+            </div>
+
+            <div id="wmWelcome" class="wm-results">
+                <div style="font-size:3rem">📚</div>
+                <h2>Ready to become a Word Master?</h2>
+                <p>Select a mode and difficulty, then start your challenge.</p>
+                <button class="wm-btn wm-primary" id="wmStart">▶ Start challenge</button>
+            </div>
+
+            <div id="wmResult" class="wm-results wm-hidden">
+                <div style="font-size:3rem">🏆</div>
+                <h2 id="wmResultTitle">Challenge complete!</h2>
+                <div class="big" id="wmFinalScore">0</div>
+                <p id="wmResultText">Your final score</p>
+                <button class="wm-btn wm-primary" id="wmPlayAgain">Play again</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="wm-card wm-side">
+                <h3>🎮 How to play</h3>
+                <p id="wmInstructions">Rearrange the scrambled letters to form the correct word.</p>
+                <p class="wm-help">
+                    • Correct answer earns points.<br>
+                    • Consecutive correct answers build streaks.<br>
+                    • Hints reduce the points available.<br>
+                    • Skipping a question earns no points.
+                </p>
+            </div>
+
+            <div class="wm-card wm-side" style="margin-top:12px">
+                <h3>📊 Your performance</h3>
+                <div class="wm-rank"><span>Questions answered</span><strong id="wmAnswered">0</strong></div>
+                <div class="wm-rank"><span>Accuracy</span><strong id="wmAccuracy">0%</strong></div>
+                <div class="wm-rank"><span>Hints used</span><strong id="wmHints">0</strong></div>
+                <div class="wm-rank"><span>Difficulty</span><strong id="wmLevel">Medium</strong></div>
+            </div>
+
+            <div class="wm-card wm-side" style="margin-top:12px">
+                <h3>⏳ Time remaining</h3>
+                <div class="wm-progress"><div id="wmTimerBar"></div></div>
+                <p class="wm-help">Each challenge lasts 60 seconds. Answer as many questions as possible.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    const questionBank = {
+        easy: [
+            {word:"APPLE", definition:"A round fruit that may be red, green or yellow.", hint:"A common fruit."},
+            {word:"BRAVE", definition:"Showing courage when facing danger or difficulty.", hint:"The opposite of cowardly."},
+            {word:"PLANET", definition:"A large celestial body that orbits a star.", hint:"Earth is one."},
+            {word:"GARDEN", definition:"An area where flowers, fruits or vegetables are grown.", hint:"A place for growing plants."},
+            {word:"CASTLE", definition:"A large fortified building where royalty once lived.", hint:"A medieval royal building."},
+            {word:"FRIEND", definition:"A person you know, trust and enjoy spending time with.", hint:"Someone close to you."},
+            {word:"MARKET", definition:"A place where people buy and sell goods.", hint:"A place for shopping."},
+            {word:"SILVER", definition:"A shiny precious metal with a grey-white appearance.", hint:"A valuable metal."},
+            {word:"JUNGLE", definition:"A dense tropical forest with thick vegetation.", hint:"A wild tropical forest."},
+            {word:"POCKET", definition:"A small sewn compartment in clothing.", hint:"You may keep money in it."}
+        ],
+        medium: [
+            {word:"CURIOUS", definition:"Eager to know or learn something.", hint:"A person who asks many questions."},
+            {word:"ANCIENT", definition:"Belonging to the distant past.", hint:"Very old."},
+            {word:"COURAGE", definition:"The ability to face fear, pain or difficulty.", hint:"Bravery."},
+            {word:"EXPLORE", definition:"To travel through an unfamiliar area to learn about it.", hint:"Discover a new place."},
+            {word:"MYSTERY", definition:"Something difficult or impossible to understand or explain.", hint:"A puzzle that needs solving."},
+            {word:"HARMONY", definition:"A pleasing combination of different elements.", hint:"Agreement and balance."},
+            {word:"DYNAMIC", definition:"Characterized by energy, activity or constant change.", hint:"Active and energetic."},
+            {word:"JUSTICE", definition:"Fair treatment according to law or moral principles.", hint:"Fairness."},
+            {word:"FRAGILE", definition:"Easily broken or damaged.", hint:"Handle with care."},
+            {word:"LOYALTY", definition:"Strong support or allegiance to someone or something.", hint:"Faithfulness."}
+        ],
+        hard: [
+            {word:"AMBIGUOUS", definition:"Open to more than one interpretation; not clear or definite.", hint:"Something that can mean two different things."},
+            {word:"PERSEVERE", definition:"Continue firmly despite difficulty or delay in achieving success.", hint:"Never give up."},
+            {word:"METICULOUS", definition:"Showing great attention to detail; extremely careful and precise.", hint:"Very careful about every detail."},
+            {word:"INEVITABLE", definition:"Certain to happen and impossible to avoid.", hint:"Cannot be prevented."},
+            {word:"RESILIENT", definition:"Able to recover quickly from difficulty or adversity.", hint:"Able to bounce back."},
+            {word:"SOPHISTICATED", definition:"Having great experience, knowledge or refinement.", hint:"Advanced and highly developed."},
+            {word:"PRAGMATIC", definition:"Dealing with things sensibly and realistically.", hint:"Practical rather than theoretical."},
+            {word:"DILIGENT", definition:"Showing careful and persistent effort in work or duties.", hint:"Hardworking and thorough."},
+            {word:"INNOVATION", definition:"The introduction of new ideas, methods or products.", hint:"Creating something new."},
+            {word:"CREDIBILITY", definition:"The quality of being trusted and believed.", hint:"How believable something is."}
+        ]
+    };
+
+    let mode = "anagram";
+    let difficulty = "medium";
+    let questions = [];
+    let current = null;
+    let score = 0;
+    let streak = 0;
+    let correct = 0;
+    let answered = 0;
+    let hints = 0;
+    let timeLeft = 60;
+    let timer = null;
+    let active = false;
+    let used = new Set();
+    let hinted = false;
+    let tileSelection = [];
+
+    const bestKey = "pupilaura_word_master_best";
+
+    function getBest() {
+        try { return Number(localStorage.getItem(bestKey)) || 0; }
+        catch (e) { return 0; }
+    }
+
+    function saveBest() {
+        if (score > getBest()) {
+            try { localStorage.setItem(bestKey, String(score)); }
+            catch (e) {}
+        }
+        $("wmBest").textContent = getBest();
+    }
+
+    function shuffle(array) {
+        const copy = [...array];
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    function scramble(word) {
+        let letters = word.split("");
+        for (let i = 0; i < 10; i++) {
+            letters = shuffle(letters);
+            if (letters.join("") !== word) break;
+        }
+        return letters;
+    }
+
+    function updateStats() {
+        $("wmScore").textContent = score;
+        $("wmStreak").textContent = streak;
+        $("wmTime").textContent = timeLeft + "s";
+        $("wmCorrect").textContent = correct;
+        $("wmAnswered").textContent = answered;
+        $("wmAccuracy").textContent = answered ? Math.round(correct / answered * 100) + "%" : "0%";
+        $("wmHints").textContent = hints;
+        $("wmLevel").textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+        $("wmTimerBar").style.width = (timeLeft / 60 * 100) + "%";
+    }
+
+    function pickQuestion() {
+        const bank = questionBank[difficulty];
+        let available = bank.filter((_, i) => !used.has(i));
+
+        if (!available.length) {
+            used.clear();
+            available = bank;
+        }
+
+        const question = available[Math.floor(Math.random() * available.length)];
+        const index = bank.indexOf(question);
+        used.add(index);
+        current = question;
+        hinted = false;
+        tileSelection = [];
+
+        $("wmFeedback").textContent = "";
+        $("wmFeedback").className = "wm-feedback";
+        $("wmAnswer").value = "";
+        $("wmAnswer").classList.remove("wm-hidden");
+
+        if (mode === "anagram") {
+            $("wmCategory").textContent = "ANAGRAM CHALLENGE";
+            $("wmPrompt").textContent = scramble(question.word).join(" ");
+            $("wmDefinition").textContent = "Rearrange these letters to form the correct word.";
+            $("wmTiles").classList.remove("wm-hidden");
+            $("wmTiles").innerHTML = "";
+            scramble(question.word).forEach((letter, i) => {
+                const button = document.createElement("button");
+                button.className = "wm-tile";
+                button.textContent = letter;
+                button.type = "button";
+                button.addEventListener("click", () => selectTile(i, button));
+                $("wmTiles").appendChild(button);
+            });
+            $("wmAnswer").placeholder = "Or type your answer here...";
+        } else if (mode === "definition") {
+            $("wmCategory").textContent = "DEFINITION CHALLENGE";
+            $("wmPrompt").textContent = "What word is this?";
+            $("wmDefinition").textContent = question.definition;
+            $("wmTiles").classList.add("wm-hidden");
+            $("wmAnswer").placeholder = "Enter the word...";
+        } else {
+            $("wmCategory").textContent = "SPELLING CHALLENGE";
+            $("wmPrompt").textContent = question.definition;
+            $("wmDefinition").textContent = "Type the correct spelling of the word described above.";
+            $("wmTiles").classList.add("wm-hidden");
+            $("wmAnswer").placeholder = "Spell the word...";
+        }
+        $("wmAnswer").focus();
+    }
+
+    function selectTile(index, button) {
+        if (!active || button.classList.contains("used")) return;
+        button.classList.add("used");
+        tileSelection.push({letter: button.textContent, index});
+        $("wmAnswer").value = tileSelection.map(t => t.letter).join("");
+    }
+
+    function startGame() {
+        clearInterval(timer);
+        difficulty = $("wmDifficulty").value;
+        questions = questionBank[difficulty];
+        score = 0;
+        streak = 0;
+        correct = 0;
+        answered = 0;
+        hints = 0;
+        timeLeft = 60;
+        used.clear();
+        active = true;
+
+        $("wmWelcome").classList.add("wm-hidden");
+        $("wmResult").classList.add("wm-hidden");
+        $("wmGame").classList.remove("wm-hidden");
+        $("wmDifficulty").disabled = true;
+        $("wmDifficulty").classList.add("wm-hidden");
+
+        updateStats();
+        pickQuestion();
+
+        timer = setInterval(() => {
+            timeLeft--;
+            updateStats();
+            if (timeLeft <= 0) finishGame();
+        }, 1000);
+    }
+
+    function submitAnswer() {
+        if (!active || !current) return;
+
+        const answer = $("wmAnswer").value.trim().toUpperCase().replace(/\s/g, "");
+        if (!answer) {
+            $("wmFeedback").textContent = "Enter an answer first.";
+            $("wmFeedback").className = "wm-feedback wm-bad";
+            return;
+        }
+
+        answered++;
+
+        if (answer === current.word) {
+            correct++;
+            streak++;
+            const base = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 30;
+            const bonus = Math.min(streak - 1, 5) * 3;
+            const points = Math.max(1, base + bonus - (hinted ? Math.floor(base * 0.4) : 0));
+            score += points;
+
+            $("wmFeedback").textContent = "✓ Correct! +" + points + " points";
+            $("wmFeedback").className = "wm-feedback wm-good";
+        } else {
+            streak = 0;
+            $("wmFeedback").textContent = "✗ Incorrect. The correct answer was " + current.word;
+            $("wmFeedback").className = "wm-feedback wm-bad";
+        }
+
+        updateStats();
+        saveBest();
+
+        const submit = $("wmSubmit");
+        submit.disabled = true;
+        setTimeout(() => {
+            if (!active) return;
+            submit.disabled = false;
+            pickQuestion();
+        }, 900);
+    }
+
+    function showHint() {
+        if (!active || !current || hinted) return;
+        hinted = true;
+        hints++;
+
+        if (mode === "anagram") {
+            $("wmFeedback").textContent = "Hint: " + current.hint;
+        } else {
+            $("wmFeedback").textContent = "Hint: The word starts with " + current.word[0] + " and has " + current.word.length + " letters.";
+        }
+        $("wmFeedback").className = "wm-feedback";
+        updateStats();
+    }
+
+    function skipQuestion() {
+        if (!active) return;
+        answered++;
+        streak = 0;
+        $("wmFeedback").textContent = "Skipped. Answer: " + current.word;
+        $("wmFeedback").className = "wm-feedback wm-bad";
+        updateStats();
+
+        $("wmSkip").disabled = true;
+        setTimeout(() => {
+            if (!active) return;
+            $("wmSkip").disabled = false;
+            pickQuestion();
+        }, 700);
+    }
+
+    function finishGame() {
+        active = false;
+        clearInterval(timer);
+        $("wmGame").classList.add("wm-hidden");
+        $("wmResult").classList.remove("wm-hidden");
+        $("wmDifficulty").disabled = false;
+        $("wmDifficulty").classList.remove("wm-hidden");
+
+        $("wmResultTitle").textContent = score >= 200 ? "Excellent performance!" : "Challenge complete!";
+        $("wmFinalScore").textContent = score;
+        $("wmResultText").textContent =
+            correct + " correct out of " + answered +
+            " answered · Accuracy: " + (answered ? Math.round(correct / answered * 100) : 0) + "%" +
+            " · Best streak: " + streak;
+
+        saveBest();
+        updateStats();
+        $("wmSubmit").disabled = false;
+        $("wmSkip").disabled = false;
+    }
+
+    document.querySelectorAll(".wm-modes button").forEach(button => {
+        button.addEventListener("click", () => {
+            if (active) {
+                clearInterval(timer);
+                active = false;
+            }
+            mode = button.dataset.mode;
+            document.querySelectorAll(".wm-modes button").forEach(b => b.classList.toggle("active", b === button));
+            $("wmInstructions").textContent =
+                mode === "anagram" ? "Rearrange the scrambled letters to form the correct word." :
+                mode === "definition" ? "Read the definition and identify the matching word." :
+                "Read the description and spell the correct word.";
+            $("wmGame").classList.add("wm-hidden");
+            $("wmResult").classList.add("wm-hidden");
+            $("wmWelcome").classList.remove("wm-hidden");
+            $("wmDifficulty").disabled = false;
+            $("wmDifficulty").classList.remove("wm-hidden");
+        });
+    });
+
+    $("wmStart").addEventListener("click", startGame);
+    $("wmPlayAgain").addEventListener("click", startGame);
+    $("wmSubmit").addEventListener("click", submitAnswer);
+    $("wmHint").addEventListener("click", showHint);
+    $("wmSkip").addEventListener("click", skipQuestion);
+
+    $("wmAnswer").addEventListener("keydown", event => {
+        if (event.key === "Enter") submitAnswer();
+    });
+
+    $("wmBest").textContent = getBest();
+    $("wmGame").classList.add("wm-hidden");
+    updateStats();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,893 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Play & Learn | PupilAura{% endblock %}
+
+{% block content %}
+
+<style>
+:root {
+    --pl-primary: #7048e8;
+    --pl-secondary: #ff7043;
+    --pl-yellow: #ffd43b;
+    --pl-dark: #20213a;
+    --pl-muted: #777b91;
+    --pl-bg: #f7f6ff;
+}
+
+.play-learn {
+    background: var(--pl-bg);
+    color: var(--pl-dark);
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: Inter, Arial, sans-serif;
+}
+
+.play-learn * {
+    box-sizing: border-box;
+}
+
+.pl-container {
+    width: min(1200px, 92%);
+    margin: auto;
+}
+
+/* NAVBAR */
+.pl-navbar {
+    background: #fff;
+    padding: 16px 0;
+    border-bottom: 1px solid #eeeaf8;
+}
+
+.pl-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.pl-brand {
+    font-size: 23px;
+    font-weight: 900;
+    color: var(--pl-primary);
+    text-decoration: none;
+}
+
+.pl-brand span {
+    color: var(--pl-secondary);
+}
+
+.pl-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.pl-nav-links a {
+    color: #55566c;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.pl-nav-links a:hover {
+    color: var(--pl-primary);
+}
+
+.pl-nav-button {
+    background: var(--pl-primary);
+    color: #fff !important;
+    padding: 11px 20px;
+    border-radius: 30px;
+}
+
+/* HERO */
+.pl-hero {
+    padding: 75px 0 65px;
+    background:
+        radial-gradient(circle at 90% 10%, #ffe5d9 0, transparent 23%),
+        radial-gradient(circle at 5% 90%, #e8e0ff 0, transparent 28%),
+        #fff;
+}
+
+.pl-hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    align-items: center;
+    gap: 45px;
+}
+
+.pl-eyebrow {
+    display: inline-block;
+    background: #eee9ff;
+    color: var(--pl-primary);
+    padding: 9px 15px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.pl-hero h1 {
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 1.08;
+    font-weight: 950;
+    letter-spacing: -2px;
+    margin: 0 0 20px;
+}
+
+.pl-hero h1 span {
+    color: var(--pl-primary);
+}
+
+.pl-hero p {
+    color: var(--pl-muted);
+    line-height: 1.8;
+    font-size: 16px;
+    max-width: 530px;
+}
+
+.pl-primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--pl-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    padding: 15px 25px;
+    font-weight: 800;
+    margin-top: 18px;
+    transition: .25s;
+}
+
+.pl-primary-button:hover {
+    background: #5933ce;
+    color: white;
+    transform: translateY(-3px);
+}
+
+.pl-hero-art {
+    min-height: 340px;
+    background: linear-gradient(145deg, #eee8ff, #ffe9df);
+    border-radius: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.pl-hero-art::before,
+.pl-hero-art::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    opacity: .45;
+}
+
+.pl-hero-art::before {
+    width: 180px;
+    height: 180px;
+    top: -65px;
+    right: -35px;
+}
+
+.pl-hero-art::after {
+    width: 120px;
+    height: 120px;
+    bottom: -40px;
+    left: -20px;
+}
+
+.pl-mascot {
+    font-size: clamp(110px, 17vw, 190px);
+    position: relative;
+    z-index: 1;
+    animation: pl-float 3s ease-in-out infinite;
+}
+
+.pl-floating-label {
+    position: absolute;
+    background: #fff;
+    padding: 12px 17px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px #29204412;
+    font-size: 13px;
+    font-weight: 900;
+    z-index: 2;
+}
+
+.pl-label-one {
+    top: 30px;
+    left: 20px;
+}
+
+.pl-label-two {
+    bottom: 35px;
+    right: 20px;
+}
+
+@keyframes pl-float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-15px) rotate(3deg); }
+}
+
+/* SHARED SECTIONS */
+.pl-section {
+    padding: 70px 0;
+}
+
+.pl-section-heading {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.pl-section-heading small {
+    color: var(--pl-secondary);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.pl-section-heading h2 {
+    font-size: clamp(27px, 4vw, 38px);
+    font-weight: 950;
+    margin: 10px 0;
+}
+
+.pl-section-heading p {
+    color: var(--pl-muted);
+    margin: 0 auto;
+    max-width: 580px;
+    line-height: 1.7;
+}
+
+/* AGE GROUPS */
+.pl-age-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.pl-age-card {
+    background: white;
+    padding: 25px 15px;
+    border-radius: 22px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: .25s;
+}
+
+.pl-age-card:hover {
+    transform: translateY(-7px);
+    border-color: var(--pl-primary);
+    box-shadow: 0 15px 35px #4a36851a;
+}
+
+.pl-age-icon {
+    width: 65px;
+    height: 65px;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    margin: 0 auto 15px;
+    font-size: 32px;
+}
+
+.pl-age-card h3 {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.pl-age-card strong {
+    color: var(--pl-primary);
+    font-size: 12px;
+}
+
+.pl-age-card p {
+    color: var(--pl-muted);
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 12px 0 0;
+}
+
+/* CATEGORY CARDS */
+.pl-category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.pl-category-card {
+    border-radius: 25px;
+    padding: 27px;
+    min-height: 235px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: .25s;
+}
+
+.pl-category-card:hover {
+    transform: translateY(-7px);
+}
+
+.pl-category-card .pl-category-icon {
+    font-size: 43px;
+}
+
+.pl-category-card h3 {
+    font-size: 20px;
+    font-weight: 950;
+    margin: 20px 0 8px;
+}
+
+.pl-category-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 0;
+    opacity: .8;
+}
+
+.pl-category-card a {
+    display: inline-block;
+    margin-top: 18px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 13px;
+}
+
+/* FEATURED GAMES */
+.pl-game-section {
+    background: #fff;
+}
+
+.pl-game-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.pl-game-card {
+    background: white;
+    border: 1px solid #eeeaf5;
+    border-radius: 24px;
+    overflow: hidden;
+    transition: .25s;
+}
+
+.pl-game-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px #29204412;
+}
+
+.pl-game-art {
+    min-height: 175px;
+    height: 175px;
+    display: grid;
+    place-items: center;
+    font-size: 75px;
+    overflow: hidden;
+}
+
+.pl-game-art img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.pl-game-content {
+    padding: 22px;
+}
+
+.pl-game-content h3 {
+    font-size: 19px;
+    font-weight: 950;
+    margin: 0 0 10px;
+}
+
+.pl-game-content p {
+    color: var(--pl-muted);
+    font-size: 13px;
+    line-height: 1.7;
+    min-height: 66px;
+}
+
+.pl-game-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--pl-muted);
+    padding-top: 12px;
+    border-top: 1px solid #f0edf7;
+}
+
+.pl-game-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pl-game-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #f2efff;
+    color: #6543c5;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.pl-game-meta a {
+    color: var(--pl-primary);
+    text-decoration: none;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.pl-game-meta a:hover {
+    color: #5933ce;
+}
+
+.pl-game-unavailable {
+    color: #999;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.pl-empty-games {
+    grid-column: 1 / -1;
+    text-align: center;
+    background: #f7f6ff;
+    border: 1px dashed #d8cef7;
+    border-radius: 24px;
+    padding: 45px 20px;
+}
+
+.pl-empty-games span {
+    display: block;
+    font-size: 45px;
+    margin-bottom: 12px;
+}
+
+.pl-empty-games h3 {
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.pl-empty-games p {
+    color: var(--pl-muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* CALL TO ACTION */
+.pl-cta {
+    background: linear-gradient(120deg, #7048e8, #9674f3);
+    color: white;
+    border-radius: 30px;
+    padding: 45px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+}
+
+.pl-cta h2 {
+    font-size: clamp(25px, 4vw, 36px);
+    font-weight: 950;
+}
+
+.pl-cta p {
+    opacity: .85;
+    margin-bottom: 0;
+}
+
+.pl-cta a {
+    background: white;
+    color: var(--pl-primary);
+    text-decoration: none;
+    padding: 15px 24px;
+    border-radius: 30px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+/* FOOTER */
+.pl-footer {
+    background: #20213a;
+    color: #fff;
+    padding: 35px 0;
+    margin-top: 70px;
+}
+
+.pl-footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.pl-footer p {
+    margin: 0;
+    color: #c4c4d2;
+    font-size: 13px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1000px) {
+    .pl-age-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .pl-category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pl-game-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .pl-hero {
+        padding: 50px 0;
+    }
+
+    .pl-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .pl-hero-art {
+        min-height: 270px;
+    }
+
+    .pl-nav-links {
+        display: none;
+    }
+
+    .pl-age-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pl-cta {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pl-age-grid,
+    .pl-category-grid,
+    .pl-game-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pl-section {
+        padding: 50px 0;
+    }
+
+    .pl-age-card {
+        padding: 22px;
+    }
+
+    .pl-hero h1 {
+        letter-spacing: -1px;
+    }
+
+    .pl-game-content p {
+        min-height: auto;
+    }
+}
+</style>
+
+<div class="play-learn">
+
+    <!-- NAVBAR -->
+    <nav class="pl-navbar">
+        <div class="pl-container pl-nav-inner">
+            <a href="{% url 'play_learn:home' %}" class="pl-brand">
+                PupilAura <span>Play!</span>
+            </a>
+
+            <div class="pl-nav-links">
+                <a href="#age-groups">Age Groups</a>
+                <a href="#categories">Explore</a>
+                <a href="#games">Games</a>
+                <a href="#stories">Stories</a>
+                <a href="{% url 'home' %}" class="pl-nav-button">Main Website</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="pl-hero">
+        <div class="pl-container pl-hero-grid">
+
+            <div>
+                <span class="pl-eyebrow">🎮 LEARN. PLAY. DISCOVER.</span>
+
+                <h1>
+                    Big Fun.<br>
+                    <span>Bright Minds.</span>
+                </h1>
+
+                <p>
+                    Welcome to PupilAura Play & Learn, where games,
+                    educational adventures, cartoons and exciting
+                    challenges make every visit an opportunity to discover
+                    something new.
+                </p>
+
+                <a href="#age-groups" class="pl-primary-button">
+                    Explore Your World →
+                </a>
+            </div>
+
+            <div class="pl-hero-art">
+                <span class="pl-floating-label pl-label-one">⭐ Learn something new!</span>
+                <div class="pl-mascot">🦊</div>
+                <span class="pl-floating-label pl-label-two">🎮 Let's Play!</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- AGE GROUPS -->
+    <section class="pl-section" id="age-groups">
+        <div class="pl-container">
+
+            <div class="pl-section-heading">
+                <small>Find your adventure</small>
+                <h2>Choose Your Age Group</h2>
+                <p>
+                    Different ages, different challenges.
+                    Choose your group and discover activities designed
+                    for your learning level.
+                </p>
+            </div>
+
+            <div class="pl-age-grid">
+
+                {% for group in age_groups %}
+                <div class="pl-age-card">
+
+                    <div class="pl-age-icon"
+                         style="background:
+                         {% if group.theme == 'little' %}#ffe4e6
+                         {% elif group.theme == 'young' %}#fff3bf
+                         {% elif group.theme == 'junior' %}#dbeafe
+                         {% elif group.theme == 'teen' %}#ede9fe
+                         {% else %}#dcfce7{% endif %};">
+                        {% if group.theme == 'little' %}🧸
+                        {% elif group.theme == 'young' %}🌈
+                        {% elif group.theme == 'junior' %}🚀
+                        {% elif group.theme == 'teen' %}⚡
+                        {% else %}🏆{% endif %}
+                    </div>
+
+                    <h3>{{ group.name }}</h3>
+                    <strong>{{ group.age }}</strong>
+                    <p>{{ group.description }}</p>
+
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="pl-section" id="categories" style="background:#fff;">
+        <div class="pl-container">
+
+            <div class="pl-section-heading">
+                <small>Explore and discover</small>
+                <h2>Enter Your Play Zone</h2>
+                <p>
+                    Four exciting worlds. Endless opportunities to play,
+                    learn, practise and explore.
+                </p>
+            </div>
+
+            <div class="pl-category-grid">
+
+                {% for category in play_categories %}
+                <div class="pl-category-card"
+                     style="
+                     {% if category.theme == 'arcade' %}
+                     background:#ffe5dc;color:#a83d21;
+                     {% elif category.theme == 'learn' %}
+                     background:#e4eaff;color:#334da5;
+                     {% elif category.theme == 'speaking' %}
+                     background:#e5f8e9;color:#23753b;
+                     {% else %}
+                     background:#f0e5ff;color:#6735a5;
+                     {% endif %}">
+
+                    <div>
+                        <div class="pl-category-icon">
+                            {% if category.theme == 'arcade' %}🕹️
+                            {% elif category.theme == 'learn' %}📚
+                            {% elif category.theme == 'speaking' %}🎤
+                            {% else %}🎬{% endif %}
+                        </div>
+
+                        <h3>{{ category.name }}</h3>
+                        <p>{{ category.description }}</p>
+                    </div>
+
+                    <a href="#games">Explore Zone →</a>
+
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURED GAMES -->
+    <section class="pl-section pl-game-section" id="games">
+        <div class="pl-container">
+
+            <div class="pl-section-heading">
+                <small>Start playing</small>
+                <h2>Featured Adventures</h2>
+                <p>
+                    Discover exciting activities that make learning
+                    and entertainment more engaging.
+                </p>
+            </div>
+
+            <div class="pl-game-grid">
+
+                {% for game in games %}
+                <article class="pl-game-card">
+
+                    <div class="pl-game-art"
+                         style="background: {{ game.art_background|default:'#eee9ff' }};">
+
+                        {% if game.thumbnail %}
+                            <img src="{{ game.thumbnail.url }}"
+                                 alt="{{ game.name }}"
+                                 loading="lazy">
+                        {% else %}
+                            {{ game.display_icon|default:"🎮" }}
+                        {% endif %}
+
+                    </div>
+
+                    <div class="pl-game-content">
+
+                        <h3>{{ game.name }}</h3>
+
+                        <p>
+                            {{ game.description|default:"Explore this exciting learning adventure and challenge yourself." }}
+                        </p>
+
+                        <div class="pl-game-meta">
+
+                            <div class="pl-game-details">
+
+                                <span class="pl-game-tag">
+                                    {% if game.max_age >= 100 %}
+                                        Ages {{ game.min_age }}+
+                                    {% else %}
+                                        Ages {{ game.min_age }}–{{ game.max_age }}
+                                    {% endif %}
+                                </span>
+
+                                <span class="pl-game-tag">
+                                    {{ game.get_difficulty_display }}
+                                </span>
+
+                            </div>
+
+                            {% if game.play_url %}
+                                <a href="{{ game.play_url }}">
+                                    Play Now →
+                                </a>
+                            {% else %}
+                                <span class="pl-game-unavailable">
+                                    Coming soon
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+                </article>
+
+                {% empty %}
+
+                <div class="pl-empty-games">
+                    <span>🎮</span>
+                    <h3>Adventures Are Coming!</h3>
+                    <p>
+                        Exciting games will appear here as soon as they
+                        are published. Check back soon!
+                    </p>
+                </div>
+
+                {% endfor %}
+
+                <!-- CARTOON STORIES -->
+                <article class="pl-game-card" id="stories">
+
+                    <div class="pl-game-art" style="background:#fff0dc;">
+                        📖
+                    </div>
+
+                    <div class="pl-game-content">
+
+                        <h3>Cartoon Stories</h3>
+
+                        <p>
+                            Discover entertaining stories filled
+                            with imagination and valuable lessons.
+                        </p>
+
+                        <div class="pl-game-meta">
+                            <span class="pl-game-tag">🌟 All ages</span>
+
+                            <a href="{% url 'play_learn:cartoon_stories' %}">
+                                Explore Stories →
+                            </a>
+                        </div>
+
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="pl-section">
+        <div class="pl-container">
+            <div class="pl-cta">
+                <div>
+                    <h2>Your Next Adventure Starts Here! 🚀</h2>
+                    <p>
+                        Play, discover, challenge yourself and keep growing.
+                    </p>
+                </div>
+
+                <a href="#games">Explore Activities →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pl-footer">
+        <div class="pl-container pl-footer-inner">
+            <a href="{% url 'play_learn:home' %}"
+               class="pl-brand" style="color:#fff;">
+                PupilAura <span>Play!</span>
+            </a>
+
+            <p>
+                © {% now "Y" %} PupilAura. Play, Learn and Grow.
+            </p>
+        </div>
+    </footer>
+
+</div>
+
+{% endblock %}

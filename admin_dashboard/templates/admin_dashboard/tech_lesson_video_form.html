@@ -1,0 +1,296 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}
+    {% if video %}
+        Update the details of this lesson video
+    {% else %}
+        Add a video to this lesson
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH LESSON VIDEO FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    .video-form-card {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Lesson context banner */
+    .lesson-context {
+        background: linear-gradient(135deg, #eff6ff, #ffffff);
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .lesson-context-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: 0.07em;
+        margin-bottom: 6px;
+    }
+
+    .lesson-context-title {
+        font-size: 20px;
+        font-weight: 750;
+        margin-bottom: 5px;
+        color: var(--text);
+    }
+
+    .lesson-context-path {
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    /* Two-column form grid (order + published) */
+    .video-form-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    /* Publish checkbox card */
+    .video-publish-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 15px;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+
+    .video-publish-card input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .video-publish-label {
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .video-form-grid-2col {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .lesson-context {
+            background: #0f1f3d;
+            border-color: #1e3a8a;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:tech_lessons' %}">Tech Lessons</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson_id=lesson.id %}">
+        {{ lesson.title }}
+    </a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">{{ page_title }}</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-camera-video"></i>
+                </div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p>
+                        {% if video %}
+                            Update the details of this lesson video.
+                        {% else %}
+                            Add a video to this lesson.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson_id=lesson.id %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back to Lesson
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<div class="video-form-card">
+
+    <!-- LESSON CONTEXT -->
+    <div class="lesson-context">
+        <div class="lesson-context-label">Lesson</div>
+        <div class="lesson-context-title">{{ lesson.title }}</div>
+        <div class="lesson-context-path">
+            {{ lesson.module.course.title }}
+            <span>›</span>
+            {{ lesson.module.title }}
+            <span>›</span>
+            {{ lesson.title }}
+        </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <section class="card">
+        <div class="card-header">
+            <h2>
+                {% if video %}Edit Video{% else %}Add Video{% endif %}
+            </h2>
+            <p>
+                {% if video %}
+                    Update the video information below and save your changes.
+                {% else %}
+                    Enter the information for the video you want to add to this lesson.
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Title -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.title.id_for_label }}">
+                        Video Title <span class="required">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <ul class="error-list">
+                            {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Video URL -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.video_url.id_for_label }}">
+                        Video URL <span class="required">*</span>
+                    </label>
+                    {{ form.video_url }}
+                    <div class="help-text">
+                        Enter the URL where the lesson video is hosted.
+                    </div>
+                    {% if form.video_url.errors %}
+                        <ul class="error-list">
+                            {% for error in form.video_url.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    <div class="help-text">
+                        Optional description explaining what the video teaches.
+                    </div>
+                    {% if form.description.errors %}
+                        <ul class="error-list">
+                            {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Order + Published -->
+                <div class="video-form-grid-2col">
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.order.id_for_label }}">
+                            Display Order
+                        </label>
+                        {{ form.order }}
+                        <div class="help-text">Lower numbers appear first.</div>
+                        {% if form.order.errors %}
+                            <ul class="error-list">
+                                {% for error in form.order.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Publication Status</label>
+                        <div class="video-publish-card">
+                            {{ form.published }}
+                            <label for="{{ form.published.id_for_label }}" class="video-publish-label">
+                                Publish this video
+                            </label>
+                        </div>
+                        {% if form.published.errors %}
+                            <ul class="error-list">
+                                {% for error in form.published.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:tech_lesson_detail' lesson_id=lesson.id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+
+                    <div class="toolbar">
+                        {% if video %}
+                            <a href="{% url 'admin_dashboard:tech_lesson_video_delete' video_id=video.id %}" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete Video
+                            </a>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2"></i> {{ submit_text }}
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,1167 @@
+
+{% extends "base.html" %}
+
+{% block title %}Math Challenge | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --math-primary: #6550e8;
+        --math-dark: #202044;
+        --math-muted: #77778f;
+        --math-bg: #f5f4ff;
+        --math-green: #159b68;
+        --math-red: #df4658;
+        --math-yellow: #ffbd4a;
+    }
+
+    .math-page {
+        min-height: 100vh;
+        padding: 25px 15px 55px;
+        background:
+            radial-gradient(circle at 5% 5%, #e9e5ff 0, transparent 27%),
+            radial-gradient(circle at 95% 15%, #fff0d5 0, transparent 25%),
+            var(--math-bg);
+        color: var(--math-dark);
+        font-family: Arial, sans-serif;
+    }
+
+    .math-container {
+        max-width: 1050px;
+        margin: auto;
+    }
+
+    .math-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .math-back {
+        text-decoration: none;
+        background: white;
+        color: var(--math-primary);
+        font-weight: 800;
+        padding: 11px 17px;
+        border-radius: 30px;
+        box-shadow: 0 5px 18px rgba(35, 25, 90, .07);
+    }
+
+    .math-brand {
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .math-brand span {
+        color: var(--math-primary);
+    }
+
+    .math-heading {
+        text-align: center;
+        margin: 25px auto 30px;
+    }
+
+    .math-eyebrow {
+        display: inline-block;
+        background: #e9e3ff;
+        color: var(--math-primary);
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .math-heading h1 {
+        font-size: clamp(30px, 5vw, 47px);
+        font-weight: 900;
+        margin: 13px 0 8px;
+    }
+
+    .math-heading p {
+        color: var(--math-muted);
+        font-size: 15px;
+    }
+
+    .math-card {
+        background: white;
+        border-radius: 25px;
+        padding: 25px;
+        box-shadow: 0 12px 35px rgba(38, 31, 93, .07);
+    }
+
+    .setup-title {
+        font-size: 20px;
+        font-weight: 900;
+        margin-bottom: 17px;
+    }
+
+    .setup-section {
+        margin-bottom: 25px;
+    }
+
+    .difficulty-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 13px;
+    }
+
+    .difficulty-option {
+        border: 2px solid #ece9f8;
+        border-radius: 17px;
+        background: #faf9ff;
+        padding: 18px 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .difficulty-option:hover {
+        transform: translateY(-3px);
+        border-color: var(--math-primary);
+    }
+
+    .difficulty-option.active {
+        background: #eeeaff;
+        border-color: var(--math-primary);
+    }
+
+    .difficulty-icon {
+        font-size: 31px;
+    }
+
+    .difficulty-option h3 {
+        font-size: 17px;
+        font-weight: 900;
+        margin: 8px 0 5px;
+    }
+
+    .difficulty-option p {
+        color: var(--math-muted);
+        font-size: 12px;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .operation-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .operation-option {
+        border: 2px solid #ece9f8;
+        border-radius: 16px;
+        background: #faf9ff;
+        padding: 15px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .operation-option:hover {
+        border-color: var(--math-primary);
+        transform: translateY(-2px);
+    }
+
+    .operation-option.active {
+        border-color: var(--math-primary);
+        background: #eeeaff;
+    }
+
+    .operation-symbol {
+        font-size: 32px;
+        font-weight: 900;
+        color: var(--math-primary);
+    }
+
+    .operation-option h3 {
+        font-size: 13px;
+        font-weight: 800;
+        margin: 5px 0 0;
+    }
+
+    .start-math-button,
+    .next-math-button,
+    .play-again-button {
+        width: 100%;
+        border: none;
+        padding: 15px;
+        border-radius: 14px;
+        background: var(--math-primary);
+        color: white;
+        font-weight: 900;
+        font-size: 15px;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .start-math-button:hover,
+    .next-math-button:hover,
+    .play-again-button:hover {
+        background: #4e39d0;
+        transform: translateY(-2px);
+    }
+
+    .game-area {
+        display: none;
+    }
+
+    .game-area.show {
+        display: block;
+    }
+
+    .game-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .math-stat {
+        background: white;
+        border-radius: 16px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(38, 31, 93, .05);
+    }
+
+    .math-stat-label {
+        color: var(--math-muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .math-stat-value {
+        font-size: 23px;
+        font-weight: 900;
+        margin-top: 5px;
+        color: var(--math-primary);
+    }
+
+    .timer-warning {
+        color: var(--math-red);
+        animation: timerPulse .8s infinite alternate;
+    }
+
+    @keyframes timerPulse {
+        to { opacity: .45; }
+    }
+
+    .game-progress {
+        height: 11px;
+        background: #e8e6f2;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .game-progress-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #6550e8, #a28cff);
+        transition: width .3s;
+    }
+
+    .question-card {
+        text-align: center;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 12px 35px rgba(38, 31, 93, .07);
+    }
+
+    .question-label {
+        color: var(--math-muted);
+        font-weight: 800;
+        font-size: 13px;
+    }
+
+    .question-expression {
+        font-size: clamp(43px, 10vw, 72px);
+        font-weight: 900;
+        margin: 25px 0;
+        color: var(--math-dark);
+    }
+
+    .question-expression span {
+        color: var(--math-primary);
+    }
+
+    .answer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 13px;
+        max-width: 500px;
+        margin: auto;
+    }
+
+    .math-answer {
+        border: 2px solid #e9e6f6;
+        background: #faf9ff;
+        border-radius: 15px;
+        min-height: 65px;
+        font-size: 23px;
+        font-weight: 900;
+        color: var(--math-primary);
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .math-answer:hover:not(:disabled) {
+        border-color: var(--math-primary);
+        background: #eeeaff;
+        transform: translateY(-2px);
+    }
+
+    .math-answer:disabled {
+        cursor: not-allowed;
+        opacity: .85;
+    }
+
+    .math-answer.correct {
+        color: var(--math-green);
+        background: #e3f8ed;
+        border-color: var(--math-green);
+    }
+
+    .math-answer.wrong {
+        color: var(--math-red);
+        background: #fff0f0;
+        border-color: var(--math-red);
+    }
+
+    .answer-feedback {
+        min-height: 35px;
+        margin: 20px 0 12px;
+        font-size: 16px;
+        font-weight: 900;
+    }
+
+    .feedback-good {
+        color: var(--math-green);
+    }
+
+    .feedback-bad {
+        color: var(--math-red);
+    }
+
+    .next-math-button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .results-area {
+        display: none;
+        text-align: center;
+        padding: 35px 25px;
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 12px 35px rgba(38, 31, 93, .07);
+    }
+
+    .results-area.show {
+        display: block;
+    }
+
+    .results-icon {
+        font-size: 75px;
+    }
+
+    .results-area h2 {
+        font-size: 30px;
+        font-weight: 900;
+        margin: 13px 0;
+    }
+
+    .results-score {
+        color: var(--math-primary);
+        font-size: 46px;
+        font-weight: 900;
+        margin: 15px 0;
+    }
+
+    .results-message {
+        color: var(--math-muted);
+        margin-bottom: 20px;
+    }
+
+    .results-details {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 25px 0;
+    }
+
+    .result-detail {
+        padding: 15px 8px;
+        background: #f7f5ff;
+        border-radius: 15px;
+    }
+
+    .result-detail strong {
+        display: block;
+        font-size: 22px;
+        color: var(--math-primary);
+    }
+
+    .result-detail span {
+        font-size: 11px;
+        color: var(--math-muted);
+        font-weight: 800;
+    }
+
+    .back-setup-button {
+        width: 100%;
+        background: #eeeaff;
+        color: var(--math-primary);
+        border: none;
+        border-radius: 13px;
+        padding: 13px;
+        font-weight: 900;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .math-note {
+        text-align: center;
+        color: var(--math-muted);
+        font-size: 12px;
+        margin-top: 25px;
+    }
+
+    @media (max-width: 650px) {
+        .math-page {
+            padding: 15px 10px 35px;
+        }
+
+        .math-card {
+            padding: 18px;
+        }
+
+        .difficulty-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .difficulty-option {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            gap: 13px;
+        }
+
+        .difficulty-option h3 {
+            margin-top: 0;
+        }
+
+        .operation-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .game-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .question-card {
+            padding: 25px 14px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .math-brand {
+            font-size: 11px;
+        }
+
+        .math-back {
+            font-size: 12px;
+            padding: 10px 12px;
+        }
+
+        .results-details {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+        }
+    }
+</style>
+
+<div class="math-page">
+    <div class="math-container">
+
+        <div class="math-topbar">
+            <a href="{% url 'play_learn:home' %}" class="math-back">
+                ← Play & Learn
+            </a>
+
+            <div class="math-brand">
+                PupilAura <span>Math Challenge</span>
+            </div>
+        </div>
+
+        <header class="math-heading">
+            <span class="math-eyebrow">Young Learners · Ages 6–8</span>
+            <h1>🧮 Math Challenge</h1>
+            <p>Think fast, solve problems and become a mathematics champion!</p>
+        </header>
+
+        <!-- GAME SETUP -->
+        <section class="math-card" id="setupArea">
+
+            <h2 class="setup-title">1. Choose your difficulty</h2>
+
+            <div class="setup-section">
+                <div class="difficulty-grid" id="difficultyGrid">
+
+                    {% for level in difficulty_levels %}
+                    <button
+                        type="button"
+                        class="difficulty-option {% if forloop.first %}active{% endif %}"
+                        data-difficulty="{{ level.value }}"
+                    >
+                        <div class="difficulty-icon">{{ level.icon }}</div>
+                        <div>
+                            <h3>{{ level.name }}</h3>
+                            <p>{{ level.description }}</p>
+                            <p>{{ level.time_limit }} seconds</p>
+                        </div>
+                    </button>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <h2 class="setup-title">2. Choose your operation</h2>
+
+            <div class="setup-section">
+                <div class="operation-grid" id="operationGrid">
+
+                    {% for operation in operations %}
+                    <button
+                        type="button"
+                        class="operation-option {% if forloop.first %}active{% endif %}"
+                        data-operation="{{ operation.value }}"
+                    >
+                        <div class="operation-symbol">{{ operation.symbol }}</div>
+                        <h3>{{ operation.name }}</h3>
+                    </button>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <button type="button" class="start-math-button" id="startMathButton">
+                Start Math Challenge →
+            </button>
+
+        </section>
+
+        <!-- GAME AREA -->
+        <section class="game-area" id="gameArea">
+
+            <div class="game-stats">
+
+                <div class="math-stat">
+                    <div class="math-stat-label">Score</div>
+                    <div class="math-stat-value" id="scoreValue">0</div>
+                </div>
+
+                <div class="math-stat">
+                    <div class="math-stat-label">Question</div>
+                    <div class="math-stat-value" id="questionValue">1/10</div>
+                </div>
+
+                <div class="math-stat">
+                    <div class="math-stat-label">Correct</div>
+                    <div class="math-stat-value" id="correctValue">0</div>
+                </div>
+
+                <div class="math-stat">
+                    <div class="math-stat-label">Time left</div>
+                    <div class="math-stat-value" id="timerValue">90</div>
+                </div>
+
+            </div>
+
+            <div class="game-progress">
+                <div class="game-progress-fill" id="gameProgressFill"></div>
+            </div>
+
+            <div class="question-card">
+
+                <div class="question-label">SOLVE THIS PROBLEM</div>
+
+                <div class="question-expression" id="questionExpression">
+                    5 <span>+</span> 3 = ?
+                </div>
+
+                <div class="answer-grid" id="answerGrid"></div>
+
+                <div class="answer-feedback" id="answerFeedback" aria-live="polite"></div>
+
+                <button
+                    type="button"
+                    class="next-math-button"
+                    id="nextMathButton"
+                    disabled
+                >
+                    Choose an answer
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- RESULTS -->
+        <section class="results-area" id="resultsArea">
+
+            <div class="results-icon" id="resultsIcon">🏆</div>
+
+            <h2 id="resultsTitle">Math Champion!</h2>
+
+            <p class="results-message" id="resultsMessage">
+                You completed the challenge.
+            </p>
+
+            <div class="results-score" id="resultsScore">0 points</div>
+
+            <div class="results-details">
+
+                <div class="result-detail">
+                    <strong id="resultCorrect">0</strong>
+                    <span>CORRECT</span>
+                </div>
+
+                <div class="result-detail">
+                    <strong id="resultWrong">0</strong>
+                    <span>INCORRECT</span>
+                </div>
+
+                <div class="result-detail">
+                    <strong id="resultAccuracy">0%</strong>
+                    <span>ACCURACY</span>
+                </div>
+
+            </div>
+
+            <button type="button" class="play-again-button" id="playAgainButton">
+                Play Again ↻
+            </button>
+
+            <button type="button" class="back-setup-button" id="backSetupButton">
+                Change Game Settings
+            </button>
+
+        </section>
+
+        <p class="math-note">
+            Every problem you solve makes your brain stronger! 🧠
+        </p>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
+
+    // ------------------------------------
+    // ELEMENTS
+    // ------------------------------------
+
+    const setupArea = document.getElementById("setupArea");
+    const gameArea = document.getElementById("gameArea");
+    const resultsArea = document.getElementById("resultsArea");
+
+    const difficultyGrid = document.getElementById("difficultyGrid");
+    const operationGrid = document.getElementById("operationGrid");
+
+    const startMathButton = document.getElementById("startMathButton");
+    const nextMathButton = document.getElementById("nextMathButton");
+    const playAgainButton = document.getElementById("playAgainButton");
+    const backSetupButton = document.getElementById("backSetupButton");
+
+    const scoreValue = document.getElementById("scoreValue");
+    const questionValue = document.getElementById("questionValue");
+    const correctValue = document.getElementById("correctValue");
+    const timerValue = document.getElementById("timerValue");
+
+    const questionExpression = document.getElementById("questionExpression");
+    const answerGrid = document.getElementById("answerGrid");
+    const answerFeedback = document.getElementById("answerFeedback");
+    const gameProgressFill = document.getElementById("gameProgressFill");
+
+    const resultsIcon = document.getElementById("resultsIcon");
+    const resultsTitle = document.getElementById("resultsTitle");
+    const resultsMessage = document.getElementById("resultsMessage");
+    const resultsScore = document.getElementById("resultsScore");
+
+    const resultCorrect = document.getElementById("resultCorrect");
+    const resultWrong = document.getElementById("resultWrong");
+    const resultAccuracy = document.getElementById("resultAccuracy");
+
+    // ------------------------------------
+    // GAME SETTINGS
+    // ------------------------------------
+
+    const difficultySettings = {
+        easy: {
+            time: 90,
+            questions: 10,
+            max: 10,
+            points: 10
+        },
+        medium: {
+            time: 75,
+            questions: 10,
+            max: 30,
+            points: 15
+        },
+        hard: {
+            time: 60,
+            questions: 10,
+            max: 60,
+            points: 20
+        }
+    };
+
+    const operationSymbols = {
+        addition: "+",
+        subtraction: "−",
+        multiplication: "×",
+        division: "÷"
+    };
+
+    let selectedDifficulty = "easy";
+    let selectedOperation = "addition";
+
+    let score = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    let questionIndex = 0;
+    let timeLeft = 90;
+    let timerInterval = null;
+
+    let questions = [];
+    let answered = false;
+    let gameRunning = false;
+
+    // ------------------------------------
+    // RANDOM NUMBER
+    // ------------------------------------
+
+    function randomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // ------------------------------------
+    // QUESTION GENERATOR
+    // ------------------------------------
+
+    function generateQuestion() {
+        const settings = difficultySettings[selectedDifficulty];
+
+        let first = randomNumber(1, settings.max);
+        let second = randomNumber(1, settings.max);
+
+        let answer = 0;
+        const operation = selectedOperation;
+
+        if (operation === "addition") {
+            answer = first + second;
+        }
+
+        if (operation === "subtraction") {
+            if (second > first) {
+                [first, second] = [second, first];
+            }
+
+            answer = first - second;
+        }
+
+        if (operation === "multiplication") {
+            const maxFactor = selectedDifficulty === "easy" ? 5 :
+                selectedDifficulty === "medium" ? 10 : 12;
+
+            first = randomNumber(1, maxFactor);
+            second = randomNumber(1, maxFactor);
+
+            answer = first * second;
+        }
+
+        if (operation === "division") {
+            const maxDivisor = selectedDifficulty === "easy" ? 5 :
+                selectedDifficulty === "medium" ? 10 : 12;
+
+            second = randomNumber(1, maxDivisor);
+            answer = randomNumber(1, maxDivisor);
+
+            first = second * answer;
+        }
+
+        return {
+            first: first,
+            second: second,
+            answer: answer,
+            operation: operation
+        };
+    }
+
+    // ------------------------------------
+    // GENERATE ANSWER OPTIONS
+    // ------------------------------------
+
+    function generateOptions(correctAnswer) {
+        const options = new Set([correctAnswer]);
+
+        while (options.size < 4) {
+            let variation = randomNumber(1, 5);
+
+            if (Math.random() < 0.5) {
+                variation *= -1;
+            }
+
+            const option = Math.max(0, correctAnswer + variation);
+
+            options.add(option);
+        }
+
+        return [...options].sort(() => Math.random() - 0.5);
+    }
+
+    // ------------------------------------
+    // BUILD GAME QUESTIONS
+    // ------------------------------------
+
+    function createQuestions() {
+        const settings = difficultySettings[selectedDifficulty];
+
+        questions = [];
+
+        for (let i = 0; i < settings.questions; i++) {
+            const question = generateQuestion();
+
+            questions.push({
+                ...question,
+                options: generateOptions(question.answer)
+            });
+        }
+    }
+
+    // ------------------------------------
+    // UPDATE GAME STATISTICS
+    // ------------------------------------
+
+    function updateStatistics() {
+        scoreValue.textContent = score;
+        questionValue.textContent =
+            Math.min(questionIndex + 1, questions.length) +
+            "/" + questions.length;
+
+        correctValue.textContent = correctAnswers;
+
+        const progress = (questionIndex / questions.length) * 100;
+
+        gameProgressFill.style.width = progress + "%";
+    }
+
+    // ------------------------------------
+    // DISPLAY QUESTION
+    // ------------------------------------
+
+    function showQuestion() {
+        if (questionIndex >= questions.length) {
+            finishGame();
+            return;
+        }
+
+        answered = false;
+
+        const question = questions[questionIndex];
+
+        questionExpression.innerHTML =
+            question.first +
+            ' <span>' +
+            operationSymbols[question.operation] +
+            '</span> ' +
+            question.second +
+            ' = ?';
+
+        answerFeedback.textContent = "";
+        answerFeedback.className = "answer-feedback";
+
+        nextMathButton.disabled = true;
+        nextMathButton.textContent = "Choose an answer";
+
+        answerGrid.innerHTML = "";
+
+        question.options.forEach(function (option) {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "math-answer";
+            button.textContent = option;
+
+            button.addEventListener("click", function () {
+                checkAnswer(button, option, question.answer);
+            });
+
+            answerGrid.appendChild(button);
+        });
+
+        updateStatistics();
+    }
+
+    // ------------------------------------
+    // CHECK ANSWER
+    // ------------------------------------
+
+    function checkAnswer(button, selectedAnswer, correctAnswer) {
+        if (answered || !gameRunning) return;
+
+        answered = true;
+
+        const buttons = answerGrid.querySelectorAll(".math-answer");
+
+        buttons.forEach(function (answerButton) {
+            answerButton.disabled = true;
+
+            if (Number(answerButton.textContent) === correctAnswer) {
+                answerButton.classList.add("correct");
+            }
+        });
+
+        if (selectedAnswer === correctAnswer) {
+            correctAnswers++;
+
+            const basePoints =
+                difficultySettings[selectedDifficulty].points;
+
+            const timeBonus = Math.floor(timeLeft / 15);
+
+            const earnedPoints = basePoints + timeBonus;
+
+            score += earnedPoints;
+
+            answerFeedback.textContent =
+                "🎉 Correct! +" + earnedPoints + " points!";
+
+            answerFeedback.classList.add("feedback-good");
+
+        } else {
+            wrongAnswers++;
+
+            button.classList.add("wrong");
+
+            answerFeedback.textContent =
+                "Good try! The correct answer is " + correctAnswer + ".";
+
+            answerFeedback.classList.add("feedback-bad");
+        }
+
+        questionIndex++;
+
+        updateStatistics();
+
+        nextMathButton.disabled = false;
+
+        nextMathButton.textContent =
+            questionIndex >= questions.length
+                ? "See My Results →"
+                : "Next Question →";
+    }
+
+    // ------------------------------------
+    // TIMER
+    // ------------------------------------
+
+    function startTimer() {
+        clearInterval(timerInterval);
+
+        timerValue.textContent = timeLeft;
+        timerValue.classList.remove("timer-warning");
+
+        timerInterval = setInterval(function () {
+            if (!gameRunning) return;
+
+            timeLeft--;
+
+            timerValue.textContent = timeLeft;
+
+            if (timeLeft <= 10) {
+                timerValue.classList.add("timer-warning");
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishGame();
+            }
+
+        }, 1000);
+    }
+
+    // ------------------------------------
+    // START GAME
+    // ------------------------------------
+
+    function startGame() {
+        clearInterval(timerInterval);
+
+        score = 0;
+        correctAnswers = 0;
+        wrongAnswers = 0;
+        questionIndex = 0;
+        answered = false;
+        gameRunning = true;
+
+        timeLeft = difficultySettings[selectedDifficulty].time;
+
+        createQuestions();
+
+        setupArea.style.display = "none";
+        resultsArea.classList.remove("show");
+        gameArea.classList.add("show");
+
+        updateStatistics();
+        showQuestion();
+        startTimer();
+
+        gameArea.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+    // ------------------------------------
+    // FINISH GAME
+    // ------------------------------------
+
+    function finishGame() {
+        if (!gameRunning) return;
+
+        gameRunning = false;
+
+        clearInterval(timerInterval);
+
+        gameArea.classList.remove("show");
+        resultsArea.classList.add("show");
+
+        gameProgressFill.style.width = "100%";
+
+        const totalAnswered = correctAnswers + wrongAnswers;
+
+        const accuracy = totalAnswered > 0
+            ? Math.round((correctAnswers / totalAnswered) * 100)
+            : 0;
+
+        resultsScore.textContent = score + " points";
+
+        resultCorrect.textContent = correctAnswers;
+        resultWrong.textContent = wrongAnswers;
+        resultAccuracy.textContent = accuracy + "%";
+
+        if (accuracy >= 80) {
+            resultsIcon.textContent = "🏆";
+            resultsTitle.textContent = "Math Champion!";
+            resultsMessage.textContent =
+                "Excellent performance! You are a mathematics superstar.";
+        } else if (accuracy >= 50) {
+            resultsIcon.textContent = "🌟";
+            resultsTitle.textContent = "Great Effort!";
+            resultsMessage.textContent =
+                "You are improving. Keep practising and aim higher!";
+        } else {
+            resultsIcon.textContent = "💪";
+            resultsTitle.textContent = "Keep Practising!";
+            resultsMessage.textContent =
+                "Every challenge teaches you something new. Try again!";
+        }
+
+        if (totalAnswered < questions.length) {
+            resultsMessage.textContent +=
+                " Time ran out before all questions were answered.";
+        }
+
+        resultsArea.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+    // ------------------------------------
+    // DIFFICULTY SELECTION
+    // ------------------------------------
+
+    difficultyGrid.addEventListener("click", function (event) {
+        const button = event.target.closest(".difficulty-option");
+
+        if (!button) return;
+
+        selectedDifficulty = button.dataset.difficulty;
+
+        document.querySelectorAll(".difficulty-option").forEach(function (item) {
+            item.classList.toggle("active", item === button);
+        });
+    });
+
+    // ------------------------------------
+    // OPERATION SELECTION
+    // ------------------------------------
+
+    operationGrid.addEventListener("click", function (event) {
+        const button = event.target.closest(".operation-option");
+
+        if (!button) return;
+
+        selectedOperation = button.dataset.operation;
+
+        document.querySelectorAll(".operation-option").forEach(function (item) {
+            item.classList.toggle("active", item === button);
+        });
+    });
+
+    // ------------------------------------
+    // BUTTON EVENTS
+    // ------------------------------------
+
+    startMathButton.addEventListener("click", startGame);
+
+    nextMathButton.addEventListener("click", function () {
+        if (!answered || !gameRunning) return;
+
+        showQuestion();
+    });
+
+    playAgainButton.addEventListener("click", startGame);
+
+    backSetupButton.addEventListener("click", function () {
+        clearInterval(timerInterval);
+
+        gameRunning = false;
+
+        resultsArea.classList.remove("show");
+        gameArea.classList.remove("show");
+
+        setupArea.style.display = "block";
+
+        setupArea.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    });
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,176 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}Confirm Delete | PupilAura Admin{% endblock %}
+{% block page_title %}Confirm Deletion{% endblock %}
+{% block page_subtitle %}Review this action before permanently deleting the selected item.{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-page {
+        max-width: 680px;
+        margin: 25px auto;
+    }
+
+    .delete-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .delete-icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(220, 38, 38, 0.10);
+        color: #dc2626;
+        font-size: 30px;
+    }
+
+    .delete-card h2 {
+        color: var(--text);
+        font-size: 23px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .delete-description {
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 22px;
+    }
+
+    .delete-object {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 22px;
+        color: var(--text);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .delete-warning {
+        background: rgba(220, 38, 38, 0.07);
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        color: #dc2626;
+        border-radius: 10px;
+        padding: 13px 15px;
+        font-size: 13px;
+        margin-bottom: 25px;
+        text-align: left;
+    }
+
+    .delete-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .delete-actions a,
+    .delete-actions button {
+        min-height: 44px;
+        padding: 11px 22px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .cancel-btn {
+        background: var(--surface-soft);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .cancel-btn:hover {
+        background: var(--border);
+        color: var(--text);
+    }
+
+    .confirm-delete-btn {
+        background: #dc2626;
+        color: #fff;
+        border: 1px solid #dc2626;
+    }
+
+    .confirm-delete-btn:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+    }
+
+    @media (max-width: 576px) {
+        .delete-page {
+            margin: 15px auto;
+        }
+
+        .delete-card {
+            padding: 22px 16px;
+        }
+
+        .delete-actions {
+            flex-direction: column;
+        }
+
+        .delete-actions a,
+        .delete-actions button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-page">
+    <div class="delete-card">
+
+        <div class="delete-icon">
+            <i class="bi bi-trash3"></i>
+        </div>
+
+        <h2>Delete {{ object_name|default:"Item" }}?</h2>
+
+        <p class="delete-description">
+            You are about to permanently delete the following item.
+            Please review your decision before continuing.
+        </p>
+
+        <div class="delete-object">
+            {{ object }}
+        </div>
+
+        <div class="delete-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            This action cannot be undone. Any related content that is
+            configured for cascading deletion may also be removed.
+        </div>
+
+        <div class="delete-actions">
+            <a href="{{ cancel_url }}" class="cancel-btn">
+                <i class="bi bi-arrow-left me-1"></i>
+                Cancel
+            </a>
+
+            <form method="POST" action="{{ delete_url }}">
+                {% csrf_token %}
+
+                <button type="submit" class="confirm-delete-btn">
+                    <i class="bi bi-trash3 me-1"></i>
+                    Yes, Delete Permanently
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

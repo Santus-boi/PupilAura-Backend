@@ -1,0 +1,543 @@
+
+{% extends "base.html" %}
+
+{% block title %}Whack-a-Mole | PupilAura Play & Learn{% endblock %}
+
+{% block content %}
+<style>
+    .mole-game {
+        max-width: 950px;
+        margin: 30px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .mole-header {
+        text-align: center;
+        margin-bottom: 22px;
+    }
+
+    .mole-header h1 {
+        color: #7c3aed;
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 900;
+    }
+
+    .mole-header p {
+        color: #64748b;
+    }
+
+    .mole-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .mole-stat {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 14px 8px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,.04);
+    }
+
+    .mole-stat small {
+        display: block;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    .mole-stat strong {
+        display: block;
+        color: #312e81;
+        font-size: 25px;
+        margin-top: 5px;
+    }
+
+    .mole-controls {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .mole-controls select,
+    .mole-controls button {
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 1px solid #ddd6fe;
+        font-weight: 700;
+    }
+
+    .mole-controls button {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .mole-controls button:hover {
+        background: #5b21b6;
+    }
+
+    .mole-board {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        padding: 30px;
+        border-radius: 25px;
+        background: linear-gradient(145deg, #86efac, #22c55e);
+        box-shadow: inset 0 -10px 0 rgba(0,0,0,.08);
+        overflow: hidden;
+    }
+
+    .mole-hole {
+        position: relative;
+        height: 150px;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        overflow: hidden;
+        touch-action: manipulation;
+    }
+
+    .hole {
+        position: absolute;
+        bottom: 8px;
+        left: 8%;
+        width: 84%;
+        height: 65px;
+        background: #422006;
+        border-radius: 50%;
+        box-shadow: inset 0 9px 12px rgba(0,0,0,.5);
+        z-index: 2;
+    }
+
+    .mole-character {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translate(-50%, 115px);
+        font-size: clamp(55px, 9vw, 85px);
+        line-height: 1;
+        transition: transform .18s ease-out;
+        z-index: 1;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    .mole-hole.active .mole-character {
+        transform: translate(-50%, 0);
+    }
+
+    .mole-hole.hit .mole-character {
+        transform: translate(-50%, -20px) rotate(-20deg);
+    }
+
+    .mole-hole:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: -5px;
+        border-radius: 15px;
+    }
+
+    .mole-message {
+        text-align: center;
+        padding: 22px 10px 5px;
+        color: #312e81;
+        font-weight: 800;
+        min-height: 65px;
+    }
+
+    .mole-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(30, 27, 75, .88);
+        color: white;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .mole-overlay h2 {
+        font-size: clamp(1.8rem, 5vw, 2.7rem);
+        font-weight: 900;
+    }
+
+    .mole-overlay p {
+        font-size: 1rem;
+    }
+
+    .mole-overlay.hidden {
+        display: none;
+    }
+
+    .mole-overlay button {
+        background: #facc15;
+        color: #422006;
+        border: none;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .mole-result {
+        text-align: center;
+        color: #7c3aed;
+        font-weight: 800;
+        margin-top: 16px;
+    }
+
+    @media(max-width: 600px) {
+        .mole-game {
+            padding: 10px;
+        }
+
+        .mole-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .mole-board {
+            gap: 8px;
+            padding: 15px 8px;
+        }
+
+        .mole-hole {
+            height: 115px;
+        }
+
+        .hole {
+            height: 48px;
+        }
+
+        .mole-character {
+            bottom: 18px;
+        }
+    }
+</style>
+
+<div class="mole-game">
+    <div class="mole-header">
+        <h1>🔨 Whack-a-Mole!</h1>
+        <p>Quick! Tap the characters when they pop out. How fast are your fingers?</p>
+    </div>
+
+    <div class="mole-stats">
+        <div class="mole-stat">
+            <small>⭐ Score</small>
+            <strong id="score">0</strong>
+        </div>
+
+        <div class="mole-stat">
+            <small>⏱️ Time</small>
+            <strong id="time">45</strong>
+        </div>
+
+        <div class="mole-stat">
+            <small>🎯 Hits</small>
+            <strong id="hits">0</strong>
+        </div>
+
+        <div class="mole-stat">
+            <small>❌ Misses</small>
+            <strong id="misses">0</strong>
+        </div>
+    </div>
+
+    <div class="mole-controls">
+        <select id="difficulty" aria-label="Choose difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button type="button" id="startButton">▶ Start Game</button>
+    </div>
+
+    <div class="mole-board" id="board">
+        <div class="mole-overlay" id="overlay">
+            <h2>Ready to Play? 🐹</h2>
+            <p>Tap the characters as quickly as you can!</p>
+            <p>Earn points for every successful hit.</p>
+            <button type="button" id="overlayStart">Start Playing</button>
+        </div>
+
+        {% for i in "123456789" %}
+        <button
+            type="button"
+            class="mole-hole"
+            data-hole="{{ forloop.counter0 }}"
+            aria-label="Hole {{ forloop.counter }}"
+        >
+            <span class="mole-character">🐹</span>
+            <span class="hole"></span>
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="mole-message" id="message">
+        Choose your difficulty and start playing!
+    </div>
+
+    <div class="mole-result" id="result" aria-live="polite"></div>
+</div>
+
+<script>
+(() => {
+    const board = document.getElementById("board");
+    const holes = [...document.querySelectorAll(".mole-hole")];
+
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+    const hitsDisplay = document.getElementById("hits");
+    const missesDisplay = document.getElementById("misses");
+
+    const difficulty = document.getElementById("difficulty");
+    const startButton = document.getElementById("startButton");
+    const overlayStart = document.getElementById("overlayStart");
+    const overlay = document.getElementById("overlay");
+    const message = document.getElementById("message");
+    const result = document.getElementById("result");
+
+    const settings = {
+        easy: {
+            duration: 60,
+            spawnInterval: 1050,
+            visibleTime: 950,
+            points: 10
+        },
+        medium: {
+            duration: 45,
+            spawnInterval: 750,
+            visibleTime: 700,
+            points: 15
+        },
+        hard: {
+            duration: 30,
+            spawnInterval: 500,
+            visibleTime: 450,
+            points: 20
+        }
+    };
+
+    const characters = ["🐹", "🐭", "🐰", "🐻", "🦊"];
+
+    let score = 0;
+    let hits = 0;
+    let misses = 0;
+    let timeLeft = 45;
+    let combo = 0;
+    let activeHole = null;
+    let running = false;
+
+    let timer = null;
+    let spawnTimer = null;
+    let hideTimer = null;
+
+    function updateStats() {
+        scoreDisplay.textContent = score;
+        timeDisplay.textContent = timeLeft;
+        hitsDisplay.textContent = hits;
+        missesDisplay.textContent = misses;
+    }
+
+    function clearTimers() {
+        clearInterval(timer);
+        clearInterval(spawnTimer);
+        clearTimeout(hideTimer);
+    }
+
+    function clearBoard() {
+        holes.forEach(hole => {
+            hole.classList.remove("active", "hit");
+        });
+
+        activeHole = null;
+    }
+
+    function chooseHole() {
+        const available = holes.filter(hole => hole !== activeHole);
+
+        if (!available.length) return null;
+
+        return available[Math.floor(Math.random() * available.length)];
+    }
+
+    function hideMole() {
+        if (!activeHole) return;
+
+        activeHole.classList.remove("active");
+        activeHole = null;
+        combo = 0;
+
+        if (running) {
+            message.textContent = "Too slow! Watch carefully for the next one.";
+        }
+    }
+
+    function showMole() {
+        if (!running) return;
+
+        if (activeHole) {
+            hideMole();
+        }
+
+        const hole = chooseHole();
+
+        if (!hole) return;
+
+        activeHole = hole;
+
+        const character = hole.querySelector(".mole-character");
+        character.textContent = characters[
+            Math.floor(Math.random() * characters.length)
+        ];
+
+        hole.classList.remove("hit");
+        hole.classList.add("active");
+
+        clearTimeout(hideTimer);
+
+        hideTimer = setTimeout(() => {
+            if (activeHole === hole && running) {
+                hole.classList.remove("active");
+                activeHole = null;
+                combo = 0;
+                message.textContent = "Missed it! Stay alert!";
+            }
+        }, settings[difficulty.value].visibleTime);
+    }
+
+    function hitMole(hole) {
+        if (!running || hole !== activeHole) return;
+
+        clearTimeout(hideTimer);
+
+        hole.classList.remove("active");
+        hole.classList.add("hit");
+
+        activeHole = null;
+        hits++;
+        combo++;
+
+        const basePoints = settings[difficulty.value].points;
+        const bonus = Math.min(combo - 1, 5) * 5;
+
+        score += basePoints + bonus;
+
+        message.textContent = combo >= 3
+            ? `🔥 ${combo} hits in a row! Combo bonus!`
+            : "Great hit! Keep going!";
+
+        updateStats();
+
+        setTimeout(() => hole.classList.remove("hit"), 180);
+    }
+
+    function finishGame() {
+        running = false;
+        clearTimers();
+        clearBoard();
+
+        const accuracy = hits + misses > 0
+            ? Math.round((hits / (hits + misses)) * 100)
+            : 0;
+
+        let title = "Good try! 💪";
+
+        if (hits >= 30) {
+            title = "Incredible speed! 🏆";
+        } else if (hits >= 15) {
+            title = "Fantastic work! 🌟";
+        }
+
+        overlay.innerHTML = `
+            <h2>${title}</h2>
+            <p>Your final score: <strong>${score}</strong></p>
+            <p>Successful hits: ${hits}</p>
+            <p>Missed characters: ${misses}</p>
+            <p>Accuracy: ${accuracy}%</p>
+            <button type="button" id="playAgain">Play Again</button>
+        `;
+
+        overlay.classList.remove("hidden");
+
+        document.getElementById("playAgain")
+            .addEventListener("click", startGame);
+
+        startButton.textContent = "↻ Play Again";
+
+        message.textContent = "Game completed!";
+        result.textContent = `Final score: ${score} points.`;
+    }
+
+    function startGame() {
+        clearTimers();
+        clearBoard();
+
+        score = 0;
+        hits = 0;
+        misses = 0;
+        combo = 0;
+
+        const level = settings[difficulty.value];
+        timeLeft = level.duration;
+        running = true;
+
+        updateStats();
+
+        overlay.classList.add("hidden");
+        startButton.textContent = "Game Running...";
+        message.textContent = "Get ready! Tap the characters!";
+
+        showMole();
+
+        spawnTimer = setInterval(showMole, level.spawnInterval);
+
+        timer = setInterval(() => {
+            timeLeft--;
+            updateStats();
+
+            if (timeLeft <= 0) {
+                finishGame();
+            }
+        }, 1000);
+    }
+
+    holes.forEach(hole => {
+        hole.addEventListener("click", () => {
+            if (!running) return;
+
+            if (hole === activeHole) {
+                hitMole(hole);
+            } else {
+                misses++;
+                combo = 0;
+                message.textContent = "Oops! You missed! Try again.";
+                updateStats();
+            }
+        });
+    });
+
+    startButton.addEventListener("click", () => {
+        if (!running) startGame();
+    });
+
+    overlayStart.addEventListener("click", startGame);
+
+    updateStats();
+})();
+</script>
+{% endblock %}

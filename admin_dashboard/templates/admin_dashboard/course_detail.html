@@ -1,0 +1,605 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }} | PupilAura Admin{% endblock %}
+
+{% block page_title %}{{ course.title }}{% endblock %}
+{% block page_subtitle %}Course details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       COURSE DETAIL — page-specific styles
+    ========================================================= */
+
+    /* ---------- HERO overrides ---------- */
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 30px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+        color: #ffffff;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        width: 190px;
+        height: 190px;
+        right: 70px;
+        bottom: -130px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        right: -90px;
+        top: -120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 900px;
+    }
+
+    .hero-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 13px;
+        font-size: 23px;
+        margin-bottom: 17px;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.25;
+        margin-bottom: 8px;
+        overflow-wrap: anywhere;
+        color: #ffffff;
+    }
+
+    .hero p {
+        max-width: 700px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 20px;
+        white-space: pre-line;
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 11px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        font-size: 12px;
+        font-weight: 600;
+        color: #ffffff;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    /* ---------- ACTIONS ---------- */
+
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 9px 15px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+        background: var(--primary);
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: #ffffff;
+    }
+
+    .btn-light {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .btn-light:hover { background: var(--surface-soft); }
+
+    /* ---------- CONTENT GRID (wider sidebar) ---------- */
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        margin-bottom: 22px;
+    }
+
+    .card:last-child { margin-bottom: 0; }
+
+    .card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .card-header h2 {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+
+    .card-header p {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .card-body { padding: 22px; }
+
+    /* ---------- THUMBNAIL ---------- */
+
+    .thumbnail {
+        width: 100%;
+        max-height: 350px;
+        min-height: 230px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #dbeafe, #eff6ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .thumbnail img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-height: 350px;
+        object-fit: cover;
+    }
+
+    .thumbnail-placeholder {
+        min-height: 230px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        font-size: 60px;
+    }
+
+    /* ---------- DESCRIPTION ---------- */
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: var(--text);
+    }
+
+    .description {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.8;
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+    }
+
+    /* ---------- INFORMATION ---------- */
+
+    .info-list {
+        display: grid;
+        gap: 18px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .info-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        font-size: 13px;
+        font-weight: 800;
+        text-align: right;
+        overflow-wrap: anywhere;
+        color: var(--text);
+    }
+
+    .info-value a {
+        color: var(--primary);
+    }
+
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 9px;
+        border-radius: 7px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .status-published {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-draft {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    /* ---------- MANAGEMENT BUTTONS ---------- */
+
+    .management-actions {
+        display: grid;
+        gap: 10px;
+    }
+
+    .management-actions .btn { width: 100%; }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (max-width: 1050px) {
+        .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .hero {
+            padding: 22px;
+            border-radius: 13px;
+        }
+
+        .hero h1 { font-size: 24px; }
+        .hero p { font-size: 13px; }
+
+        .hero-meta {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .meta-badge { width: 100%; }
+
+        .actions { flex-direction: column; }
+        .actions .btn { width: 100%; }
+
+        .card-body { padding: 18px; }
+        .card-header { padding: 18px; }
+
+        .thumbnail { min-height: 190px; }
+        .thumbnail-placeholder { min-height: 190px; font-size: 50px; }
+
+        .info-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-value { text-align: left; }
+    }
+
+    /* ---------- DARK MODE ---------- */
+
+    @media (prefers-color-scheme: dark) {
+        .thumbnail {
+            background: linear-gradient(135deg, #1e3a8a, #1e293b);
+        }
+
+        .status-published {
+            background: #14532d;
+            color: #86efac;
+        }
+
+        .status-draft {
+            background: #78350f;
+            color: #fcd34d;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <div class="breadcrumb">
+        <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+        <span class="breadcrumb-separator">›</span>
+        <a href="{% url 'admin_dashboard:courses' %}">Courses</a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ course.title }}</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-icon">🎓</div>
+        <h1>{{ course.title }}</h1>
+        <p>{{ course.description|default:"No course description has been added yet." }}</p>
+        <div class="hero-meta">
+
+            <div class="meta-badge">
+                Category:
+                {% if course.category %}{{ course.category.name }}{% else %}—{% endif %}
+            </div>
+
+            {% if course.education_level %}
+                <div class="meta-badge">
+                    Education Level: {{ course.education_level.name }}
+                </div>
+            {% endif %}
+
+            {% if course.subject %}
+                <div class="meta-badge">
+                    Subject: {{ course.subject.name }}
+                </div>
+            {% endif %}
+
+            {% if course.published %}
+                <div class="meta-badge">✓ Published</div>
+            {% else %}
+                <div class="meta-badge">Draft</div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+<!-- ACTIONS -->
+<div class="actions">
+    <a href="{% url 'admin_dashboard:courses' %}" class="btn btn-light">
+        ← Back to Courses
+    </a>
+    <a href="{% url 'admin_dashboard:course_edit' course.id %}" class="btn btn-primary">
+        ✎ Edit Course
+    </a>
+</div>
+
+<!-- CONTENT -->
+<div class="content-grid">
+
+    <!-- MAIN COLUMN -->
+    <div>
+
+        <!-- THUMBNAIL + DESCRIPTION -->
+        <section class="card">
+            <div class="card-body">
+                <div class="thumbnail">
+                    {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}"
+                             alt="{{ course.title }} course thumbnail">
+                    {% else %}
+                        <div class="thumbnail-placeholder" aria-label="No course thumbnail">
+                            🎓
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h2 class="section-title">Course Description</h2>
+                    <div class="description">
+                        {{ course.description|default:"No course description has been added yet." }}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COURSE INFORMATION -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Course Information</h2>
+                <p>Additional information about this course.</p>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+
+                    <div class="info-item">
+                        <span class="info-label">Course Title</span>
+                        <span class="info-value">{{ course.title }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Category</span>
+                        <span class="info-value">
+                            {% if course.category %}{{ course.category.name }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Education Level</span>
+                        <span class="info-value">
+                            {% if course.education_level %}
+                                <a href="{% url 'admin_dashboard:education_level_detail' course.education_level.id %}">
+                                    {{ course.education_level.name }}
+                                </a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Subject</span>
+                        <span class="info-value">
+                            {% if course.subject %}
+                                <a href="{% url 'admin_dashboard:subject_detail' course.subject.id %}">
+                                    {{ course.subject.name }}
+                                </a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Price</span>
+                        <span class="info-value">
+                            {% if course.price %}₦{{ course.price }}{% else %}Free{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            {% if course.published %}
+                                <span class="status status-published">Published</span>
+                            {% else %}
+                                <span class="status status-draft">Draft</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Created</span>
+                        <span class="info-value">
+                            {% if course.created_at %}{{ course.created_at|date:"M d, Y" }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Last Updated</span>
+                        <span class="info-value">
+                            {% if course.updated_at %}{{ course.updated_at|date:"M d, Y" }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside>
+
+        <!-- COURSE STATUS -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Course Status</h2>
+                <p>Publishing information</p>
+            </div>
+            <div class="card-body">
+
+                <div style="text-align: center; margin-bottom: 20px;">
+                    {% if course.published %}
+                        <span class="status status-published">✓ Published</span>
+                    {% else %}
+                        <span class="status status-draft">● Draft</span>
+                    {% endif %}
+                </div>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">Course ID</span>
+                        <span class="info-value">{{ course.id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Price</span>
+                        <span class="info-value">
+                            {% if course.price %}₦{{ course.price }}{% else %}Free{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Category</span>
+                        <span class="info-value">
+                            {% if course.category %}{{ course.category.name }}{% else %}—{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- MANAGEMENT -->
+        <section class="card">
+            <div class="card-header">
+                <h2>Management</h2>
+                <p>Course administration</p>
+            </div>
+            <div class="card-body">
+                <div class="management-actions">
+                    <a href="{% url 'admin_dashboard:course_edit' course.id %}" class="btn btn-primary">
+                        ✎ Edit Course
+                    </a>
+                    <a href="{% url 'admin_dashboard:courses' %}" class="btn btn-light">
+                        ← All Courses
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </aside>
+
+</div>
+
+{% endblock %}

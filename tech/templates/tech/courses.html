@@ -1,0 +1,497 @@
+
+{% extends "tech/base.html" %}
+{% load static %}
+
+{% block title %}{{ category.name }} | PupilAura Technology Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .courses-page {
+        padding: 42px 0 75px;
+    }
+
+    .courses-container {
+        width: min(1200px, calc(100% - 40px));
+        margin: 0 auto;
+    }
+
+    .courses-breadcrumb {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 25px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .courses-breadcrumb a {
+        color: #2563eb;
+        font-weight: 650;
+    }
+
+    .courses-breadcrumb a:hover {
+        color: #1d4ed8;
+    }
+
+    .courses-hero {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 36px;
+        padding: 42px;
+        border: 1px solid #dbeafe;
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(191, 219, 254, .65), transparent 30%),
+            linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+    }
+
+    .courses-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+        padding: 7px 12px;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        background: #fff;
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .courses-hero h1 {
+        max-width: 800px;
+        margin: 0 0 14px;
+        color: #111827;
+        font-size: clamp(30px, 4vw, 44px);
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .courses-hero p {
+        max-width: 760px;
+        margin: 0;
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.85;
+        overflow-wrap: anywhere;
+    }
+
+    .courses-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 23px;
+    }
+
+    .courses-summary h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 23px;
+        font-weight: 850;
+    }
+
+    .courses-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: #fff;
+        color: #4b5563;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 23px;
+    }
+
+    .course-card {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(17, 24, 39, .04);
+        transition: transform .2s ease, box-shadow .2s ease,
+            border-color .2s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        border-color: #bfdbfe;
+        box-shadow: 0 15px 32px rgba(17, 24, 39, .09);
+    }
+
+    .course-card-image {
+        position: relative;
+        display: flex;
+        min-height: 175px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    }
+
+    .course-card-image img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .course-placeholder {
+        display: flex;
+        width: 72px;
+        height: 72px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(37, 99, 235, .12);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, .8);
+        color: #2563eb;
+        font-size: 32px;
+    }
+
+    .course-status {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border: 1px solid #bbf7d0;
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #166534;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .course-card-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 23px;
+    }
+
+    .course-category-label {
+        margin-bottom: 10px;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+    }
+
+    .course-card h3 {
+        margin: 0 0 11px;
+        color: #111827;
+        font-size: 20px;
+        font-weight: 850;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .course-description {
+        flex: 1;
+        margin: 0 0 21px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.85;
+        overflow-wrap: anywhere;
+    }
+
+    .course-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 17px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .course-price {
+        color: #111827;
+        font-size: 14px;
+        font-weight: 850;
+    }
+
+    .course-price small {
+        display: block;
+        margin-top: 3px;
+        color: #6b7280;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .course-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 13px;
+        border-radius: 9px;
+        background: #2563eb;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+        transition: background .2s ease;
+    }
+
+    .course-link:hover {
+        background: #1d4ed8;
+        color: #fff;
+    }
+
+    .courses-empty {
+        padding: 55px 25px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    .courses-empty-icon {
+        display: flex;
+        width: 65px;
+        height: 65px;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        border-radius: 20px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 28px;
+    }
+
+    .courses-empty h3 {
+        margin: 0 0 10px;
+        color: #111827;
+        font-size: 21px;
+        font-weight: 850;
+    }
+
+    .courses-empty p {
+        max-width: 500px;
+        margin: 0 auto 22px;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .back-home-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .back-home-link:hover {
+        color: #1d4ed8;
+    }
+
+    @media (max-width: 950px) {
+        .courses-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .courses-hero {
+            padding: 32px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .courses-container {
+            width: calc(100% - 28px);
+        }
+
+        .courses-page {
+            padding-top: 25px;
+        }
+
+        .courses-hero {
+            padding: 25px 21px;
+            border-radius: 17px;
+        }
+
+        .courses-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .course-card-body {
+            padding: 20px;
+        }
+
+        .courses-summary h2 {
+            font-size: 21px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .course-card,
+        .course-link {
+            transition: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="courses-page">
+    <div class="courses-container">
+
+        <nav class="courses-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'tech:tech_home' %}">
+                <i class="bi bi-house" aria-hidden="true"></i>
+                Technology Academy
+            </a>
+
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+
+            <span aria-current="page">{{ category.name }}</span>
+        </nav>
+
+        <header class="courses-hero">
+            <div class="courses-eyebrow">
+                <i class="bi bi-collection" aria-hidden="true"></i>
+                Learning category
+            </div>
+
+            <h1>{{ category.name }}</h1>
+
+            <p>
+                {% if category.description %}
+                    {{ category.description }}
+                {% else %}
+                    Explore the courses in this category and develop your
+                    technology skills through structured lessons and practice.
+                {% endif %}
+            </p>
+        </header>
+
+        <div class="courses-summary">
+            <h2>Available courses</h2>
+
+            <span class="courses-count">
+                <i class="bi bi-journal-code" aria-hidden="true"></i>
+                {{ courses|length }}
+                {% if courses|length == 1 %}
+                    course
+                {% else %}
+                    courses
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="courses-grid">
+            {% for course in courses %}
+                <article class="course-card">
+
+                    <div class="course-card-image">
+                        {% if course.thumbnail %}
+                            <img
+                                src="{{ course.thumbnail.url }}"
+                                alt="{{ course.title }}"
+                                loading="lazy"
+                            >
+                        {% else %}
+                            <div class="course-placeholder">
+                                <i class="bi bi-code-slash" aria-hidden="true"></i>
+                            </div>
+                        {% endif %}
+
+                        {% if course.id in enrolled_course_ids %}
+                            <span class="course-status">
+                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                Enrolled
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="course-card-body">
+                        <div class="course-category-label">
+                            {{ category.name }}
+                        </div>
+
+                        <h3>{{ course.title }}</h3>
+
+                        <p class="course-description">
+                            {% if course.description %}
+                                {{ course.description|truncatewords:32 }}
+                            {% else %}
+                                Start learning with structured lessons and
+                                practical activities in this course.
+                            {% endif %}
+                        </p>
+
+                        <div class="course-card-footer">
+                            <div class="course-price">
+                                {% if course.price is None %}
+                                    Contact for details
+                                {% elif course.price == 0 %}
+                                    Free
+                                {% else %}
+                                    ₦{{ course.price|floatformat:2 }}
+                                {% endif %}
+
+                                <small>Course access</small>
+                            </div>
+
+                            <a
+                                class="course-link"
+                                href="{% url 'tech:tech_course_detail' course.id %}"
+                            >
+                                {% if course.id in enrolled_course_ids %}
+                                    Continue
+                                {% else %}
+                                    View course
+                                {% endif %}
+
+                                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </article>
+            {% empty %}
+                <div class="courses-empty">
+                    <div class="courses-empty-icon">
+                        <i class="bi bi-journal-x" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>No published courses yet</h3>
+
+                    <p>
+                        This category does not have any published courses
+                        available right now. Return to the academy to explore
+                        other categories.
+                    </p>
+
+                    <a class="back-home-link" href="{% url 'tech:tech_home' %}">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        Back to Technology Academy
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

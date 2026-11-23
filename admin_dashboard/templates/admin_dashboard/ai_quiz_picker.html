@@ -1,0 +1,99 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}AI Quiz Generator | PupilAura Admin{% endblock %}
+{% block page_title %}AI Quiz Generator{% endblock %}
+{% block page_subtitle %}Choose a lesson to generate a quiz from{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">AI Quiz Generator</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h1>AI Quiz Generator</h1>
+                    <p>
+                        Select a lesson below. PupilAura will generate
+                        WAEC/JAMB-style multiple-choice questions and save
+                        them as a <strong>draft quiz</strong> attached to
+                        that lesson.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">Choose a Lesson</div>
+            <div class="section-description">
+                Click any lesson to open its AI quiz generator.
+            </div>
+        </div>
+    </div>
+
+    {% if lessons %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lesson</th>
+                        <th>Subject</th>
+                        <th>Week</th>
+                        <th>Order</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                        <tr>
+                            <td>
+                                <strong>{{ lesson.title }}</strong>
+                            </td>
+                            <td>{{ lesson.week.term.subject.name }}</td>
+                            <td>{{ lesson.week.term.name }} · Week {{ lesson.week.number }}</td>
+                            <td>{{ lesson.order }}</td>
+                            <td>
+                                <a
+                                    href="{% url 'admin_dashboard:ai_quiz_generator' lesson.id %}"
+                                    class="btn btn-primary"
+                                >
+                                    <i class="bi bi-stars"></i> Generate
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <h3>No lessons yet</h3>
+            <p>Create at least one lesson before generating a quiz.</p>
+            <a href="{% url 'admin_dashboard:lessons' %}" class="btn btn-blue">
+                <i class="bi bi-arrow-right"></i> Go to Lessons
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,911 @@
+
+{% extends "community/base.html" %}
+
+{% block title %}Community Dashboard | PupilAura{% endblock %}
+{% block community_breadcrumb %}Overview{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ==========================================
+   PUPILAURA COMMUNITY DASHBOARD
+========================================== */
+
+.community-dashboard {
+    --cd-primary: #dc2626;
+    --cd-dark: #172033;
+    --cd-muted: #748094;
+    --cd-border: #edf0f4;
+    --cd-surface: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    color: var(--cd-dark);
+}
+
+.community-dashboard * {
+    box-sizing: border-box;
+}
+
+.cd-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 32px;
+    border-radius: 22px;
+    background: linear-gradient(120deg, #171f35 0%, #293958 100%);
+    color: #fff;
+}
+
+.cd-hero::before,
+.cd-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: rgba(255,255,255,.045);
+}
+
+.cd-hero::before {
+    width: 260px;
+    height: 260px;
+    right: 10%;
+    top: -160px;
+}
+
+.cd-hero::after {
+    width: 190px;
+    height: 190px;
+    right: -55px;
+    bottom: -115px;
+}
+
+.cd-hero-content,
+.cd-hero-actions {
+    position: relative;
+    z-index: 1;
+}
+
+.cd-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #ffb6b6;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+}
+
+.cd-hero h1 {
+    margin: 0 0 10px;
+    color: #fff;
+    font-size: clamp(1.65rem, 3vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -.8px;
+}
+
+.cd-hero p {
+    max-width: 570px;
+    margin: 0;
+    color: #cbd5e1;
+    font-size: .94rem;
+    line-height: 1.7;
+}
+
+.cd-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.cd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 11px 17px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-size: .86rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.cd-btn-primary {
+    background: var(--cd-primary);
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(220,38,38,.2);
+}
+
+.cd-btn-primary:hover {
+    background: #b91c1c;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.cd-btn-light {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.2);
+    color: #fff;
+}
+
+.cd-btn-light:hover {
+    background: rgba(255,255,255,.18);
+    color: #fff;
+}
+
+.cd-btn-outline {
+    background: #fff;
+    border-color: #e5e9ef;
+    color: #344054;
+}
+
+.cd-btn-outline:hover {
+    border-color: var(--cd-primary);
+    color: var(--cd-primary);
+}
+
+.cd-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.cd-stat-card {
+    position: relative;
+    min-width: 0;
+    min-height: 155px;
+    padding: 19px;
+    overflow: hidden;
+    background: var(--cd-surface);
+    border: 1px solid var(--cd-border);
+    border-radius: 17px;
+    box-shadow: 0 4px 18px rgba(16,24,40,.035);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.cd-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(16,24,40,.075);
+}
+
+.cd-stat-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.cd-stat-label {
+    margin: 2px 0 0;
+    color: var(--cd-muted);
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.cd-stat-icon {
+    display: flex;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    font-size: 1.15rem;
+}
+
+.cd-stat-value {
+    margin-top: 17px;
+    color: #182235;
+    font-size: 2rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.cd-stat-note {
+    display: block;
+    margin-top: 9px;
+    color: #98a2b3;
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+.cd-red { background: #fff0f0; color: #dc2626; }
+.cd-purple { background: #f2edff; color: #805ad5; }
+.cd-green { background: #e9f9f0; color: #159957; }
+.cd-orange { background: #fff4e8; color: #e68a22; }
+.cd-blue { background: #eaf3ff; color: #3478d4; }
+
+.cd-section {
+    min-width: 0;
+}
+
+.cd-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.cd-section-heading h2 {
+    margin: 0 0 5px;
+    color: #1b2638;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.cd-section-heading p {
+    margin: 0;
+    color: var(--cd-muted);
+    font-size: .82rem;
+}
+
+.cd-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--cd-primary);
+    font-size: .81rem;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cd-text-link:hover {
+    color: #991b1b;
+}
+
+.cd-panel {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--cd-border);
+    border-radius: 17px;
+    box-shadow: 0 4px 18px rgba(16,24,40,.03);
+}
+
+.cd-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 19px 21px;
+    border-bottom: 1px solid #f0f2f5;
+    color: inherit;
+    text-decoration: none;
+    transition: background .18s ease;
+}
+
+.cd-list-item:last-child {
+    border-bottom: 0;
+}
+
+.cd-list-item:hover {
+    background: #fafbfc;
+}
+
+.cd-list-icon {
+    display: flex;
+    flex: 0 0 43px;
+    width: 43px;
+    height: 43px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    background: #fff0f0;
+    color: var(--cd-primary);
+    font-size: 1.1rem;
+}
+
+.cd-list-icon.purple {
+    background: #f2edff;
+    color: #805ad5;
+}
+
+.cd-list-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cd-list-body h3 {
+    margin: 1px 0 5px;
+    color: #263247;
+    font-size: .91rem;
+    font-weight: 750;
+}
+
+.cd-list-body p {
+    margin: 0;
+    color: #778397;
+    font-size: .81rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.cd-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 17px;
+    margin-top: 10px;
+    color: #98a2b3;
+    font-size: .72rem;
+}
+
+.cd-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cd-item-action {
+    flex: 0 0 auto;
+    align-self: center;
+}
+
+.cd-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 30px;
+    background: #e9f9f0;
+    color: #16834d;
+    font-size: .69rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.cd-status.pending {
+    background: #fff5e5;
+    color: #b7791f;
+}
+
+.cd-status.rejected,
+.cd-status.suspended {
+    background: #fff0f0;
+    color: #c53030;
+}
+
+.cd-empty {
+    padding: 37px 20px;
+    text-align: center;
+}
+
+.cd-empty-icon {
+    display: flex;
+    width: 58px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    background: #fff0f0;
+    color: var(--cd-primary);
+    font-size: 1.5rem;
+}
+
+.cd-empty h3 {
+    margin: 0 0 7px;
+    color: #263247;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.cd-empty p {
+    max-width: 390px;
+    margin: 0 auto 17px;
+    color: var(--cd-muted);
+    font-size: .82rem;
+    line-height: 1.65;
+}
+
+.cd-created-icon {
+    background: #eaf3ff;
+    color: #3478d4;
+}
+
+.cd-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 25px 27px;
+    border: 1px solid #f5dada;
+    border-radius: 18px;
+    background: linear-gradient(110deg, #fff7f7, #fff 75%);
+}
+
+.cd-cta h3 {
+    margin: 0 0 6px;
+    color: #263247;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.cd-cta p {
+    margin: 0;
+    color: var(--cd-muted);
+    font-size: .82rem;
+}
+
+@media (max-width: 1199.98px) {
+    .cd-stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .community-dashboard {
+        gap: 23px;
+    }
+
+    .cd-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 25px 21px;
+        border-radius: 17px;
+    }
+
+    .cd-hero-actions {
+        width: 100%;
+    }
+
+    .cd-hero-actions .cd-btn {
+        flex: 1;
+    }
+
+    .cd-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 11px;
+    }
+
+    .cd-stat-card {
+        min-height: 137px;
+        padding: 15px;
+        border-radius: 14px;
+    }
+
+    .cd-stat-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+        border-radius: 11px;
+        font-size: 1rem;
+    }
+
+    .cd-stat-label {
+        font-size: .72rem;
+    }
+
+    .cd-stat-value {
+        margin-top: 15px;
+        font-size: 1.75rem;
+    }
+
+    .cd-section-heading {
+        align-items: flex-start;
+    }
+
+    .cd-section-heading h2 {
+        font-size: 1.02rem;
+    }
+
+    .cd-section-heading p {
+        font-size: .76rem;
+    }
+
+    .cd-list-item {
+        gap: 11px;
+        padding: 16px 14px;
+    }
+
+    .cd-list-icon {
+        width: 37px;
+        height: 37px;
+        flex-basis: 37px;
+        border-radius: 11px;
+    }
+
+    .cd-meta {
+        gap: 7px 12px;
+    }
+
+    .cd-cta {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 21px;
+    }
+}
+
+@media (max-width: 380px) {
+    .cd-stat-card {
+        padding: 12px;
+    }
+
+    .cd-stat-value {
+        font-size: 1.55rem;
+    }
+
+    .cd-stat-label {
+        font-size: .68rem;
+    }
+
+    .cd-section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block community_content %}
+<div class="community-dashboard">
+
+    <!-- HERO -->
+    <section class="cd-hero">
+        <div class="cd-hero-content">
+            <div class="cd-eyebrow">
+                <i class="bi bi-stars"></i>
+                PUPILAURA COMMUNITY
+            </div>
+
+            <h1>
+                Welcome, {{ request.user.first_name|default:request.user.username }} 👋
+            </h1>
+
+            <p>
+                Your space to connect with learners, exchange knowledge,
+                build meaningful relationships and grow together.
+            </p>
+        </div>
+
+        <div class="cd-hero-actions">
+            <a href="{% url 'community:home' %}" class="cd-btn cd-btn-light">
+                <i class="bi bi-compass"></i>
+                Discover Groups
+            </a>
+
+            <a href="{% url 'community:create_group' %}" class="cd-btn cd-btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Create Group
+            </a>
+        </div>
+    </section>
+
+    <!-- STATISTICS -->
+    <section class="cd-stats-grid">
+
+        <div class="cd-stat-card">
+            <div class="cd-stat-top">
+                <p class="cd-stat-label">Joined Groups</p>
+                <div class="cd-stat-icon cd-red">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="cd-stat-value">{{ joined_groups_count }}</div>
+            <span class="cd-stat-note">Your active communities</span>
+        </div>
+
+        <div class="cd-stat-card">
+            <div class="cd-stat-top">
+                <p class="cd-stat-label">Discussions</p>
+                <div class="cd-stat-icon cd-purple">
+                    <i class="bi bi-chat-square-text-fill"></i>
+                </div>
+            </div>
+            <div class="cd-stat-value">{{ discussions_count }}</div>
+            <span class="cd-stat-note">Group discussions</span>
+        </div>
+
+        <div class="cd-stat-card">
+            <div class="cd-stat-top">
+                <p class="cd-stat-label">Chat Messages</p>
+                <div class="cd-stat-icon cd-green">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+            </div>
+            <div class="cd-stat-value">{{ messages_count }}</div>
+            <span class="cd-stat-note">Messages in your groups</span>
+        </div>
+
+        <div class="cd-stat-card">
+            <div class="cd-stat-top">
+                <p class="cd-stat-label">Comments</p>
+                <div class="cd-stat-icon cd-orange">
+                    <i class="bi bi-reply-all-fill"></i>
+                </div>
+            </div>
+            <div class="cd-stat-value">{{ comments_count }}</div>
+            <span class="cd-stat-note">Community replies</span>
+        </div>
+
+        <div class="cd-stat-card">
+            <div class="cd-stat-top">
+                <p class="cd-stat-label">Pending Requests</p>
+                <div class="cd-stat-icon cd-blue">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+            </div>
+            <div class="cd-stat-value">{{ pending_requests_count }}</div>
+            <span class="cd-stat-note">Requests awaiting your action</span>
+        </div>
+
+    </section>
+
+    <!-- RECENT ACTIVITY -->
+    <section class="cd-section">
+        <div class="cd-section-heading">
+            <div>
+                <h2>Recent Community Activity</h2>
+                <p>See what's happening in the groups you've joined.</p>
+            </div>
+
+            <a href="{% url 'community:home' %}" class="cd-text-link">
+                Explore groups <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="cd-panel">
+            {% for activity in recent_activity %}
+                <div class="cd-list-item">
+                    <div class="cd-list-icon {% if activity.activity_type == 'message' %}purple{% endif %}">
+                        {% if activity.activity_type == "discussion" %}
+                            <i class="bi bi-chat-square-text"></i>
+                        {% else %}
+                            <i class="bi bi-chat-dots"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="cd-list-body">
+                        <h3>
+                            {% if activity.activity_type == "discussion" %}
+                                New discussion in {{ activity.activity_group.name }}
+                            {% else %}
+                                New message in {{ activity.activity_group.name }}
+                            {% endif %}
+                        </h3>
+
+                        <p>{{ activity.content|truncatechars:150 }}</p>
+
+                        <div class="cd-meta">
+                            <span>
+                                <i class="bi bi-person"></i>
+                                {{ activity.activity_author.get_full_name|default:activity.activity_author.username }}
+                            </span>
+
+                            <span>
+                                <i class="bi bi-clock"></i>
+                                {{ activity.created_at|timesince }} ago
+                            </span>
+
+                            <a href="{% url 'community:group_detail' activity.activity_group.slug %}"
+                               class="cd-text-link">
+                                View group <i class="bi bi-arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="cd-empty">
+                    <div class="cd-empty-icon">
+                        <i class="bi bi-chat-square-heart"></i>
+                    </div>
+                    <h3>No recent activity yet</h3>
+                    <p>
+                        Join a group and participate in discussions.
+                        Your community activity will appear here.
+                    </p>
+                    <a href="{% url 'community:home' %}" class="cd-btn cd-btn-primary">
+                        <i class="bi bi-compass"></i>
+                        Discover Groups
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- MY GROUPS -->
+    <section class="cd-section">
+        <div class="cd-section-heading">
+            <div>
+                <h2>Your Groups</h2>
+                <p>Communities where you currently have active membership.</p>
+            </div>
+
+            <a href="{% url 'community:my_groups' %}" class="cd-text-link">
+                View all <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="cd-panel">
+            {% for membership in active_memberships %}
+                <a href="{% url 'community:group_detail' membership.group.slug %}"
+                   class="cd-list-item">
+
+                    <div class="cd-list-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <div class="cd-list-body">
+                        <h3>{{ membership.group.name }}</h3>
+                        <p>
+                            {{ membership.group.description|default:"Connect and collaborate with group members."|truncatechars:100 }}
+                        </p>
+
+                        <div class="cd-meta">
+                            <span>
+                                <i class="bi bi-tag"></i>
+                                {{ membership.group.get_group_type_display }}
+                            </span>
+                            <span>
+                                <i class="bi bi-calendar3"></i>
+                                Joined {{ membership.joined_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="cd-item-action">
+                        <span class="cd-status">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                        </span>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="cd-empty">
+                    <div class="cd-empty-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3>You haven't joined a group yet</h3>
+                    <p>
+                        Discover communities that match your learning
+                        interests and start connecting with other students.
+                    </p>
+                    <a href="{% url 'community:home' %}" class="cd-btn cd-btn-primary">
+                        <i class="bi bi-compass"></i>
+                        Explore Groups
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- DISCOVER GROUPS -->
+    <section class="cd-section">
+        <div class="cd-section-heading">
+            <div>
+                <h2>Discover Communities</h2>
+                <p>Explore approved groups you haven't joined yet.</p>
+            </div>
+
+            <a href="{% url 'community:home' %}" class="cd-text-link">
+                Browse all <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="cd-panel">
+            {% for group in available_groups %}
+                <div class="cd-list-item">
+                    <div class="cd-list-icon cd-created-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+
+                    <div class="cd-list-body">
+                        <h3>{{ group.name }}</h3>
+                        <p>
+                            {{ group.description|default:"A community for students to connect and learn."|truncatechars:110 }}
+                        </p>
+
+                        <div class="cd-meta">
+                            <span>
+                                <i class="bi bi-tag"></i>
+                                {{ group.get_group_type_display }}
+                            </span>
+                            <span>
+                                <i class="bi bi-person"></i>
+                                Created by {{ group.created_by.get_full_name|default:group.created_by.username }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="cd-item-action">
+                        <a href="{% url 'community:group_detail' group.slug %}"
+                           class="cd-btn cd-btn-outline">
+                            View Group
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="cd-empty">
+                    <div class="cd-empty-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <h3>You're all caught up</h3>
+                    <p>
+                        There are no additional approved groups available
+                        for you to join right now.
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- CREATED GROUPS -->
+    {% if created_groups %}
+        <section class="cd-section">
+            <div class="cd-section-heading">
+                <div>
+                    <h2>Groups You've Created</h2>
+                    <p>Manage and monitor the communities you've started.</p>
+                </div>
+
+                <a href="{% url 'community:my_groups' %}" class="cd-text-link">
+                    Manage groups <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="cd-panel">
+                {% for group in created_groups %}
+                    <a href="{% if group.review_status == 'approved' %}{% url 'community:group_detail' group.slug %}{% else %}{% url 'community:my_groups' %}{% endif %}"
+                       class="cd-list-item">
+
+                        <div class="cd-list-icon cd-created-icon">
+                            <i class="bi bi-collection"></i>
+                        </div>
+
+                        <div class="cd-list-body">
+                            <h3>{{ group.name }}</h3>
+                            <p>
+                                {{ group.description|default:"Your community group."|truncatechars:100 }}
+                            </p>
+
+                            <div class="cd-meta">
+                                <span>
+                                    <i class="bi bi-calendar3"></i>
+                                    Created {{ group.created_at|date:"M d, Y" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="cd-item-action">
+                            {% if group.review_status == "approved" %}
+                                <span class="cd-status">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Approved
+                                </span>
+                            {% elif group.review_status == "pending" %}
+                                <span class="cd-status pending">Under review</span>
+                            {% elif group.review_status == "rejected" %}
+                                <span class="cd-status rejected">Rejected</span>
+                            {% else %}
+                                <span class="cd-status suspended">Suspended</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- CALL TO ACTION -->
+    <section class="cd-cta">
+        <div>
+            <h3>Have an idea for a learning community?</h3>
+            <p>Create a group, bring learners together and start sharing knowledge.</p>
+        </div>
+
+        <a href="{% url 'community:create_group' %}" class="cd-btn cd-btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            Create a Group
+        </a>
+    </section>
+
+</div>
+{% endblock %}

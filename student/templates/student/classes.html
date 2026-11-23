@@ -1,0 +1,759 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}My Class | PupilAura{% endblock %}
+
+{% block body_class %}pa-no-sidebar{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block breadcrumb %}
+    Workspace
+    <span class="pa-breadcrumb-sep">/</span>
+    <a href="{% url 'student_dashboard' %}" style="color: inherit;">Dashboard</a>
+    <span class="pa-breadcrumb-sep">/</span>
+    <strong>My Class</strong>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --pa-primary: #4f46e5;
+        --pa-primary-dark: #4338ca;
+        --pa-primary-soft: #eef2ff;
+
+        --pa-text: #172033;
+        --pa-text-soft: #64748b;
+        --pa-text-muted: #94a3b8;
+
+        --pa-bg: #f8fafc;
+        --pa-card: #ffffff;
+        --pa-border: #e5e7eb;
+
+        --pa-shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.06);
+        --pa-shadow-md: 0 12px 30px rgba(15, 23, 42, 0.10);
+
+        --pa-radius: 18px;
+        --pa-radius-sm: 12px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .pa-classes-page {
+        min-height: calc(100vh - 80px);
+        background: var(--pa-bg);
+        padding: 30px 20px 60px;
+        color: var(--pa-text);
+    }
+
+    .pa-container {
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    /* =========================================
+       BREADCRUMB
+    ========================================= */
+
+    .pa-breadcrumb {
+        margin-bottom: 26px;
+    }
+
+    .pa-breadcrumb a {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+
+        color: var(--pa-text-soft);
+        text-decoration: none;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        transition: color 0.2s ease;
+    }
+
+    .pa-breadcrumb a:hover {
+        color: var(--pa-primary);
+    }
+
+    /* =========================================
+       SECTION HEADER
+    ========================================= */
+
+    .pa-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 15px;
+
+        margin-bottom: 18px;
+    }
+
+    .pa-section-header h2 {
+        margin: 0;
+
+        color: var(--pa-text);
+
+        font-size: 19px;
+        font-weight: 750;
+    }
+
+    .pa-section-header span {
+        color: var(--pa-text-muted);
+
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* =========================================
+       CLASS GRID
+
+       IMPORTANT:
+       This is the main responsive card system.
+    ========================================= */
+
+    .pa-class-grid {
+        display: grid;
+
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+
+        gap: 22px;
+
+        align-items: stretch;
+    }
+
+    /* =========================================
+       CLASS CARD
+    ========================================= */
+
+    .pa-class-card {
+        position: relative;
+
+        width: 100%;
+        min-width: 0;
+
+        overflow: hidden;
+
+        background: var(--pa-card);
+
+        border: 1px solid var(--pa-border);
+        border-radius: var(--pa-radius);
+
+        box-shadow: var(--pa-shadow-sm);
+
+        transition:
+            transform 0.25s ease,
+            box-shadow 0.25s ease,
+            border-color 0.25s ease;
+    }
+
+    .pa-class-card:hover {
+        transform: translateY(-4px);
+
+        border-color: rgba(79, 70, 229, 0.25);
+
+        box-shadow: var(--pa-shadow-md);
+    }
+
+    .pa-class-card::before {
+        content: "";
+
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 4px;
+
+        background: linear-gradient(
+            90deg,
+            var(--pa-primary),
+            #7c3aed
+        );
+    }
+
+    .pa-class-card-body {
+        padding: 25px;
+    }
+
+    /* =========================================
+       ICON
+    ========================================= */
+
+    .pa-class-icon {
+        width: 58px;
+        height: 58px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        margin-bottom: 19px;
+
+        border-radius: 15px;
+
+        background: var(--pa-primary-soft);
+        color: var(--pa-primary);
+
+        font-size: 26px;
+    }
+
+    /* =========================================
+       CLASS TEXT
+    ========================================= */
+
+    .pa-education-level {
+        margin-bottom: 6px;
+
+        color: var(--pa-text-muted);
+
+        font-size: 12px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pa-class-name {
+        margin: 0 0 11px;
+
+        color: var(--pa-text);
+
+        font-size: 24px;
+        line-height: 1.2;
+        font-weight: 800;
+    }
+
+    .pa-class-description {
+        margin: 0 0 22px;
+
+        color: var(--pa-text-soft);
+
+        font-size: 14px;
+        line-height: 1.65;
+    }
+
+    /* =========================================
+       LEARNING PATH
+    ========================================= */
+
+    .pa-learning-path {
+        display: grid;
+
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 8px;
+
+        margin-bottom: 22px;
+    }
+
+    .pa-path-item {
+        min-width: 0;
+
+        padding: 9px 6px;
+
+        text-align: center;
+
+        background: #f8fafc;
+
+        border: 1px solid #edf1f6;
+        border-radius: 10px;
+    }
+
+    .pa-path-number {
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: var(--pa-primary);
+
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .pa-path-label {
+        display: block;
+
+        color: var(--pa-text-muted);
+
+        font-size: 10px;
+        font-weight: 650;
+    }
+
+    /* =========================================
+       BUTTON
+    ========================================= */
+
+    .pa-primary-button {
+        width: 100%;
+        min-height: 46px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 8px;
+
+        padding: 11px 15px;
+
+        border: 0;
+        border-radius: 11px;
+
+        background: var(--pa-primary);
+        color: #ffffff;
+
+        font-size: 14px;
+        font-weight: 700;
+
+        text-decoration: none;
+
+        transition:
+            background 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .pa-primary-button:hover {
+        background: var(--pa-primary-dark);
+        color: #ffffff;
+
+        transform: translateY(-1px);
+
+        box-shadow: 0 7px 16px rgba(79, 70, 229, 0.22);
+    }
+
+    .pa-primary-button i {
+        transition: transform 0.2s ease;
+    }
+
+    .pa-primary-button:hover i {
+        transform: translateX(3px);
+    }
+
+    /* =========================================
+       NO CLASS
+    ========================================= */
+
+    .pa-empty-state {
+        width: 100%;
+
+        padding: 55px 25px;
+
+        text-align: center;
+
+        background: var(--pa-card);
+
+        border: 1px solid var(--pa-border);
+        border-radius: var(--pa-radius);
+
+        box-shadow: var(--pa-shadow-sm);
+    }
+
+    .pa-empty-icon {
+        width: 76px;
+        height: 76px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        margin: 0 auto 20px;
+
+        border-radius: 50%;
+
+        background: #f1f5f9;
+        color: var(--pa-text-muted);
+
+        font-size: 32px;
+    }
+
+    .pa-empty-state h2 {
+        margin: 0 0 9px;
+
+        color: var(--pa-text);
+
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .pa-empty-state p {
+        max-width: 500px;
+
+        margin: 0 auto 22px;
+
+        color: var(--pa-text-soft);
+
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .pa-secondary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 44px;
+
+        padding: 10px 19px;
+
+        border: 1px solid var(--pa-border);
+        border-radius: 10px;
+
+        background: #ffffff;
+        color: var(--pa-text);
+
+        font-size: 14px;
+        font-weight: 700;
+
+        text-decoration: none;
+
+        transition: all 0.2s ease;
+    }
+
+    .pa-secondary-button:hover {
+        border-color: var(--pa-primary);
+
+        background: var(--pa-primary-soft);
+        color: var(--pa-primary);
+    }
+
+    /* =========================================
+       LARGE LAPTOP
+       3 CARDS
+    ========================================= */
+
+    @media (max-width: 1100px) {
+
+        .pa-class-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+    }
+
+    /* =========================================
+       TABLET
+       2 CARDS
+    ========================================= */
+
+    @media (max-width: 800px) {
+
+        .pa-classes-page {
+            padding: 25px 16px 50px;
+        }
+
+        .pa-class-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .pa-class-card-body {
+            padding: 22px;
+        }
+
+    }
+
+    /* =========================================
+       MOBILE
+       1 CARD
+    ========================================= */
+
+    @media (max-width: 560px) {
+
+        .pa-classes-page {
+            padding: 21px 13px 42px;
+        }
+
+        .pa-section-header {
+            margin-bottom: 15px;
+        }
+
+        .pa-section-header h2 {
+            font-size: 17px;
+        }
+
+        .pa-class-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .pa-class-card-body {
+            padding: 21px;
+        }
+
+        .pa-class-name {
+            font-size: 23px;
+        }
+
+    }
+
+    /* =========================================
+       SMALL MOBILE
+    ========================================= */
+
+    @media (max-width: 380px) {
+
+        .pa-classes-page {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .pa-class-card-body {
+            padding: 19px;
+        }
+
+        .pa-class-icon {
+            width: 54px;
+            height: 54px;
+            font-size: 24px;
+        }
+
+        .pa-class-name {
+            font-size: 21px;
+        }
+
+    }
+
+    /* =========================================
+       REDUCED MOTION
+    ========================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .pa-class-card,
+        .pa-primary-button,
+        .pa-secondary-button,
+        .pa-primary-button i {
+            transition: none;
+        }
+
+    }
+
+    .pa-hero {
+    margin-bottom: 35px;
+    padding: 38px;
+    border-radius: var(--pa-radius);
+    background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+    border: 1px solid #e0e7ff;
+}
+
+.pa-hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: var(--pa-primary);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+}
+
+.pa-hero h1 {
+    margin: 0 0 12px;
+    color: var(--pa-text);
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 800;
+}
+
+.pa-hero-description {
+    max-width: 650px;
+    margin: 0 0 18px;
+    color: var(--pa-text-soft);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.pa-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pa-hero-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--pa-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pa-level-section {
+    margin-bottom: 38px;
+}
+
+@media (max-width: 560px) {
+    .pa-hero {
+        padding: 25px 20px;
+        margin-bottom: 28px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pa-classes-page">
+    <div class="pa-container">
+
+        <!-- Breadcrumb -->
+        <nav class="pa-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'student_dashboard' %}">
+                <i class="bi bi-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </nav>
+
+        <!-- Hero -->
+        <header class="pa-hero">
+            <div class="pa-hero-content">
+
+                <div class="pa-hero-label">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    School curriculum
+                </div>
+
+                <h1>Choose Your Class</h1>
+
+                <p class="pa-hero-description">
+                    Select an education level and class to explore available
+                    subjects, lessons, activities, and assessments.
+                </p>
+
+                <div class="pa-hero-meta">
+                    <span class="pa-hero-meta-item">
+                        <i class="bi bi-check-circle"></i>
+                        No profile completion required
+                    </span>
+                </div>
+
+            </div>
+        </header>
+
+        {% if education_levels %}
+
+            {% for level in education_levels %}
+
+                {% if level.classes.all %}
+
+                    <section class="pa-level-section">
+
+                        <div class="pa-section-header">
+                            <h2>{{ level.name }}</h2>
+
+                            <span>
+                                {{ level.classes.count }}
+                                {% if level.classes.count == 1 %}
+                                    class
+                                {% else %}
+                                    classes
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="pa-class-grid">
+
+                            {% for school_class in level.classes.all %}
+
+                                <article class="pa-class-card">
+                                    <div class="pa-class-card-body">
+
+                                        <div class="pa-class-icon">
+                                            <i class="bi bi-mortarboard-fill"></i>
+                                        </div>
+
+                                        <div class="pa-education-level">
+                                            {{ level.name }}
+                                        </div>
+
+                                        <h2 class="pa-class-name">
+                                            {{ school_class.name }}
+                                        </h2>
+
+                                        <p class="pa-class-description">
+                                            Explore the subjects, terms, weeks,
+                                            lessons, activities, and assessments
+                                            available for this class.
+                                        </p>
+
+                                        <div class="pa-learning-path">
+
+                                            <div class="pa-path-item">
+                                                <span class="pa-path-number">01</span>
+                                                <span class="pa-path-label">Subjects</span>
+                                            </div>
+
+                                            <div class="pa-path-item">
+                                                <span class="pa-path-number">02</span>
+                                                <span class="pa-path-label">Terms</span>
+                                            </div>
+
+                                            <div class="pa-path-item">
+                                                <span class="pa-path-number">03</span>
+                                                <span class="pa-path-label">Weeks</span>
+                                            </div>
+
+                                            <div class="pa-path-item">
+                                                <span class="pa-path-number">04</span>
+                                                <span class="pa-path-label">Lessons</span>
+                                            </div>
+
+                                        </div>
+
+                                        <a
+                                            href="{% url 'student_subjects' school_class.id %}"
+                                            class="pa-primary-button"
+                                        >
+                                            Explore Subjects
+                                            <i class="bi bi-arrow-right"></i>
+                                        </a>
+
+                                    </div>
+                                </article>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            {% endfor %}
+
+        {% else %}
+
+            <section class="pa-empty-state">
+
+                <div class="pa-empty-icon">
+                    <i class="bi bi-journal-x"></i>
+                </div>
+
+                <h2>No Classes Available</h2>
+
+                <p>
+                    There are currently no school classes available.
+                    Please check again later or contact the administrator.
+                </p>
+
+                <a
+                    href="{% url 'student_dashboard' %}"
+                    class="pa-secondary-button"
+                >
+                    Back to Dashboard
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

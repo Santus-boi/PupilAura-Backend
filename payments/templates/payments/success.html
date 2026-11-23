@@ -1,0 +1,54 @@
+{% extends "student/base.html" %}
+{% load static payments %}
+
+{% block title %}Payment successful | PupilAura{% endblock %}
+
+{% block breadcrumb %}
+    Workspace <span class="pa-breadcrumb-sep">/</span>
+    <strong>Payment successful</strong>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 640px; margin: 0 auto; text-align: center;">
+
+    <div style="width: 96px; height: 96px; margin: 0 auto 24px; display: grid; place-items: center; border-radius: 26px; background: linear-gradient(145deg, #dcfce7, #bbf7d0); color: #15803d; font-size: 48px; box-shadow: 0 16px 36px -12px rgba(22,163,74,0.4);">
+        <i class="bi bi-check-circle-fill"></i>
+    </div>
+
+    <h1 style="margin: 0 0 10px; font: 800 32px 'Plus Jakarta Sans', sans-serif; color: var(--ink); letter-spacing: -0.6px;">
+        Payment confirmed!
+    </h1>
+
+    <p style="margin: 0 0 24px; color: var(--muted); font-size: 16px; line-height: 1.7;">
+        You now have <strong>90 days</strong> of access to
+        {{ purchase.get_content_type_display }} #{{ purchase.content_id }}.
+    </p>
+
+    <div style="padding: 20px; border: 1px solid var(--border); border-radius: 16px; background: white; margin-bottom: 24px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border);">
+            <span style="color: var(--muted); font-size: 14px;">Amount paid</span>
+            <strong style="color: var(--ink);">{{ purchase.currency }} {{ purchase.amount }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border);">
+            <span style="color: var(--muted); font-size: 14px;">Access expires</span>
+            <strong style="color: var(--ink);">{{ purchase.access_expires_at|date:"M d, Y" }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+            <span style="color: var(--muted); font-size: 14px;">Reference</span>
+            <strong style="color: var(--ink); font-family: monospace; font-size: 13px;">{{ purchase.gateway_reference }}</strong>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+        <a href="{% url 'student_dashboard' %}" class="pa-btn-primary">
+            <i class="bi bi-grid-1x2-fill"></i>
+            Back to dashboard
+        </a>
+        <a href="{% url 'my_courses' %}" class="pa-btn-outline">
+            <i class="bi bi-book-half"></i>
+            My courses
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,381 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Tech Lessons | PupilAura Admin{% endblock %}
+
+{% block page_title %}Tech Lessons{% endblock %}
+{% block page_subtitle %}Manage lessons inside your technology modules{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       TECH LESSONS LIST — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Search input */
+    .lessons-search-box {
+        position: relative;
+        width: 280px;
+    }
+
+    .lessons-search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+    }
+
+    .lessons-search-box input {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 12px 9px 37px;
+        outline: none;
+        font-size: 13px;
+        background: var(--surface);
+        color: var(--text);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lessons-search-box input:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    }
+
+    /* Table min width */
+    .tech-lessons-table {
+        min-width: 950px;
+    }
+
+    /* Lesson cell */
+    .lesson-info-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+    }
+
+    .lesson-number {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .lesson-title {
+        font-weight: 650;
+        color: var(--text);
+        margin-bottom: 3px;
+        overflow-wrap: anywhere;
+    }
+
+    .lesson-description {
+        color: var(--muted);
+        font-size: 12px;
+        max-width: 330px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Course / module cell */
+    .course-name {
+        color: var(--text);
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .module-name {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    /* Order badge */
+    .order-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 28px;
+        padding: 0 8px;
+        background: var(--surface-soft);
+        color: var(--text);
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .lessons-search-box {
+            width: 100%;
+        }
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .lesson-number {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+        }
+        .order-badge {
+            background: var(--surface-soft);
+            color: var(--text);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:tech_courses' %}">Tech Courses</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">Tech Lessons</span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-journal-code"></i>
+                </div>
+                <div>
+                    <h1>Tech Lessons</h1>
+                    <p>Manage lessons inside your technology modules.</p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:tech_lesson_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Add Lesson
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                {{ total_tech_lessons|default:0 }} lesson{{ total_tech_lessons|default:0|pluralize }}
+            </span>
+            <span class="meta-badge">
+                {{ published_tech_lessons|default:0 }} published
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-journal-code"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_lessons|default:0 }}</div>
+            <div class="stat-label">Total Lessons</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ published_tech_lessons|default:0 }}</div>
+            <div class="stat-label">Published</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-pencil-square"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ draft_tech_lessons|default:0 }}</div>
+            <div class="stat-label">Drafts</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-collection-play-fill"></i>
+        </div>
+        <div>
+            <div class="stat-value">{{ total_tech_content|default:0 }}</div>
+            <div class="stat-label">Content</div>
+        </div>
+    </div>
+
+</section>
+
+<!-- LESSONS TABLE -->
+<section class="section-card">
+    <div class="section-header">
+        <div>
+            <div class="section-title">All Tech Lessons</div>
+            <div class="section-description">
+                Manage technology lessons across all modules.
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="lessons-search-box">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                    type="text"
+                    id="lessonSearch"
+                    placeholder="Search lessons..."
+                    autocomplete="off"
+                    aria-label="Search lessons"
+                >
+            </div>
+        </div>
+    </div>
+
+    {% if tech_lessons %}
+        <div class="table-wrapper">
+            <table class="tech-lessons-table" id="lessonsTable">
+                <thead>
+                    <tr>
+                        <th>Lesson</th>
+                        <th>Course / Module</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in tech_lessons %}
+                        <tr>
+                            <td>
+                                <div class="lesson-info-cell">
+                                    <div class="lesson-number">{{ lesson.order }}</div>
+                                    <div>
+                                        <div class="lesson-title">{{ lesson.title }}</div>
+                                        <div class="lesson-description">
+                                            {% if lesson.description %}
+                                                {{ lesson.description }}
+                                            {% else %}
+                                                No description
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="course-name">{{ lesson.module.course.title }}</div>
+                                <div class="module-name">
+                                    <i class="bi bi-collection-play" style="margin-right:4px;"></i>
+                                    {{ lesson.module.title }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="order-badge">{{ lesson.order }}</span>
+                            </td>
+
+                            <td>
+                                {% if lesson.published %}
+                                    <span class="badge badge-green">
+                                        <i class="bi bi-check-circle-fill" style="margin-right:4px;"></i>
+                                        Published
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-orange">
+                                        <i class="bi bi-pencil-fill" style="margin-right:4px;"></i>
+                                        Draft
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ lesson.created_at|date:"M d, Y" }}</td>
+
+                            <td>
+                                <div class="action-group">
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_lesson_detail' lesson.id %}"
+                                        class="action-btn"
+                                        title="View lesson"
+                                        aria-label="View {{ lesson.title }}"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_lesson_edit' lesson.id %}"
+                                        class="action-btn"
+                                        title="Edit lesson"
+                                        aria-label="Edit {{ lesson.title }}"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a
+                                        href="{% url 'admin_dashboard:tech_lesson_delete' lesson.id %}"
+                                        class="action-btn danger"
+                                        title="Delete lesson"
+                                        aria-label="Delete {{ lesson.title }}"
+                                    >
+                                        <i class="bi bi-trash3"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <i class="bi bi-journal-code"></i>
+            </div>
+            <h3>No Tech Lessons Yet</h3>
+            <p>
+                Create your first technology lesson to start building
+                course content.
+            </p>
+            <a href="{% url 'admin_dashboard:tech_lesson_create' %}" class="btn btn-blue">
+                <i class="bi bi-plus-lg"></i> Create First Lesson
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const lessonSearch = document.getElementById("lessonSearch");
+
+    if (lessonSearch) {
+        lessonSearch.addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll("#lessonsTable tbody tr");
+
+            rows.forEach(function (row) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? "" : "none";
+            });
+        });
+    }
+</script>
+{% endblock %}

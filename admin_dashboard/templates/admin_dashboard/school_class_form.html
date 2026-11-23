@@ -1,0 +1,278 @@
+{% extends "admin_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if edit_mode %}Edit School Class{% else %}Add School Class{% endif %} | PupilAura Admin
+{% endblock %}
+
+{% block page_title %}
+    {% if edit_mode %}Edit School Class{% else %}Add School Class{% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if edit_mode %}
+        Update the school class information.
+    {% else %}
+        Create a new school class under an education level.
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       SCHOOL CLASS FORM — PAGE SPECIFIC
+       ========================================================= */
+
+    /* Info sidebar list */
+    .class-info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .class-info-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .class-info-item:first-child {
+        padding-top: 0;
+    }
+
+    .class-info-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .class-info-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    .class-info-value {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 3px;
+        color: var(--text);
+    }
+
+    .class-info-note {
+        background: #eff6ff;
+        color: #1e40af;
+        padding: 13px;
+        border-radius: 10px;
+        font-size: 11px;
+        line-height: 1.6;
+        margin-top: 18px;
+    }
+
+    /* Dark mode for page-only elements */
+    @media (prefers-color-scheme: dark) {
+        .class-info-note {
+            background: #172554;
+            color: #bfdbfe;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:curriculum' %}">Curriculum</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <a href="{% url 'admin_dashboard:school_classes' %}">School Classes</a>
+    <span class="breadcrumb-separator" aria-hidden="true">›</span>
+    <span class="breadcrumb-current">
+        {% if edit_mode %}Edit{% else %}Add{% endif %}
+    </span>
+</nav>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-top">
+            <div class="hero-title">
+                <div class="hero-icon" aria-hidden="true">
+                    <i class="bi bi-mortarboard"></i>
+                </div>
+                <div>
+                    <h1>
+                        {% if edit_mode %}Edit School Class{% else %}Add School Class{% endif %}
+                    </h1>
+                    <p>
+                        {% if edit_mode %}
+                            Update the school class information.
+                        {% else %}
+                            Create a new school class under an education level.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="{% url 'admin_dashboard:school_classes' %}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-meta">
+            <span class="meta-badge">
+                <i class="bi bi-diagram-3" style="margin-right:6px;"></i>
+                Curriculum structure
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<section class="content-grid">
+
+    <!-- FORM CARD -->
+    <div class="card">
+        <div class="card-header">
+            <h2>School Class Information</h2>
+            <p>Enter the details for this school class.</p>
+        </div>
+
+        <div class="card-body">
+
+            {% if form.non_field_errors %}
+                <div class="non-field-errors">
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">
+                        Class Name
+                        {% if form.name.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ form.name }}
+
+                    {% if form.name.errors %}
+                        <ul class="error-list">
+                            {% for error in form.name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if form.name.help_text %}
+                        <div class="help-text">{{ form.name.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Education Level -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.education_level.id_for_label }}">
+                        Education Level
+                        {% if form.education_level.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ form.education_level }}
+
+                    {% if form.education_level.errors %}
+                        <ul class="error-list">
+                            {% for error in form.education_level.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if form.education_level.help_text %}
+                        <div class="help-text">{{ form.education_level.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Order -->
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.order.id_for_label }}">
+                        Display Order
+                        {% if form.order.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+
+                    {{ form.order }}
+
+                    {% if form.order.errors %}
+                        <ul class="error-list">
+                            {% for error in form.order.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if form.order.help_text %}
+                        <div class="help-text">{{ form.order.help_text }}</div>
+                    {% else %}
+                        <div class="help-text">
+                            Lower numbers appear first in the curriculum.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:school_classes' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2"></i>
+                        {% if edit_mode %}Save Changes{% else %}Create School Class{% endif %}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <!-- INFO SIDEBAR -->
+    <aside class="card">
+        <div class="card-header">
+            <h2>Class Information</h2>
+            <p>How this class fits into the curriculum.</p>
+        </div>
+
+        <div class="card-body">
+            <div class="class-info-list">
+                <div class="class-info-item">
+                    <div class="class-info-label">Structure</div>
+                    <div class="class-info-value">Education Level → Class</div>
+                </div>
+                <div class="class-info-item">
+                    <div class="class-info-label">Next Level</div>
+                    <div class="class-info-value">Subjects</div>
+                </div>
+                <div class="class-info-item">
+                    <div class="class-info-label">Curriculum</div>
+                    <div class="class-info-value">School Curriculum</div>
+                </div>
+            </div>
+
+            <div class="class-info-note">
+                A school class belongs to one education level.
+                Subjects can then be added to the class, followed
+                by terms, weeks and lessons.
+            </div>
+        </div>
+    </aside>
+
+</section>
+
+{% endblock %}

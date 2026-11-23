@@ -1,0 +1,93 @@
+
+{% extends "admin_dashboard/base.html" %}
+
+{% block title %}AI Tech Lesson Generator | PupilAura{% endblock %}
+{% block page_title %}AI Tech Lesson Generator{% endblock %}
+{% block page_subtitle %}Generate lessons inside an existing technology module{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_dashboard:dashboard' %}">Dashboard</a>
+    <span>/</span>
+    <a href="{% url 'admin_dashboard:ai_index' %}">AI Studio</a>
+    <span>/</span>
+    <span class="breadcrumb-current">Tech Lesson Generator</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-title">
+            <div class="hero-icon"><i class="bi bi-journal-code"></i></div>
+            <div>
+                <h1>Generate Tech Lesson</h1>
+                <p>Create practical, structured technology lessons for learners in an existing course module.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="content-grid">
+    <section class="section-card">
+        <div class="section-header">
+            <div>
+                <div class="section-title">Lesson Generation Details</div>
+                <div class="section-description">Describe the lesson you want generated.</div>
+            </div>
+            <span class="badge badge-green">Technology Academy</span>
+        </div>
+
+        <div class="card-body">
+            <div class="info-note" style="margin-bottom:20px;">
+                <strong>Selected module:</strong> {{ module }}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="topic">Lesson topic <span class="required">*</span></label>
+                    <input type="text" name="topic" id="topic" class="form-control"
+                           value="{{ form_data.topic|default:'' }}"
+                           placeholder="e.g. Introduction to HTML elements" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="difficulty">Difficulty level <span class="required">*</span></label>
+                    <select name="difficulty" id="difficulty" class="form-select" required>
+                        <option value="beginner" {% if form_data.difficulty == "beginner" or not form_data.difficulty %}selected{% endif %}>Beginner</option>
+                        <option value="intermediate" {% if form_data.difficulty == "intermediate" %}selected{% endif %}>Intermediate</option>
+                        <option value="advanced" {% if form_data.difficulty == "advanced" %}selected{% endif %}>Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'admin_dashboard:ai_index' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-stars"></i> Generate Lesson
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <aside class="section-card">
+        <div class="section-header">
+            <div class="section-title">Selected Module</div>
+        </div>
+        <div class="card-body">
+            <div class="info-item">
+                <div class="info-label">Module</div>
+                <div class="info-value">{{ module }}</div>
+            </div>
+            <div class="info-note" style="margin-top:18px;">
+                The generated lesson will be associated with this module.
+            </div>
+            <div class="warning-box" style="margin-top:15px;">
+                Review the lesson content before publishing it to learners.
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

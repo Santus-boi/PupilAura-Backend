@@ -1,0 +1,849 @@
+{% extends "exam_prep/base.html" %}
+{% load static %}
+
+{% block title %}Exam History | PupilAura{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="Review your previous exam tests, scores, percentages and results on PupilAura.">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================================
+       EXAM HISTORY — matches PupilAura design system
+    ========================================================= */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #eff6ff;
+
+        --success: #16a34a;
+        --success-light: #f0fdf4;
+
+        --warning: #d97706;
+        --warning-light: #fffbeb;
+
+        --purple: #7c3aed;
+        --purple-light: #f5f3ff;
+
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+
+        --text: #172033;
+        --text-secondary: #4b5563;
+        --text-muted: #6b7280;
+
+        --background: #f5f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+
+        --border: #e5e7eb;
+        --border-light: #eef0f3;
+
+        --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+        --shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+        --shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.10);
+
+        --radius-sm: 10px;
+        --radius: 16px;
+        --radius-lg: 22px;
+
+        --transition: 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .history-page {
+        min-height: 100vh;
+        padding: 28px 18px 70px;
+        background: var(--background);
+    }
+
+    .history-container {
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    /* BREADCRUMB */
+    .history-page .breadcrumb {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 20px;
+        color: var(--text-muted);
+        font-size: 0.86rem;
+    }
+    .history-page .breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 650;
+        transition: color var(--transition);
+    }
+    .history-page .breadcrumb a:hover { text-decoration: underline; }
+    .history-page .breadcrumb-separator { color: #9ca3af; }
+    .history-page .breadcrumb-current {
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+    .history-hero {
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+        border-radius: var(--radius-lg);
+        padding: 44px;
+        margin-bottom: 22px;
+        box-shadow: 0 20px 50px rgba(37, 99, 235, 0.20);
+    }
+
+    .history-hero::before {
+        content: "";
+        position: absolute;
+        width: 330px;
+        height: 330px;
+        right: -140px;
+        top: -160px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+    .history-hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 90px;
+        bottom: -130px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .history-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+    }
+
+    .history-hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        margin-bottom: 17px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .history-hero-label i { color: #c7d2fe; }
+
+    .history-hero h1 {
+        margin: 0 0 14px;
+        color: #fff;
+        font-size: clamp(2rem, 5vw, 3rem);
+        line-height: 1.12;
+        font-weight: 850;
+        letter-spacing: -0.035em;
+    }
+
+    .history-hero-description {
+        max-width: 700px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+
+    .history-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 24px;
+    }
+    .history-hero-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 34px;
+        padding: 7px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.11);
+        color: #fff;
+        font-size: 0.82rem;
+        font-weight: 650;
+    }
+    .history-hero-meta-item i { color: #c7d2fe; font-size: 0.9rem; }
+
+    /* =========================================================
+       STATS STRIP
+    ========================================================= */
+    .history-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+
+    .history-stat {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px 22px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .history-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .history-stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 46px;
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 1.15rem;
+    }
+    .history-stat:nth-child(2) .history-stat-icon {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    .history-stat:nth-child(3) .history-stat-icon {
+        background: var(--purple-light);
+        color: var(--purple);
+    }
+
+    .history-stat-label {
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+    }
+    .history-stat-value {
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    /* =========================================================
+       SECTION HEADING
+    ========================================================= */
+    .history-section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .history-section-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--primary);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .history-section-title {
+        margin: 0;
+        color: var(--text);
+        font-size: clamp(1.3rem, 2.4vw, 1.65rem);
+        font-weight: 850;
+        letter-spacing: -0.03em;
+        line-height: 1.3;
+    }
+
+    .history-section-desc {
+        margin: 8px 0 0;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        line-height: 1.7;
+    }
+
+    .history-section-count {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--text-secondary);
+        font-size: 0.76rem;
+        font-weight: 750;
+        box-shadow: var(--shadow-sm);
+    }
+    .history-section-count strong {
+        color: var(--primary);
+        font-size: 0.92rem;
+        font-weight: 850;
+    }
+
+    /* =========================================================
+       ATTEMPT CARDS
+    ========================================================= */
+    .attempt-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .attempt-card {
+        position: relative;
+        overflow: hidden;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        transition:
+            transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+            box-shadow 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+            border-color 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .attempt-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary);
+    }
+    .attempt-card.is-passed::before { background: var(--success); }
+    .attempt-card.is-failed::before { background: var(--danger); }
+
+    .attempt-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(
+            500px circle at var(--mx, 50%) var(--my, 0%),
+            rgba(37, 99, 235, 0.05),
+            transparent 55%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .attempt-card:hover {
+        transform: translateY(-3px);
+        border-color: #bfdbfe;
+        box-shadow: 0 20px 40px -18px rgba(37, 99, 235, 0.25);
+    }
+    .attempt-card:hover::after { opacity: 1; }
+
+    .attempt-main {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 25px;
+        margin-bottom: 20px;
+    }
+
+    .attempt-info { min-width: 0; flex: 1; }
+
+    .attempt-title {
+        margin: 0 0 7px;
+        color: var(--text);
+        font-size: 1.08rem;
+        font-weight: 800;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+    }
+
+    .attempt-title span {
+        color: var(--text-muted);
+        font-weight: 600;
+        margin: 0 4px;
+    }
+
+    .attempt-resource {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+    .attempt-resource i {
+        color: var(--primary);
+        font-size: 0.8rem;
+        margin-right: 4px;
+    }
+    .attempt-resource .dot {
+        color: #cbd5e1;
+        margin: 0 8px;
+    }
+
+    /* Status pill */
+    .attempt-status {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+    }
+
+    .attempt-status.is-passed {
+        background: var(--success-light);
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+    .attempt-status.is-failed {
+        background: var(--danger-light);
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    /* Stats row */
+    .attempt-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .attempt-stat {
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface-soft);
+        transition: border-color var(--transition), background var(--transition);
+    }
+    .attempt-card:hover .attempt-stat {
+        border-color: #dbeafe;
+        background: var(--primary-light);
+    }
+
+    .attempt-stat-label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--text-muted);
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .attempt-stat-value {
+        color: var(--text);
+        font-size: 0.98rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+    .attempt-stat-value.is-passed { color: var(--success); }
+    .attempt-stat-value.is-failed { color: var(--danger); }
+
+    /* Footer */
+    .attempt-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding-top: 17px;
+        border-top: 1px dashed var(--border);
+    }
+
+    .attempt-date {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .attempt-date i { color: var(--primary); font-size: 0.85rem; }
+
+    .attempt-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-shrink: 0;
+        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, var(--primary), #4338ca);
+        color: #fff;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 10px 22px -10px rgba(37, 99, 235, 0.55);
+        transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .attempt-action:hover {
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px -10px rgba(37, 99, 235, 0.7);
+    }
+    .attempt-action i { transition: transform var(--transition); }
+    .attempt-action:hover i { transform: translateX(3px); }
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+    .history-empty {
+        padding: 60px 24px;
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--radius);
+        background: var(--surface-soft);
+        text-align: center;
+    }
+
+    .history-empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 18px;
+        border-radius: 18px;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 1.7rem;
+    }
+
+    .history-empty h3 {
+        margin: 0 0 9px;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .history-empty p {
+        max-width: 440px;
+        margin: 0 auto 22px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.75;
+    }
+
+    .history-empty-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, var(--primary), #4338ca);
+        color: #fff;
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.55);
+        transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .history-empty-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px -10px rgba(37, 99, 235, 0.7);
+    }
+
+    /* =========================================================
+       REVEAL
+    ========================================================= */
+    @keyframes hr-rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal { opacity: 0; animation: hr-rise 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+    .reveal.d1 { animation-delay: 0.05s; }
+    .reveal.d2 { animation-delay: 0.15s; }
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+    @media (max-width: 950px) {
+        .attempt-main {
+            flex-direction: column;
+            gap: 14px;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .history-page { padding: 20px 12px 48px; }
+        .history-hero { padding: 30px 22px; border-radius: 18px; }
+        .history-hero h1 { font-size: 1.9rem; }
+        .history-hero-description { font-size: 0.94rem; }
+        .history-hero-meta { display: grid; grid-template-columns: 1fr; }
+
+        .history-stats { grid-template-columns: 1fr; gap: 10px; }
+        .history-stat { padding: 16px; }
+
+        .history-section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .attempt-card { padding: 20px; }
+        .attempt-stats { grid-template-columns: 1fr; }
+
+        .attempt-footer {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .attempt-action { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .history-page *, .history-page *::before, .history-page *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+        .reveal { opacity: 1; animation: none; transform: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <div class="history-container">
+
+        <!-- BREADCRUMB -->
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'student_dashboard' %}">Dashboard</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{% url 'exam_prep:home' %}">Exam Preparation</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Exam History</span>
+        </nav>
+
+        <!-- HERO -->
+        <header class="history-hero reveal">
+            <div class="history-hero-content">
+
+                <div class="history-hero-label">
+                    <i class="bi bi-clock-history" aria-hidden="true"></i>
+                    Your activity
+                </div>
+
+                <h1>Exam history</h1>
+
+                <p class="history-hero-description">
+                    Review your previous exam tests, scores, percentages
+                    and results. Track your progress over time and open
+                    any attempt to see the full answer review.
+                </p>
+
+                <div class="history-hero-meta">
+                    <span class="history-hero-meta-item">
+                        <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
+                        {{ attempts|length }} attempt{{ attempts|length|pluralize }}
+                    </span>
+                    <span class="history-hero-meta-item">
+                        <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                        Track your progress
+                    </span>
+                    <span class="history-hero-meta-item">
+                        <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+                        Detailed reviews
+                    </span>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- STATS -->
+        {% if attempts %}
+            <div class="history-stats reveal d1">
+                <div class="history-stat">
+                    <div class="history-stat-icon">
+                        <i class="bi bi-collection" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="history-stat-label">Total attempts</div>
+                        <div class="history-stat-value">
+                            {{ attempts|length }} attempt{{ attempts|length|pluralize }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-stat">
+                    <div class="history-stat-icon">
+                        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="history-stat-label">Passed</div>
+                        <div class="history-stat-value">
+                            {{ attempts|dictsort:"passed"|length }} attempt{{ attempts|dictsort:"passed"|length|pluralize }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-stat">
+                    <div class="history-stat-icon">
+                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="history-stat-label">Most recent</div>
+                        <div class="history-stat-value">
+                            {% if attempts.0.submitted_at %}
+                                {{ attempts.0.submitted_at|date:"M d, Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- SECTION HEADING -->
+        <div class="history-section-heading reveal d2">
+            <div>
+                <div class="history-section-kicker">
+                    <i class="bi bi-list-check" aria-hidden="true"></i>
+                    All attempts
+                </div>
+                <h2 class="history-section-title">Your test attempts</h2>
+                <p class="history-section-desc">
+                    Each card shows the exam, subject, year, score and
+                    result. Open an attempt to review every answer.
+                </p>
+            </div>
+
+            {% if attempts %}
+                <div class="history-section-count">
+                    <strong>{{ attempts|length }}</strong>
+                    attempt{{ attempts|length|pluralize }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ATTEMPTS -->
+        {% if attempts %}
+            <div class="attempt-list">
+                {% for attempt in attempts %}
+                    <article class="attempt-card reveal {% if attempt.passed %}is-passed{% else %}is-failed{% endif %}"
+                             style="animation-delay: {{ forloop.counter0|add:2 }}00ms;"
+                             onmousemove="this.style.setProperty('--mx', event.offsetX + 'px'); this.style.setProperty('--my', event.offsetY + 'px');">
+
+                        <div class="attempt-main">
+                            <div class="attempt-info">
+                                <h3 class="attempt-title">
+                                    {{ attempt.resource.exam.name }}
+                                    <span>—</span>
+                                    {{ attempt.resource.subject.name }}
+                                </h3>
+
+                                <div class="attempt-resource">
+                                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                    {{ attempt.resource.year.year }}
+                                    <span class="dot">·</span>
+                                    {{ attempt.resource.title }}
+                                </div>
+                            </div>
+
+                            {% if attempt.passed %}
+                                <span class="attempt-status is-passed">
+                                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                    Passed
+                                </span>
+                            {% else %}
+                                <span class="attempt-status is-failed">
+                                    <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
+                                    Not passed
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="attempt-stats">
+                            <div class="attempt-stat">
+                                <span class="attempt-stat-label">Score</span>
+                                <span class="attempt-stat-value">
+                                    {{ attempt.score }} / {{ attempt.total_marks }}
+                                </span>
+                            </div>
+
+                            <div class="attempt-stat">
+                                <span class="attempt-stat-label">Percentage</span>
+                                <span class="attempt-stat-value">
+                                    {{ attempt.percentage }}%
+                                </span>
+                            </div>
+
+                            <div class="attempt-stat">
+                                <span class="attempt-stat-label">Result</span>
+                                {% if attempt.passed %}
+                                    <span class="attempt-stat-value is-passed">Passed</span>
+                                {% else %}
+                                    <span class="attempt-stat-value is-failed">Not passed</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="attempt-footer">
+                            {% if attempt.submitted_at %}
+                                <span class="attempt-date">
+                                    <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                                    Submitted {{ attempt.submitted_at|date:"M d, Y · g:i A" }}
+                                </span>
+                            {% else %}
+                                <span class="attempt-date">
+                                    <i class="bi bi-clock" aria-hidden="true"></i>
+                                    Submission date unavailable
+                                </span>
+                            {% endif %}
+
+                            <a href="{% url 'exam_prep:result' attempt.id %}"
+                               class="attempt-action">
+                                View result
+                                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="history-empty">
+                <div class="history-empty-icon">
+                    <i class="bi bi-journal-x" aria-hidden="true"></i>
+                </div>
+                <h3>No exam attempts yet</h3>
+                <p>
+                    Complete an exam test and your score and result
+                    will appear here automatically.
+                </p>
+                <a href="{% url 'exam_prep:home' %}" class="history-empty-btn">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    Browse exams
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
