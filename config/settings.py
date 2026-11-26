@@ -187,3 +187,5 @@ LOGIN_REDIRECT_URL = "student_dashboard"
 # SITE URL
 # ==============================================================
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
