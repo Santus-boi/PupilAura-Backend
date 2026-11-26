@@ -403,7 +403,7 @@ def education_level_create(request):
 
     return render(
         request,
-        "admin_dashboard/education_level_create.html",
+        "admin_dashboard/education_level_form.html",
         {
             "form": form,
             "title": "Create Education Level",
